@@ -1,0 +1,5 @@
+Analyzing pontos...                                             
+
+  error - Abstract classes can't be instantiated - lib\screens\lyric_form_screen.dart:55:17 - instantiate_abstract_class
+   info - 'composer' is deprecated and shouldn't be used. The composer is now retrieved from the Editor. You should remove this property from your SuperEditor widget - lib\screens\lyric_form_screen.dart:194:15 - deprecated_member_use
+
