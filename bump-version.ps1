@@ -20,6 +20,19 @@ $NewContent | Set-Content $PubspecPath
 
 Write-Host "Updated pubspec.yaml to version $Version" -ForegroundColor Green
 
+# Update version in lib/screens/home_screen.dart
+$HomeScreenPath = "lib/screens/home_screen.dart"
+if (Test-Path $HomeScreenPath) {
+    $HomeContent = Get-Content $HomeScreenPath
+    $NewHomeContent = $HomeContent -replace 'Versão: .*?"', "Versão: $Version"""
+    $NewHomeContent | Set-Content $HomeScreenPath
+    Write-Host "Updated home_screen.dart to version $Version" -ForegroundColor Green
+    git add lib/screens/home_screen.dart
+}
+else {
+    Write-Host "Warning: $HomeScreenPath not found. Version in UI skipped." -ForegroundColor Yellow
+}
+
 # Git operations
 git add pubspec.yaml
 git commit -m "chore: bump version to $Version"

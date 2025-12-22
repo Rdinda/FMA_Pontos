@@ -47,46 +47,62 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Consumer<SyncRepository>(
-          builder: (context, syncRepo, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo Image
-                Image.asset(
-                  'assets/images/splash.png',
-                  width: 300,
-                  height: 300,
-                ),
-                const SizedBox(height: 24),
-                // Loader
-                const CupertinoActivityIndicator(
-                  radius: 15.0,
-                  color: Colors.blue,
-                ),
-                const SizedBox(height: 16),
-                if (syncRepo.isDownloading) ...[
-                  Text(
-                    syncRepo.downloadStatus,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 48.0),
-                    child: LinearProgressIndicator(
-                      value: syncRepo.downloadProgress,
+      body: Stack(
+        children: [
+          Center(
+            child: Consumer<SyncRepository>(
+              builder: (context, syncRepo, child) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo Image
+                    Image.asset(
+                      'assets/images/splash.png',
+                      width: 300,
+                      height: 300,
                     ),
-                  ),
-                ] else
-                  const Text(
-                    "Carregando...",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-              ],
-            );
-          },
-        ),
+                    const SizedBox(height: 24),
+                    // Loader
+                    const CupertinoActivityIndicator(
+                      radius: 15.0,
+                      color: Colors.blue,
+                    ),
+                    const SizedBox(height: 16),
+                    if (syncRepo.isDownloading) ...[
+                      Text(
+                        syncRepo.downloadStatus,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                        child: LinearProgressIndicator(
+                          value: syncRepo.downloadProgress,
+                        ),
+                      ),
+                    ] else
+                      const Text(
+                        "Carregando...",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const Positioned(
+            bottom: 16,
+            right: 16,
+            child: Text(
+              "v1.0.0",
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
