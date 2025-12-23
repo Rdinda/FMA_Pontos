@@ -7,6 +7,8 @@ import 'category_screen.dart'; // Will create next
 import 'search_screen.dart'; // Will create next
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../services/update_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Initial data load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SyncRepository>(context, listen: false).syncData();
+      _checkForUpdates();
     });
   }
 
@@ -242,5 +245,58 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _checkForUpdates() async {
+    final updateInfo = await UpdateService.checkForUpdate();
+    if (updateInfo != null && updateInfo.hasUpdate && mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Nova Atualização Disponível'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Uma nova versão (${updateInfo.version}) está disponível.'),
+              if (updateInfo.changelog.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'O que há de novo:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: SingleChildScrollView(
+                    child: Text(updateInfo.changelog),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Depois'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _launchUpdateUrl(updateInfo.url);
+              },
+              child: const Text('Baixar'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _launchUpdateUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }
