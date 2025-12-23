@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Versão: 1.0.4"),
+            const Text("Versão: 1.0.6"),
             const SizedBox(height: 8),
             const Text("Criado por: Rdinda"),
             const SizedBox(height: 16),
