@@ -33,6 +33,19 @@ else {
     Write-Host "Warning: $HomeScreenPath not found. Version in UI skipped." -ForegroundColor Yellow
 }
 
+# Update version in lib/screens/splash_screen.dart
+$SplashScreenPath = "lib/screens/splash_screen.dart"
+if (Test-Path $SplashScreenPath) {
+    $SplashContent = Get-Content $SplashScreenPath
+    $NewSplashContent = $SplashContent -replace 'v\d+\.\d+\.\d+', "v$Version"
+    $NewSplashContent | Set-Content $SplashScreenPath
+    Write-Host "Updated splash_screen.dart to version $Version" -ForegroundColor Green
+    git add lib/screens/splash_screen.dart
+}
+else {
+    Write-Host "Warning: $SplashScreenPath not found. Version in UI skipped." -ForegroundColor Yellow
+}
+
 # Git operations
 git add pubspec.yaml
 git commit -m "chore: bump version to $Version"

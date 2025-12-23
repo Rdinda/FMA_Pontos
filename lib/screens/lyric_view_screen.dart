@@ -1,10 +1,10 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'lyric_form_screen.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
+import '../services/audio_player_service.dart';
 
 class LyricViewScreen extends StatefulWidget {
   final Lyric lyric;
@@ -17,71 +17,30 @@ class LyricViewScreen extends StatefulWidget {
 
 class _LyricViewScreenState extends State<LyricViewScreen> {
   late Lyric _lyric;
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isPlaying = false;
-  Duration _duration = Duration.zero;
-  Duration _position = Duration.zero;
-
   @override
   void initState() {
     super.initState();
     _lyric = widget.lyric;
-
-    _audioPlayer.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() {
-          _isPlaying = state == PlayerState.playing;
-        });
-      }
-    });
-
-    _audioPlayer.onDurationChanged.listen((newDuration) {
-      if (mounted) {
-        setState(() {
-          _duration = newDuration;
-        });
-      }
-    });
-
-    _audioPlayer.onPositionChanged.listen((newPosition) {
-      if (mounted) {
-        setState(() {
-          _position = newPosition;
-        });
-      }
-    });
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
     super.dispose();
   }
 
   Future<void> _togglePlay() async {
-    if (_lyric.audioUrl == null) return;
+    if (_lyric.audioUrl == null && _lyric.localAudioPath == null) return;
 
-    if (_isPlaying) {
-      await _audioPlayer.pause();
-    } else {
-      // Use locally downloaded path if available for offline playback support preference
-      // But _lyric.audioUrl is the HTTP URL.
-      // Wait, the audio player might need local file path if offline.
-      // SyncRepository downloads to local path.
-      // We should prefer local path if available!
-      // But _lyric.localAudioPath might be null if not synced yet?
-      // Let's check.
-      if (_lyric.localAudioPath != null) {
-        await _audioPlayer.play(DeviceFileSource(_lyric.localAudioPath!));
-      } else {
-        await _audioPlayer.play(UrlSource(_lyric.audioUrl!));
-      }
-    }
+    final audioService = Provider.of<AudioPlayerService>(
+      context,
+      listen: false,
+    );
+    await audioService.play(_lyric);
   }
 
   void _edit(BuildContext context) async {
-    // Pause audio if editing
-    _audioPlayer.pause();
+    // Pause audio if editing (optional, strictly speaking we might want to keep it playing, but usually pausing is good UX when editing)
+    // _audioPlayer.pause(); // We can remove this for now or use service to pause if desired. Let's keep it playing as per request "keep playing".
 
     final result = await Navigator.push(
       context,
@@ -155,102 +114,128 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                children: [
-                  if (_lyric.audioUrl != null) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade300),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: _togglePlay,
-                                icon: Icon(
-                                  _isPlaying
-                                      ? Icons.pause_circle_filled
-                                      : Icons.play_circle_filled,
-                                ),
-                                iconSize: 48,
-                                color: Colors.blue,
+              child: Consumer<AudioPlayerService>(
+                builder: (context, audioService, child) {
+                  final isCurrentLyric =
+                      audioService.currentLyric?.id == _lyric.id;
+                  final isPlaying = isCurrentLyric && audioService.isPlaying;
+                  final duration = isCurrentLyric
+                      ? audioService.duration
+                      : Duration.zero;
+                  final position = isCurrentLyric
+                      ? audioService.position
+                      : Duration.zero;
+
+                  return Column(
+                    children: [
+                      if (_lyric.audioUrl != null ||
+                          _lyric.localAudioPath != null) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade300),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                              Expanded(
-                                child: Slider(
-                                  min: 0,
-                                  max: _duration.inSeconds.toDouble(),
-                                  value: _position.inSeconds.toDouble().clamp(
-                                    0,
-                                    _duration.inSeconds.toDouble(),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: _togglePlay,
+                                    icon: Icon(
+                                      isPlaying
+                                          ? Icons.pause_circle_filled
+                                          : Icons.play_circle_filled,
+                                    ),
+                                    iconSize: 48,
+                                    color: Colors.blue,
                                   ),
-                                  onChanged: (value) async {
-                                    final position = Duration(
-                                      seconds: value.toInt(),
-                                    );
-                                    await _audioPlayer.seek(position);
-                                  },
+                                  Expanded(
+                                    child: Slider(
+                                      min: 0,
+                                      max: duration.inSeconds.toDouble() > 0
+                                          ? duration.inSeconds.toDouble()
+                                          : 1.0,
+                                      value: position.inSeconds
+                                          .toDouble()
+                                          .clamp(
+                                            0,
+                                            duration.inSeconds.toDouble() > 0
+                                                ? duration.inSeconds.toDouble()
+                                                : 1.0,
+                                          ),
+                                      onChanged: (value) async {
+                                        if (isCurrentLyric) {
+                                          final newPosition = Duration(
+                                            seconds: value.toInt(),
+                                          );
+                                          await audioService.seek(newPosition);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(_formatDuration(position)),
+                                    Text(_formatDuration(duration)),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(_formatDuration(_position)),
-                                Text(_formatDuration(_duration)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32.0,
-                      vertical: 40.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.grey.shade300,
-                      ), // Requested: Borders
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
                         ),
+                        const SizedBox(height: 24),
                       ],
-                    ),
-                    child: Text(
-                      _lyric.content,
-                      style: GoogleFonts.openSans(
-                        fontSize: 18,
-                        height: 1.8,
-                        color: Colors.black87,
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32.0,
+                          vertical: 40.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                          ), // Requested: Borders
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          _lyric.content,
+                          style: GoogleFonts.openSans(
+                            fontSize: 18,
+                            height: 1.8,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.left, // Requested: Left aligned
+                        ),
                       ),
-                      textAlign: TextAlign.left, // Requested: Left aligned
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
             ),
           ),

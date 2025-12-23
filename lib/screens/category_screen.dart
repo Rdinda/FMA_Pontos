@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
+import '../services/audio_player_service.dart';
+import '../widgets/category_player_widget.dart';
 import 'lyric_form_screen.dart';
 import 'search_screen.dart';
 import 'lyric_view_screen.dart';
@@ -103,6 +105,26 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
+  Future<void> _playAllLyrics() async {
+    final repo = Provider.of<SyncRepository>(context, listen: false);
+    final audioService = Provider.of<AudioPlayerService>(
+      context,
+      listen: false,
+    );
+
+    final lyrics = await repo.getLyrics(widget.category.id);
+    if (lyrics.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nenhuma letra nesta categoria.')),
+        );
+      }
+      return;
+    }
+
+    await audioService.playAll(lyrics);
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = Provider.of<SyncRepository>(context);
@@ -111,6 +133,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
       appBar: AppBar(
         title: Text(widget.category.name.capitalize()),
         actions: [
+          IconButton(
+            onPressed: _playAllLyrics,
+            icon: const Icon(Icons.play_circle_outline),
+            tooltip: 'Tocar Todas',
+          ),
           IconButton(onPressed: _editCategory, icon: const Icon(Icons.edit)),
           IconButton(
             onPressed: _deleteCategory,
@@ -158,6 +185,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   child: Card(
                     elevation: 2,
+                    color: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -204,6 +232,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.add), label: "Letra"),
         ],
       ),
+      bottomSheet: const CategoryPlayerWidget(),
     );
   }
 }

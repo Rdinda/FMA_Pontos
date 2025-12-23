@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'services/sync_repository.dart';
+import 'services/audio_player_service.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -14,16 +15,26 @@ void main() async {
     anonKey: 'sb_publishable_XY51Jp2zfA7GJ85r-THEkA_e_XbpBnY',
   );
 
-  runApp(const MyApp());
+  // Initialize AudioPlayerService BEFORE runApp to ensure it's ready
+  debugPrint('[main] Initializing AudioPlayerService...');
+  final audioService = await AudioPlayerService.create();
+  debugPrint('[main] AudioPlayerService initialized successfully');
+
+  runApp(MyApp(audioService: audioService));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AudioPlayerService audioService;
+
+  const MyApp({super.key, required this.audioService});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => SyncRepository())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => SyncRepository()),
+        ChangeNotifierProvider.value(value: audioService),
+      ],
       child: MaterialApp(
         title: 'Filhos de Maria das Almas',
         debugShowCheckedModeBanner: false,
