@@ -35,3 +35,11 @@
 # Suppress warnings for missing optional deps
 -dontwarn java.lang.invoke.**
 -dontwarn javax.annotation.**
+
+# Fix for Play Store Split Application (R8 Missing Classes)
+-dontwarn com.google.android.play.core.splitcompat.**
+-dontwarn com.google.android.play.core.splitinstall.**
+-dontwarn com.google.android.play.core.tasks.**
+-keep class com.google.android.play.core.splitcompat.** { *; }
+-keep class com.google.android.play.core.splitinstall.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
