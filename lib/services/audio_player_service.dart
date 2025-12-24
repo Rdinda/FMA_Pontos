@@ -427,7 +427,23 @@ class MyAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
   @override
   Future<void> play() async {
-    debugPrint('[MyAudioHandler] play() - resuming');
+    debugPrint('[MyAudioHandler] play() - checking player state');
+
+    // If the player was stopped (not just paused), we need to reload the media
+    // resume() only works after pause(), not after stop()
+    if (_player.state == PlayerState.stopped ||
+        _player.state == PlayerState.completed) {
+      debugPrint(
+        '[MyAudioHandler] Player is stopped/completed, reloading media...',
+      );
+      final currentMediaItem = mediaItem.value;
+      if (currentMediaItem != null) {
+        await playMediaItem(currentMediaItem);
+        return;
+      }
+    }
+
+    debugPrint('[MyAudioHandler] Resuming playback...');
     await _player.resume();
   }
 

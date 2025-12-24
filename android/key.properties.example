@@ -1,0 +1,13 @@
+# Este é um arquivo de EXEMPLO para configurar a keystore de assinatura.
+# 
+# INSTRUÇÕES:
+# 1. Copie este arquivo para 'key.properties' (sem .example)
+# 2. Substitua os valores abaixo pelos seus valores reais
+# 3. O arquivo key.properties já está no .gitignore para segurança
+#
+# Nunca faça commit do arquivo key.properties real!
+
+storePassword=SUA_SENHA_DA_KEYSTORE
+keyPassword=SUA_SENHA_DA_CHAVE
+keyAlias=fmapontos
+storeFile=../keystore/fmapontos-release-key.jks

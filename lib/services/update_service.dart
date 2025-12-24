@@ -25,19 +25,21 @@ class UpdateService {
   static final Logger _logger = Logger();
 
   // Use this for debugging/testing to force an update availability
-  // static const String? _forceCurrentVersion = "0.0.1";
+  // static const String? _forceCurrentVersion = "0.0.1"; // TEMPORARY: Remove after testing
 
   static Future<UpdateInfo?> checkForUpdate() async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
-      // final currentVersion = _forceCurrentVersion ?? packageInfo.version;
+      _logger.i('Checking for updates - Current version: $currentVersion');
 
       final response = await http.get(
         Uri.parse(
           'https://api.github.com/repos/$_repoOwner/$_repoName/releases/latest',
         ),
       );
+
+      _logger.i('GitHub API response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -46,7 +48,10 @@ class UpdateService {
             ? tagName.substring(1)
             : tagName;
 
+        _logger.i('Latest version from GitHub: $latestVersion');
+
         final hasUpdate = _compareVersions(currentVersion, latestVersion);
+        _logger.i('Has update available: $hasUpdate');
 
         if (hasUpdate) {
           // Find the apk asset if available, or fall back to html_url
@@ -61,6 +66,8 @@ class UpdateService {
             downloadUrl = apkAsset['browser_download_url'];
           }
 
+          _logger.i('Download URL: $downloadUrl');
+
           return UpdateInfo(
             version: latestVersion,
             url: downloadUrl,
@@ -68,10 +75,18 @@ class UpdateService {
             hasUpdate: true,
           );
         }
+      } else {
+        _logger.w(
+          'GitHub API request failed with status: ${response.statusCode}',
+        );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Log error using Logger
-      _logger.e('Error checking for updates: $e');
+      _logger.e(
+        'Error checking for updates: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
     return null;
   }

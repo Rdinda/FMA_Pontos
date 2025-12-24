@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
@@ -92,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Versão: 1.0.6"),
+            const Text("Versão: 1.0.5"),
             const SizedBox(height: 8),
             const Text("Criado por: Rdinda"),
             const SizedBox(height: 16),
@@ -283,6 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ElevatedButton(
               onPressed: () {
+                Navigator.pop(context); // Close dialog first
                 _launchUpdateUrl(updateInfo.url);
               },
               child: const Text('Baixar'),
@@ -294,9 +296,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _launchUpdateUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final uri = Uri.parse(url);
+      debugPrint('[Update] Attempting to launch URL: $url');
+
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o link de download'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[Update] Error launching URL: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir download: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

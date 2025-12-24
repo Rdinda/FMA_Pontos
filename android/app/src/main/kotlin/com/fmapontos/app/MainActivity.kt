@@ -1,4 +1,4 @@
-package com.example.pontos
+package com.fmapontos.app
 
 import io.flutter.embedding.android.FlutterActivity
 import com.ryanheise.audioservice.AudioServiceActivity

@@ -98,3 +98,4 @@ android/key.properties
 *.keystore
 *.p12
 *.pfX
+keystore.base64.txt
