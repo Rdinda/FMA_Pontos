@@ -9,8 +9,7 @@
     <application
         android:label="FMA Pontos"
         android:name="${applicationName}"
-        android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="false"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

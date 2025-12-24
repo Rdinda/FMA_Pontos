@@ -4,12 +4,12 @@ import '../models/category.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/category_player_widget.dart';
 import 'lyric_form_screen.dart';
 import 'search_screen.dart';
 import 'lyric_view_screen.dart';
 import '../utils/string_extensions.dart';
-// For navigation
 
 class CategoryScreen extends StatefulWidget {
   final Category category;
@@ -32,13 +32,41 @@ class _CategoryScreenState extends State<CategoryScreen> {
         MaterialPageRoute(builder: (_) => const SearchScreen()),
       );
     } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => LyricFormScreen(categoryId: widget.category.id),
-        ),
-      );
+      final authService = Provider.of<AuthService>(context, listen: false);
+      if (!authService.canAddLyrics) {
+        _showPermissionMessage(authService.isAnonymous);
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LyricFormScreen(categoryId: widget.category.id),
+          ),
+        );
+      }
     }
+  }
+
+  void _showPermissionMessage(bool isAnonymous) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isAnonymous
+              ? 'Faça login com Google para adicionar letras'
+              : 'Você não tem permissão para esta ação',
+        ),
+      ),
+    );
+  }
+
+  // Getters de permissão usando AuthService
+  bool get _canEditCategory {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    return authService.canEditCategories;
+  }
+
+  bool get _canDeleteCategory {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    return authService.canDeleteCategories;
   }
 
   void _editCategory() {
@@ -138,11 +166,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
             icon: const Icon(Icons.play_circle_outline),
             tooltip: 'Tocar Todas',
           ),
-          IconButton(onPressed: _editCategory, icon: const Icon(Icons.edit)),
-          IconButton(
-            onPressed: _deleteCategory,
-            icon: const Icon(Icons.delete),
-          ),
+          if (_canEditCategory)
+            IconButton(onPressed: _editCategory, icon: const Icon(Icons.edit)),
+          if (_canDeleteCategory)
+            IconButton(
+              onPressed: _deleteCategory,
+              icon: const Icon(Icons.delete),
+            ),
         ],
       ),
       body: FutureBuilder<List<Lyric>>(
@@ -178,6 +208,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               itemCount: lyrics.length,
               itemBuilder: (ctx, i) {
                 final lyric = lyrics[i];
+                final colorScheme = Theme.of(context).colorScheme;
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -185,7 +216,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   child: Card(
                     elevation: 2,
-                    color: Colors.white,
+                    color: colorScheme.surfaceContainer,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -196,12 +227,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       ),
                       title: Text(
                         lyric.title.capitalize(),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
-                      trailing: const Icon(
+                      trailing: Icon(
                         Icons.arrow_forward_ios,
                         size: 16,
-                        color: Colors.grey,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       onTap: () {
                         // Open View Screen
@@ -223,9 +257,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: "Buscar"),

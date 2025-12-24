@@ -28,6 +28,9 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
     // Calculate max height for lyrics panel (65% of screen height)
     final screenHeight = MediaQuery.of(context).size.height;
     final lyricsMaxHeight = screenHeight * 0.65;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Consumer<AudioPlayerService>(
       builder: (context, audioService, child) {
@@ -46,10 +49,12 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
 
         return Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surfaceContainer,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, -2),
               ),
@@ -68,7 +73,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                   child: ClipRect(
                     child: _showLyrics && currentLyric != null
                         ? Container(
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             child: Column(
                               children: [
                                 // Header with title and close
@@ -80,7 +85,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: BorderSide(
-                                        color: Colors.grey.shade200,
+                                        color: colorScheme.outlineVariant,
                                       ),
                                     ),
                                   ),
@@ -89,9 +94,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                       Container(
                                         padding: const EdgeInsets.all(6),
                                         decoration: BoxDecoration(
-                                          color: Theme.of(
-                                            context,
-                                          ).primaryColor.withValues(alpha: 0.1),
+                                          color: colorScheme.primaryContainer,
                                           borderRadius: BorderRadius.circular(
                                             6,
                                           ),
@@ -99,7 +102,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                         child: Icon(
                                           Icons.music_note,
                                           size: 18,
-                                          color: Theme.of(context).primaryColor,
+                                          color: colorScheme.onPrimaryContainer,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -120,7 +123,8 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                             Text(
                                               '${currentIndex + 1} de $totalTracks',
                                               style: TextStyle(
-                                                color: Colors.grey[600],
+                                                color: colorScheme
+                                                    .onSurfaceVariant,
                                                 fontSize: 11,
                                               ),
                                             ),
@@ -134,7 +138,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                           Icons.keyboard_arrow_down,
                                         ),
                                         iconSize: 26,
-                                        color: Colors.grey[600],
+                                        color: colorScheme.onSurfaceVariant,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(
                                           minWidth: 36,
@@ -156,7 +160,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                       style: GoogleFonts.openSans(
                                         fontSize: 16,
                                         height: 1.75,
-                                        color: Colors.black87,
+                                        color: colorScheme.onSurface,
                                       ),
                                       textAlign: TextAlign.left,
                                     ),
@@ -173,9 +177,9 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                   value: duration.inSeconds > 0
                       ? position.inSeconds / duration.inSeconds
                       : 0.0,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: colorScheme.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor,
+                    colorScheme.primary,
                   ),
                   minHeight: 3,
                 ),
@@ -191,7 +195,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                         onPressed: () => audioService.clearPlaylist(),
                         icon: const Icon(Icons.close),
                         iconSize: 22,
-                        color: Colors.grey[600],
+                        color: colorScheme.onSurfaceVariant,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
                           minWidth: 36,
@@ -206,9 +210,10 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                           children: [
                             Text(
                               currentLyric?.title.capitalize() ?? '',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
+                                color: colorScheme.onSurface,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -216,7 +221,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                             Text(
                               '${currentIndex + 1}/$totalTracks • ${_formatDuration(position)}/${_formatDuration(duration)}',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 11,
                               ),
                             ),
@@ -233,8 +238,8 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                         ),
                         iconSize: 22,
                         color: _showLyrics
-                            ? Theme.of(context).primaryColor
-                            : Colors.grey[500],
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
                           minWidth: 36,
@@ -253,8 +258,8 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                             ),
                             iconSize: 20,
                             color: isRepeat
-                                ? Theme.of(context).primaryColor
-                                : Colors.grey[500],
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                               minWidth: 36,
@@ -266,7 +271,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                             onPressed: () => audioService.skipPrevious(),
                             icon: const Icon(Icons.skip_previous_rounded),
                             iconSize: 28,
-                            color: Colors.black87,
+                            color: colorScheme.onSurface,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                               minWidth: 40,
@@ -282,7 +287,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                   : Icons.play_circle_filled,
                             ),
                             iconSize: 44,
-                            color: Theme.of(context).primaryColor,
+                            color: colorScheme.primary,
                             padding: EdgeInsets.zero,
                           ),
                           // Next
@@ -290,7 +295,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                             onPressed: () => audioService.skipNext(),
                             icon: const Icon(Icons.skip_next_rounded),
                             iconSize: 28,
-                            color: Colors.black87,
+                            color: colorScheme.onSurface,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                               minWidth: 40,

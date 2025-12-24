@@ -5,6 +5,8 @@ import 'lyric_form_screen.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
+import '../services/auth_service.dart';
+import '../utils/snackbar_utils.dart';
 
 class LyricViewScreen extends StatefulWidget {
   final Lyric lyric;
@@ -71,29 +73,101 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
     return "$minutes:$seconds";
   }
 
+  void _confirmDelete() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Excluir Letra?"),
+        content: const Text("Esta ação não pode ser desfeita."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final repo = Provider.of<SyncRepository>(context, listen: false);
+              await repo.deleteLyric(_lyric.id);
+              if (mounted) {
+                Navigator.pop(context);
+                final updated = await repo.getLyric(_lyric.id);
+                if (updated == null && mounted) {
+                  // Verifica se foi realmente deletado ou se precisa de feedback
+                  // Mas o código original apenas fazia pop e snackbar.
+                  // Vamos manter original, mas usando SnackbarUtils que eu introduzi anteriormente
+                  // Ah, espera, no Step 20 eu já tinha mudado para SnackbarUtils!
+                  // Mas a leitura do arquivo no Step 100 mostrou ScaffoldMessenger!?
+                  // VAMOS INVESTIGAR ISSO.
+                  SnackbarUtils.show(
+                    context,
+                    message: 'Letra excluída com sucesso.',
+                  );
+                }
+              }
+            },
+            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Slightly off-white for contrast
       appBar: AppBar(
-        centerTitle: true, // Requested: Center title
+        centerTitle: true,
         title: Text(
-          _lyric.title
-              .toUpperCase(), // Capitalize (Upper case for title style?) or Title Case
+          _lyric.title.toUpperCase(),
           style: GoogleFonts.montserrat(
             fontWeight: FontWeight.bold,
             fontSize: 20,
-            color: Colors.black87,
+            color: colorScheme.onSurface,
           ),
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
         actions: [
-          IconButton(
-            onPressed: () => _edit(context),
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Editar',
+          Consumer<AuthService>(
+            builder: (context, authService, child) {
+              final canEdit = authService.canEditLyrics;
+              final canDelete = authService.canDeleteLyrics;
+
+              if (!canEdit && !canDelete) return const SizedBox.shrink();
+
+              // Se só puder editar (Moderator)
+              if (canEdit && !canDelete) {
+                return IconButton(
+                  onPressed: () => _edit(context),
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Editar',
+                );
+              }
+
+              // Se puder deletar (Admin)
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (canEdit)
+                    IconButton(
+                      onPressed: () => _edit(context),
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Editar',
+                    ),
+                  if (canDelete)
+                    IconButton(
+                      onPressed: () => _confirmDelete(), // fix argument count
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: 'Excluir',
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -134,16 +208,11 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16.0),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade300),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                            ),
                           ),
                           child: Column(
                             children: [
@@ -157,7 +226,7 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                                           : Icons.play_circle_filled,
                                     ),
                                     iconSize: 48,
-                                    color: Colors.blue,
+                                    color: colorScheme.primary,
                                   ),
                                   Expanded(
                                     child: Slider(
@@ -210,27 +279,18 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                           vertical: 40.0,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.grey.shade300,
-                          ), // Requested: Borders
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          border: Border.all(color: colorScheme.outlineVariant),
                         ),
                         child: Text(
                           _lyric.content,
                           style: GoogleFonts.openSans(
                             fontSize: 18,
                             height: 1.8,
-                            color: Colors.black87,
+                            color: colorScheme.onSurface,
                           ),
-                          textAlign: TextAlign.left, // Requested: Left aligned
+                          textAlign: TextAlign.left,
                         ),
                       ),
                     ],

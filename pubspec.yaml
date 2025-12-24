@@ -28,7 +28,8 @@ dependencies:
   url_launcher: ^6.3.2
   logger: ^2.6.2
   audio_service: ^0.18.18
-  flutter_dotenv: ^6.0.0
+  google_sign_in: 6.2.1
+  shared_preferences: ^2.5.4
 
 
 dev_dependencies:
@@ -47,5 +48,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - .env
 

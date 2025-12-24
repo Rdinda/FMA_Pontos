@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../services/sync_repository.dart';
-import 'category_screen.dart'; // Will create next
-import 'search_screen.dart'; // Will create next
+import '../services/auth_service.dart';
+import '../providers/theme_provider.dart';
+import 'category_screen.dart';
+import 'search_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
+import '../utils/snackbar_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/update_service.dart';
@@ -51,12 +53,37 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (_) => const SearchScreen()),
       );
     } else if (index == 2) {
-      _showAddCategoryDialog();
+      final authService = Provider.of<AuthService>(context, listen: false);
+      if (!authService.canAddCategories) {
+        _showPermissionDeniedMessage('moderador', 'adicionar categorias');
+      } else {
+        _showAddCategoryDialog();
+      }
     } else {
       setState(() {
         _currentIndex = index;
       });
     }
+  }
+
+  void _showPermissionDeniedMessage(String requiredRole, String action) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    String message;
+
+    if (authService.isAnonymous) {
+      message = 'Faça login com Google para $action';
+    } else {
+      message = 'Você precisa ser $requiredRole para $action';
+    }
+
+    SnackbarUtils.show(
+      context,
+      message: message,
+      isError: true, // Permission denied effectively an error/warning
+      action: authService.isAnonymous
+          ? SnackBarAction(label: 'Entrar', onPressed: _showAppInfoDialog)
+          : null,
+    );
   }
 
   void _showAddCategoryDialog() {
@@ -99,28 +126,126 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showAppInfoDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Sobre o App"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Versão: $_version"),
-            const SizedBox(height: 8),
-            const Text("Criado por: Rdinda"),
-            const SizedBox(height: 16),
-            const Text(
-              "Filhos de Maria das Almas",
-              style: TextStyle(fontWeight: FontWeight.bold),
+      builder: (ctx) => Consumer<AuthService>(
+        builder: (context, authService, child) {
+          return AlertDialog(
+            title: const Text("Sobre o App"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Versão: $_version"),
+                const SizedBox(height: 8),
+                const Text("Criado por: Rdinda"),
+                const SizedBox(height: 16),
+                const Text(
+                  "Filhos de Maria das Almas",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Divider(height: 24),
+                // Tema
+                Consumer<ThemeProvider>(
+                  builder: (context, themeProvider, child) {
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(themeProvider.themeIcon),
+                      title: const Text('Tema'),
+                      subtitle: Text(themeProvider.themeLabel),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => themeProvider.cycleTheme(),
+                    );
+                  },
+                ),
+                const Divider(height: 24),
+                // Status de login
+                Row(
+                  children: [
+                    Icon(
+                      authService.isAnonymous
+                          ? Icons.person_outline
+                          : Icons.person,
+                      size: 20,
+                      color: authService.isAnonymous
+                          ? Colors.grey
+                          : Colors.green,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        authService.isAnonymous
+                            ? "Usando como convidado"
+                            : "${authService.userEmail}\n${authService.userRole.toUpperCase()}",
+                        style: TextStyle(
+                          color: authService.isAnonymous
+                              ? Colors.grey
+                              : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Botão de login/logout
+                if (authService.isAnonymous)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: authService.isLoading
+                          ? null
+                          : () async {
+                              final success = await authService
+                                  .signInWithGoogle();
+                              if (success && ctx.mounted) {
+                                Navigator.pop(ctx);
+                                SnackbarUtils.show(
+                                  context,
+                                  message: 'Login realizado!',
+                                );
+                              } else if (!success &&
+                                  authService.error != null &&
+                                  ctx.mounted) {
+                                SnackbarUtils.show(
+                                  context,
+                                  message: authService.error!,
+                                  isError: true,
+                                );
+                              }
+                            },
+                      icon: authService.isLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.login),
+                      label: const Text("Entrar com Google"),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        await authService.signOut();
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      icon: const Icon(Icons.logout, color: Colors.red),
+                      label: const Text(
+                        "Sair",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Fechar"),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Fechar"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -135,18 +260,17 @@ class _HomeScreenState extends State<HomeScreen> {
         if (didPop) return;
 
         final now = DateTime.now();
-        const maxDuration = Duration(seconds: 2);
+        const maxDuration = Duration(seconds: 3);
         final isWarning =
             _lastPressedAt == null ||
             now.difference(_lastPressedAt!) > maxDuration;
 
         if (isWarning) {
           _lastPressedAt = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Pressione novamente para sair'),
-              duration: maxDuration,
-            ),
+          SnackbarUtils.show(
+            context,
+            message: 'Pressione novamente para sair',
+            duration: maxDuration,
           );
         } else {
           SystemNavigator.pop();
@@ -161,17 +285,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.only(right: 16.0),
                 child: Icon(Icons.wifi_off, color: Colors.red),
               ),
-            IconButton(
-              onPressed: _showAppInfoDialog,
-              icon: const Icon(Icons.info_outline),
-              tooltip: "Informações",
+            Consumer<AuthService>(
+              builder: (context, authService, child) {
+                if (!authService.isAnonymous && authService.photoUrl != null) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: GestureDetector(
+                      onTap: _showAppInfoDialog,
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundImage: NetworkImage(authService.photoUrl!),
+                      ),
+                    ),
+                  );
+                }
+                return IconButton(
+                  onPressed: _showAppInfoDialog,
+                  icon: const Icon(Icons.info_outline),
+                  tooltip: "Informações",
+                );
+              },
             ),
             const SizedBox(width: 8),
           ],
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            await syncRepo.syncData();
+            final authService = Provider.of<AuthService>(
+              context,
+              listen: false,
+            );
+            await Future.wait([
+              syncRepo.syncData(),
+              authService.refreshUserRole(),
+            ]);
           },
           child: FutureBuilder<List<Category>>(
             future: syncRepo.getCategories(),
@@ -206,6 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
                   final category = categories[index];
+                  final colorScheme = Theme.of(context).colorScheme;
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -216,19 +364,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     child: Card(
-                      color: Colors.white,
+                      color: colorScheme.surfaceContainer,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                       elevation: 4,
                       child: Center(
                         child: Padding(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           child: Text(
                             category.name.capitalize(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -244,9 +393,8 @@ class _HomeScreenState extends State<HomeScreen> {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onTabTapped,
-          backgroundColor: Colors.white,
-          selectedItemColor: Theme.of(context).primaryColor,
-          unselectedItemColor: Colors.grey,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.search), label: "Buscar"),
@@ -318,21 +466,19 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (!launched && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Não foi possível abrir o link de download'),
-            backgroundColor: Colors.red,
-          ),
+        SnackbarUtils.show(
+          context,
+          message: 'Não foi possível abrir o link de download',
+          isError: true,
         );
       }
     } catch (e) {
       debugPrint('[Update] Error launching URL: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao abrir download: $e'),
-            backgroundColor: Colors.red,
-          ),
+        SnackbarUtils.show(
+          context,
+          message: 'Erro ao abrir download: $e',
+          isError: true,
         );
       }
     }

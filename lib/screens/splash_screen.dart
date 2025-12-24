@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/sync_repository.dart';
+import '../services/auth_service.dart';
 import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -37,17 +38,13 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
 
     // Request permissions for audio/storage
-    // Android 13+ use PHOTOS/AUDIO/VIDEO permissions, older use STORAGE
-    await [
-      Permission.storage,
-      Permission.audio,
-      // Add other media permissions if necessary for Android 13+ specifically if audio isn't enough,
-      // but 'audio' permission handler maps correctly usually.
-    ].request();
+    await [Permission.storage, Permission.audio].request();
 
-    // We proceed regardless of acceptance for now, or you can block.
-    // Usually good UX to proceed and ask again when action attempts it if denied.
-    // But since "it MUST be requested", we do it here.
+    if (!mounted) return;
+
+    // Garantir autenticação (anônima se necessário)
+    final authService = Provider.of<AuthService>(context, listen: false);
+    await authService.ensureAuthenticated();
 
     if (mounted) {
       Navigator.of(
@@ -58,8 +55,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Center(
@@ -76,15 +75,15 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                     const SizedBox(height: 24),
                     // Loader
-                    const CupertinoActivityIndicator(
+                    CupertinoActivityIndicator(
                       radius: 15.0,
-                      color: Colors.blue,
+                      color: colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
                     if (syncRepo.isDownloading) ...[
                       Text(
                         syncRepo.downloadStatus,
-                        style: const TextStyle(color: Colors.grey),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 8),
                       Padding(
@@ -94,9 +93,9 @@ class _SplashScreenState extends State<SplashScreen> {
                         ),
                       ),
                     ] else
-                      const Text(
+                      Text(
                         "Carregando...",
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                   ],
                 );
@@ -108,8 +107,8 @@ class _SplashScreenState extends State<SplashScreen> {
             right: 16,
             child: Text(
               _version.isNotEmpty ? "v$_version" : "",
-              style: const TextStyle(
-                color: Colors.grey,
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 fontWeight: FontWeight.w300,
               ),
