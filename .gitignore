@@ -99,3 +99,7 @@ android/key.properties
 *.p12
 *.pfX
 keystore.base64.txt
+
+# Environment files (contain secrets)
+.env
+!.env.example

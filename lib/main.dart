@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'services/sync_repository.dart';
 import 'services/audio_player_service.dart';
 import 'screens/splash_screen.dart';
@@ -10,9 +11,12 @@ import 'screens/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   await Supabase.initialize(
-    url: 'https://hlvvazkgzzoichdgkszf.supabase.co',
-    anonKey: 'sb_publishable_XY51Jp2zfA7GJ85r-THEkA_e_XbpBnY',
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
   // Initialize AudioPlayerService BEFORE runApp to ensure it's ready

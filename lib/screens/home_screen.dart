@@ -9,6 +9,7 @@ import 'search_screen.dart'; // Will create next
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../services/update_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,15 +22,26 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   DateTime? _lastPressedAt;
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
     // Initial data load
+    _loadVersion();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SyncRepository>(context, listen: false).syncData();
       _checkForUpdates();
     });
+  }
+
+  Future<void> _loadVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = packageInfo.version;
+      });
+    }
   }
 
   void _onTabTapped(int index) {
@@ -93,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Versão: 1.0.7"),
+            Text("Versão: $_version"),
             const SizedBox(height: 8),
             const Text("Criado por: Rdinda"),
             const SizedBox(height: 16),

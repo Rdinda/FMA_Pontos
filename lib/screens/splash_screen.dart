@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../services/sync_repository.dart';
 import 'home_screen.dart';
 
@@ -13,10 +14,22 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String _version = '';
+
   @override
   void initState() {
     super.initState();
+    _loadVersion();
     _checkPermissionsAndNavigate();
+  }
+
+  Future<void> _loadVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = packageInfo.version;
+      });
+    }
   }
 
   Future<void> _checkPermissionsAndNavigate() async {
@@ -90,12 +103,12 @@ class _SplashScreenState extends State<SplashScreen> {
               },
             ),
           ),
-          const Positioned(
+          Positioned(
             bottom: 16,
             right: 16,
             child: Text(
-              "v1.0.7",
-              style: TextStyle(
+              _version.isNotEmpty ? "v$_version" : "",
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 12,
                 fontWeight: FontWeight.w300,

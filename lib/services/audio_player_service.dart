@@ -250,7 +250,7 @@ class AudioPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearPlaylist() {
+  Future<void> clearPlaylist() async {
     debugPrint('[AudioPlayerService] clearPlaylist()');
     _playlist = [];
     _currentIndex = -1;
@@ -258,9 +258,11 @@ class AudioPlayerService extends ChangeNotifier {
     _myHandler.onSkipNext = null;
     _myHandler.onSkipPrevious = null;
     _myHandler.onToggleRepeat = null;
-    _audioHandler.stop();
+    await _audioHandler.stop(); // Await to ensure notification is cleared
     _currentLyric = null;
     _isPlaying = false;
+    _position = Duration.zero;
+    _duration = Duration.zero;
     notifyListeners();
   }
 
@@ -460,7 +462,10 @@ class MyAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
   @override
   Future<void> stop() async {
+    debugPrint('[MyAudioHandler] stop() - stopping and clearing notification');
     await _player.stop();
+    // Clear the media item to remove the notification
+    mediaItem.add(null);
     _broadcastState(playing: false, processingState: AudioProcessingState.idle);
   }
 

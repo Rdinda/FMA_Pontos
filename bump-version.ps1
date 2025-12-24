@@ -1,6 +1,9 @@
 
 # Script to bump version and create release tag
 # Usage: ./bump-version.ps1 [new_version] (e.g., ./bump-version.ps1 1.0.1)
+#
+# Note: The app version is read dynamically from pubspec.yaml using package_info_plus,
+# so we only need to update pubspec.yaml - all screens will show the new version automatically.
 
 param (
     [string]$Version
@@ -19,32 +22,7 @@ $NewContent = $Content -replace '^version: .*', "version: $Version"
 $NewContent | Set-Content $PubspecPath
 
 Write-Host "Updated pubspec.yaml to version $Version" -ForegroundColor Green
-
-# Update version in lib/screens/home_screen.dart
-$HomeScreenPath = "lib/screens/home_screen.dart"
-if (Test-Path $HomeScreenPath) {
-    $HomeContent = Get-Content $HomeScreenPath
-    $NewHomeContent = $HomeContent -replace 'Versão: .*?"', "Versão: $Version"""
-    $NewHomeContent | Set-Content $HomeScreenPath
-    Write-Host "Updated home_screen.dart to version $Version" -ForegroundColor Green
-    git add lib/screens/home_screen.dart
-}
-else {
-    Write-Host "Warning: $HomeScreenPath not found. Version in UI skipped." -ForegroundColor Yellow
-}
-
-# Update version in lib/screens/splash_screen.dart
-$SplashScreenPath = "lib/screens/splash_screen.dart"
-if (Test-Path $SplashScreenPath) {
-    $SplashContent = Get-Content $SplashScreenPath
-    $NewSplashContent = $SplashContent -replace 'v\d+\.\d+\.\d+', "v$Version"
-    $NewSplashContent | Set-Content $SplashScreenPath
-    Write-Host "Updated splash_screen.dart to version $Version" -ForegroundColor Green
-    git add lib/screens/splash_screen.dart
-}
-else {
-    Write-Host "Warning: $SplashScreenPath not found. Version in UI skipped." -ForegroundColor Yellow
-}
+Write-Host "Note: All app screens will automatically display the new version." -ForegroundColor Gray
 
 # Git operations
 git add pubspec.yaml
@@ -53,5 +31,7 @@ git tag "v$Version"
 git push origin main
 git push origin "v$Version"
 
+Write-Host ""
 Write-Host "Pushed changes and tag v$Version to origin." -ForegroundColor Cyan
 Write-Host "GitHub Action should trigger automatically." -ForegroundColor Cyan
+
