@@ -67,6 +67,11 @@ android {
     }
 }
 
+dependencies {
+    // Play Feature Delivery - required for R8 to resolve Play Core classes
+    implementation("com.google.android.play:feature-delivery:2.1.0")
+}
+
 flutter {
     source = "../.."
 }
