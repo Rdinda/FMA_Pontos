@@ -20,7 +20,7 @@ class UpdateInfo {
 
 class UpdateService {
   static const String _repoOwner = 'Rdinda';
-  static const String _repoName = 'app_terreiro_letras';
+  static const String _repoName = 'FMA_Pontos';
 
   static final Logger _logger = Logger();
 
