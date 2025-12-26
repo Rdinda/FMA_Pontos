@@ -93,6 +93,11 @@ class MyApp extends StatelessWidget {
           color: Colors.white,
         ),
       ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+        indicatorColor: Colors.white,
+      ),
       cardTheme: const CardThemeData(elevation: 2),
       useMaterial3: true,
       inputDecorationTheme: InputDecorationTheme(
@@ -139,6 +144,11 @@ class MyApp extends StatelessWidget {
           fontWeight: FontWeight.bold,
           color: darkColorScheme.onSurface,
         ),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: darkColorScheme.primary,
+        unselectedLabelColor: darkColorScheme.onSurfaceVariant,
+        indicatorColor: darkColorScheme.primary,
       ),
       cardTheme: CardThemeData(
         elevation: 2,
