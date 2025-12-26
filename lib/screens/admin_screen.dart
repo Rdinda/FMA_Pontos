@@ -470,10 +470,10 @@ class _AdminScreenState extends State<AdminScreen>
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Filtro de tabela
+              // Filtro de tabelas
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _selectedTable,
+                  initialValue: _selectedTable,
                   decoration: const InputDecoration(
                     labelText: 'Tabela',
                     isDense: true,
