@@ -9,6 +9,7 @@ import '../widgets/category_player_widget.dart';
 import 'lyric_form_screen.dart';
 import 'search_screen.dart';
 import 'lyric_view_screen.dart';
+import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -47,14 +48,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   void _showPermissionMessage(bool isAnonymous) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isAnonymous
-              ? 'Faça login com Google para adicionar letras'
-              : 'Você não tem permissão para esta ação',
-        ),
-      ),
+    SnackbarUtils.show(
+      context,
+      message: isAnonymous
+          ? 'Faça login com Google para adicionar letras'
+          : 'Você não tem permissão para esta ação',
+      isError: true,
     );
   }
 
@@ -143,9 +142,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final lyrics = await repo.getLyrics(widget.category.id);
     if (lyrics.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nenhuma letra nesta categoria.')),
-        );
+        SnackbarUtils.show(context, message: 'Nenhuma letra nesta categoria.');
       }
       return;
     }

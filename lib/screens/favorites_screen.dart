@@ -186,14 +186,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ),
                         leading: IconButton(
                           onPressed: () async {
-                            final messenger = ScaffoldMessenger.of(context);
                             await favoritesService.toggleFavorite(lyric.id);
-                            if (!mounted) return;
-                            messenger.showSnackBar(
-                              const SnackBar(
-                                content: Text('Removido dos favoritos'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
+                            if (!context.mounted) return;
+                            SnackbarUtils.show(
+                              context,
+                              message: 'Removido dos favoritos',
                             );
                           },
                           icon: Icon(Icons.favorite, color: colorScheme.error),

@@ -240,23 +240,15 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                                           final wasFav = favService.isFavorite(
                                             _lyric.id,
                                           );
-                                          // Capturar messenger antes do await
-                                          final messenger =
-                                              ScaffoldMessenger.of(context);
                                           await favService.toggleFavorite(
                                             _lyric.id,
                                           );
-                                          if (!mounted) return;
-                                          messenger.showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                wasFav
-                                                    ? 'Removido dos favoritos'
-                                                    : 'Adicionado aos favoritos',
-                                              ),
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                            ),
+                                          if (!context.mounted) return;
+                                          SnackbarUtils.show(
+                                            context,
+                                            message: wasFav
+                                                ? 'Removido dos favoritos'
+                                                : 'Adicionado aos favoritos',
                                           );
                                         },
                                         icon: Icon(

@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/supabase_service.dart';
+import '../utils/snackbar_utils.dart';
 
 class LyricFormScreen extends StatefulWidget {
   final String categoryId;
@@ -84,9 +85,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
             _isUploadingAudio = false;
           });
           if (url != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Áudio enviado com sucesso!')),
-            );
+            SnackbarUtils.show(context, message: 'Áudio enviado com sucesso!');
 
             // Auto-save if editing
             if (widget.lyric != null) {
@@ -110,8 +109,10 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
               }
             }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Erro ao enviar áudio.')),
+            SnackbarUtils.show(
+              context,
+              message: 'Erro ao enviar áudio.',
+              isError: true,
             );
           }
         }
@@ -122,10 +123,10 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
         setState(() {
           _isUploadingAudio = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao selecionar áudio: Verifique permissões.'),
-          ),
+        SnackbarUtils.show(
+          context,
+          message: 'Erro ao selecionar áudio: Verifique permissões.',
+          isError: true,
         );
       }
     }
@@ -136,8 +137,9 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
       try {
         await SupabaseService().deleteAudioByUrl(_audioUrl!);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Áudio removido do armazenamento.')),
+          SnackbarUtils.show(
+            context,
+            message: 'Áudio removido do armazenamento.',
           );
         }
       } catch (e) {
