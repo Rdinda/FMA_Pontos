@@ -275,6 +275,49 @@ WITH CHECK (auth.uid() = id AND role = 'user');
 ALTER PUBLICATION supabase_realtime ADD TABLE public.user_roles;
 
 -- =====================================================
+-- TABELA DE ESTATÍSTICAS DE REPRODUÇÃO
+-- Rastreia quantas vezes cada ponto foi tocado globalmente
+-- =====================================================
+
+-- Criar tabela de estatísticas de reprodução
+CREATE TABLE IF NOT EXISTS public.lyric_play_stats (
+    lyric_id TEXT PRIMARY KEY REFERENCES public.lyrics(id) ON DELETE CASCADE,
+    play_count INTEGER NOT NULL DEFAULT 0,
+    last_played_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Habilitar RLS
+ALTER TABLE public.lyric_play_stats ENABLE ROW LEVEL SECURITY;
+
+-- Permissões de tabela
+GRANT SELECT ON public.lyric_play_stats TO anon;
+GRANT SELECT ON public.lyric_play_stats TO authenticated;
+GRANT INSERT, UPDATE ON public.lyric_play_stats TO authenticated;
+
+-- Políticas de acesso
+DROP POLICY IF EXISTS "Users can read play stats" ON public.lyric_play_stats;
+CREATE POLICY "Users can read play stats"
+    ON public.lyric_play_stats FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Users can insert play stats" ON public.lyric_play_stats;
+CREATE POLICY "Users can insert play stats"
+    ON public.lyric_play_stats FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Users can update play stats" ON public.lyric_play_stats;
+CREATE POLICY "Users can update play stats"
+    ON public.lyric_play_stats FOR UPDATE
+    TO authenticated
+    USING (true);
+
+-- Índice para ordenação eficiente por popularidade
+CREATE INDEX IF NOT EXISTS idx_lyric_play_stats_count 
+    ON public.lyric_play_stats(play_count DESC);
+
+-- =====================================================
 -- CORREÇÃO (BACKFILL)
 -- Insere roles para usuários que já existem mas não têm registro em user_roles
 -- =====================================================

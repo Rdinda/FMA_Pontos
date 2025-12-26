@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'services/sync_repository.dart';
 import 'services/audio_player_service.dart';
 import 'services/auth_service.dart';
+import 'services/favorites_service.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
 
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => SyncRepository()),
+        ChangeNotifierProvider(create: (_) => FavoritesService()),
         ChangeNotifierProvider.value(value: audioService),
       ],
       child: Consumer<ThemeProvider>(

@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import '../models/lyric.dart';
+import 'play_stats_service.dart';
 
 /// Singleton late instance set from main.dart
 late AudioPlayerService audioPlayerServiceInstance;
@@ -10,6 +11,7 @@ late AudioPlayerService audioPlayerServiceInstance;
 class AudioPlayerService extends ChangeNotifier {
   final AudioHandler _audioHandler;
   final MyAudioHandler _myHandler;
+  final PlayStatsService _playStatsService = PlayStatsService();
 
   Lyric? _currentLyric;
   bool _isPlaying = false;
@@ -112,6 +114,9 @@ class AudioPlayerService extends ChangeNotifier {
 
       debugPrint('[AudioPlayerService] Calling playMediaItem...');
       await _audioHandler.playMediaItem(mediaItem);
+
+      // Registrar reprodução nas estatísticas globais
+      _playStatsService.incrementPlayCount(lyric.id);
     } else {
       // Toggle
       if (_isPlaying) {
@@ -196,6 +201,9 @@ class AudioPlayerService extends ChangeNotifier {
       '[AudioPlayerService] Playing track ${_currentIndex + 1}/${_playlist.length}: ${lyric.title}',
     );
     await _audioHandler.playMediaItem(mediaItem);
+
+    // Registrar reprodução nas estatísticas globais
+    _playStatsService.incrementPlayCount(lyric.id);
   }
 
   Future<void> skipNext() async {

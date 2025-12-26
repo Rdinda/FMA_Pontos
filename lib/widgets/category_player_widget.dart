@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/audio_player_service.dart';
+import '../services/favorites_service.dart';
 import '../utils/string_extensions.dart';
 
 /// A compact player widget that appears at the bottom of the CategoryScreen
@@ -70,107 +71,105 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                   height: _showLyrics ? lyricsMaxHeight : 0,
-                  child: ClipRect(
-                    child: _showLyrics && currentLyric != null
-                        ? Container(
-                            color: colorScheme.surface,
-                            child: Column(
-                              children: [
-                                // Header with title and close
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: colorScheme.outlineVariant,
-                                      ),
+                  clipBehavior: Clip.hardEdge,
+                  decoration: const BoxDecoration(),
+                  child: _showLyrics && currentLyric != null
+                      ? Container(
+                          color: colorScheme.surface,
+                          child: Column(
+                            children: [
+                              // Header with title and close
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: colorScheme.outlineVariant,
                                     ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.primaryContainer,
-                                          borderRadius: BorderRadius.circular(
-                                            6,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Icon(
+                                        Icons.music_note,
+                                        size: 18,
+                                        color: colorScheme.onPrimaryContainer,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            currentLyric.title.capitalize(),
+                                            style: GoogleFonts.montserrat(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                        child: Icon(
-                                          Icons.music_note,
-                                          size: 18,
-                                          color: colorScheme.onPrimaryContainer,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              currentLyric.title.capitalize(),
-                                              style: GoogleFonts.montserrat(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 14,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                          Text(
+                                            '${currentIndex + 1} de $totalTracks',
+                                            style: TextStyle(
+                                              color:
+                                                  colorScheme.onSurfaceVariant,
+                                              fontSize: 11,
                                             ),
-                                            Text(
-                                              '${currentIndex + 1} de $totalTracks',
-                                              style: TextStyle(
-                                                color: colorScheme
-                                                    .onSurfaceVariant,
-                                                fontSize: 11,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                      IconButton(
-                                        onPressed: () =>
-                                            setState(() => _showLyrics = false),
-                                        icon: const Icon(
-                                          Icons.keyboard_arrow_down,
-                                        ),
-                                        iconSize: 26,
-                                        color: colorScheme.onSurfaceVariant,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(
-                                          minWidth: 36,
-                                          minHeight: 36,
-                                        ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          setState(() => _showLyrics = false),
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down,
                                       ),
-                                    ],
+                                      iconSize: 26,
+                                      color: colorScheme.onSurfaceVariant,
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Lyrics content
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 16,
+                                  ),
+                                  child: Text(
+                                    currentLyric.content,
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 16,
+                                      height: 1.75,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                    textAlign: TextAlign.left,
                                   ),
                                 ),
-                                // Lyrics content
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 16,
-                                    ),
-                                    child: Text(
-                                      currentLyric.content,
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 16,
-                                        height: 1.75,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                      textAlign: TextAlign.left,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
                 // Progress bar
                 LinearProgressIndicator(
@@ -246,6 +245,34 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                           minHeight: 36,
                         ),
                       ),
+                      // Favorite button
+                      if (currentLyric != null)
+                        Consumer<FavoritesService>(
+                          builder: (context, favService, child) {
+                            final isFav = favService.isFavorite(
+                              currentLyric.id,
+                            );
+                            return IconButton(
+                              onPressed: () =>
+                                  favService.toggleFavorite(currentLyric.id),
+                              icon: Icon(
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                              ),
+                              iconSize: 22,
+                              color: isFav
+                                  ? colorScheme.error
+                                  : colorScheme.onSurfaceVariant,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 36,
+                                minHeight: 36,
+                              ),
+                              tooltip: isFav
+                                  ? 'Remover dos favoritos'
+                                  : 'Favoritar',
+                            );
+                          },
+                        ),
                       // Controls (right side)
                       Row(
                         mainAxisSize: MainAxisSize.min,

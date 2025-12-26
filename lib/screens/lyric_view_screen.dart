@@ -6,6 +6,7 @@ import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
 import '../services/auth_service.dart';
+import '../services/favorites_service.dart';
 import '../utils/snackbar_utils.dart';
 
 class LyricViewScreen extends StatefulWidget {
@@ -227,6 +228,51 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                                     ),
                                     iconSize: 48,
                                     color: colorScheme.primary,
+                                  ),
+                                  // Botão de favoritar
+                                  Consumer<FavoritesService>(
+                                    builder: (context, favService, child) {
+                                      final isFav = favService.isFavorite(
+                                        _lyric.id,
+                                      );
+                                      return IconButton(
+                                        onPressed: () async {
+                                          final wasFav = favService.isFavorite(
+                                            _lyric.id,
+                                          );
+                                          // Capturar messenger antes do await
+                                          final messenger =
+                                              ScaffoldMessenger.of(context);
+                                          await favService.toggleFavorite(
+                                            _lyric.id,
+                                          );
+                                          if (!mounted) return;
+                                          messenger.showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                wasFav
+                                                    ? 'Removido dos favoritos'
+                                                    : 'Adicionado aos favoritos',
+                                              ),
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        },
+                                        icon: Icon(
+                                          isFav
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                        ),
+                                        iconSize: 28,
+                                        color: isFav
+                                            ? colorScheme.error
+                                            : colorScheme.onSurfaceVariant,
+                                        tooltip: isFav
+                                            ? 'Remover dos favoritos'
+                                            : 'Adicionar aos favoritos',
+                                      );
+                                    },
                                   ),
                                   Expanded(
                                     child: Slider(

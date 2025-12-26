@@ -7,6 +7,8 @@ import '../services/auth_service.dart';
 import '../providers/theme_provider.dart';
 import 'category_screen.dart';
 import 'search_screen.dart';
+import 'favorites_screen.dart';
+import 'top_played_screen.dart';
 import 'admin_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
@@ -49,11 +51,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onTabTapped(int index) {
     if (index == 1) {
+      // Buscar
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const SearchScreen()),
       );
     } else if (index == 2) {
+      // Mais Tocados
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const TopPlayedScreen()),
+      );
+    } else if (index == 3) {
+      // Gostei (Favoritos)
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+      );
+    } else if (index == 4) {
+      // Adicionar Categoria
       final authService = Provider.of<AuthService>(context, listen: false);
       if (!authService.canAddCategories) {
         _showPermissionDeniedMessage('moderador', 'adicionar categorias');
@@ -617,11 +633,20 @@ class _HomeScreenState extends State<HomeScreen> {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onTabTapped,
+          type: BottomNavigationBarType.fixed,
           selectedItemColor: Theme.of(context).colorScheme.primary,
           unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.search), label: "Buscar"),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.trending_up_rounded),
+              label: "Top",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_outline),
+              label: "Gostei",
+            ),
             BottomNavigationBarItem(
               icon: Icon(Icons.add_circle_outline),
               label: "Categoria",
