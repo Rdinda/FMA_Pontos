@@ -50,6 +50,28 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
 -- Índice para busca por email
 CREATE INDEX IF NOT EXISTS idx_user_roles_email ON public.user_roles(email);
 
+-- =====================================================
+-- PERMISSÕES DE TABELA (GRANTS)
+-- Necessário para que os roles do Supabase acessem as tabelas
+-- =====================================================
+
+-- Permissões para categories
+GRANT SELECT ON public.categories TO anon;
+GRANT SELECT ON public.categories TO authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.categories TO authenticated;
+
+-- Permissões para lyrics
+GRANT SELECT ON public.lyrics TO anon;
+GRANT SELECT ON public.lyrics TO authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.lyrics TO authenticated;
+
+-- Permissões para user_roles
+GRANT SELECT, INSERT, UPDATE ON public.user_roles TO authenticated;
+
+-- =====================================================
+-- FUNÇÕES AUXILIARES
+-- =====================================================
+
 -- Função para obter role do usuário atual
 CREATE OR REPLACE FUNCTION public.get_user_role()
 RETURNS text AS $$

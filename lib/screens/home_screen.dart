@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../providers/theme_provider.dart';
 import 'category_screen.dart';
 import 'search_screen.dart';
+import 'admin_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
 import '../utils/snackbar_utils.dart';
@@ -123,73 +124,199 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  String _getRoleLabel(String role) {
+    switch (role) {
+      case 'admin':
+        return 'Administrador';
+      case 'moderator':
+        return 'Moderador';
+      default:
+        return 'Usuário';
+    }
+  }
+
   void _showAppInfoDialog() {
-    showDialog(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (ctx) => Consumer<AuthService>(
         builder: (context, authService, child) {
-          return AlertDialog(
-            title: const Text("Sobre o App"),
-            content: Column(
+          return Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Versão: $_version"),
-                const SizedBox(height: 8),
-                const Text("Criado por: Rdinda"),
-                const SizedBox(height: 16),
-                const Text(
-                  "Filhos de Maria das Almas",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                // Handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outline.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                const Divider(height: 24),
-                // Tema
-                Consumer<ThemeProvider>(
-                  builder: (context, themeProvider, child) {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(themeProvider.themeIcon),
-                      title: const Text('Tema'),
-                      subtitle: Text(themeProvider.themeLabel),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => themeProvider.cycleTheme(),
-                    );
-                  },
-                ),
-                const Divider(height: 24),
-                // Status de login
-                Row(
-                  children: [
-                    Icon(
-                      authService.isAnonymous
-                          ? Icons.person_outline
-                          : Icons.person,
-                      size: 20,
-                      color: authService.isAnonymous
-                          ? Colors.grey
-                          : Colors.green,
+                const SizedBox(height: 20),
+
+                // Header com foto/avatar
+                if (!authService.isAnonymous) ...[
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: colorScheme.primaryContainer,
+                    backgroundImage: authService.photoUrl != null
+                        ? NetworkImage(authService.photoUrl!)
+                        : null,
+                    child: authService.photoUrl == null
+                        ? Icon(
+                            Icons.person,
+                            size: 40,
+                            color: colorScheme.primary,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    authService.displayName ?? authService.userEmail ?? '',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        authService.isAnonymous
-                            ? "Usando como convidado"
-                            : "${authService.userEmail}\n${authService.userRole.toUpperCase()}",
-                        style: TextStyle(
-                          color: authService.isAnonymous
-                              ? Colors.grey
-                              : Colors.black87,
-                        ),
+                  ),
+                  if (authService.displayName != null)
+                    Text(
+                      authService.userEmail ?? '',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.outline,
                       ),
                     ),
-                  ],
+                  const SizedBox(height: 8),
+                  // Badge de role
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _getRoleLabel(authService.userRole),
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Icon(
+                    Icons.person_outline,
+                    size: 60,
+                    color: colorScheme.outline,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Visitante',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                  Text(
+                    'Entre para contribuir com a comunidade',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 24),
+
+                // Opções
+                Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      // Tema
+                      Consumer<ThemeProvider>(
+                        builder: (context, themeProvider, child) {
+                          return ListTile(
+                            leading: Icon(
+                              themeProvider.themeIcon,
+                              color: colorScheme.primary,
+                            ),
+                            title: const Text('Tema'),
+                            subtitle: Text(themeProvider.themeLabel),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: colorScheme.outline,
+                            ),
+                            onTap: () => themeProvider.cycleTheme(),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      Divider(
+                        height: 1,
+                        indent: 56,
+                        color: colorScheme.outline.withOpacity(0.2),
+                      ),
+                      // Admin
+                      if (authService.isAdmin)
+                        ListTile(
+                          leading: Icon(
+                            Icons.admin_panel_settings,
+                            color: colorScheme.primary,
+                          ),
+                          title: const Text('Administração'),
+                          subtitle: const Text('Gerenciar usuários e logs'),
+                          trailing: Icon(
+                            Icons.chevron_right,
+                            color: colorScheme.outline,
+                          ),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AdminScreen(),
+                              ),
+                            );
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              bottom: authService.isAnonymous
+                                  ? Radius.zero
+                                  : const Radius.circular(16),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
+
+                const SizedBox(height: 16),
+
                 // Botão de login/logout
                 if (authService.isAnonymous)
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    child: FilledButton.icon(
                       onPressed: authService.isLoading
                           ? null
                           : () async {
@@ -215,35 +342,58 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Icon(Icons.login),
-                      label: const Text("Entrar com Google"),
+                      label: const Text('Entrar com Google'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   )
                 else
                   SizedBox(
                     width: double.infinity,
-                    child: TextButton.icon(
+                    child: OutlinedButton.icon(
                       onPressed: () async {
                         await authService.signOut();
                         if (ctx.mounted) Navigator.pop(ctx);
                       },
-                      icon: const Icon(Icons.logout, color: Colors.red),
-                      label: const Text(
-                        "Sair",
-                        style: TextStyle(color: Colors.red),
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Sair da conta'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colorScheme.error,
+                        side: BorderSide(
+                          color: colorScheme.error.withOpacity(0.5),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
+
+                const SizedBox(height: 20),
+
+                // Info do app
+                Text(
+                  'Filhos de Maria das Almas • v$_version',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                ),
+
+                // Safe area padding
+                SizedBox(height: MediaQuery.of(context).padding.bottom),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text("Fechar"),
-              ),
-            ],
           );
         },
       ),

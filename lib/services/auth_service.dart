@@ -143,6 +143,7 @@ class AuthService extends ChangeNotifier {
         'id': _currentUser!.id,
         'email': _currentUser!.email ?? '',
         'role': 'user',
+        'avatar_url': _currentUser!.userMetadata?['avatar_url'],
       });
       debugPrint('[AuthService] Created user role for ${_currentUser!.email}');
     } catch (e) {
