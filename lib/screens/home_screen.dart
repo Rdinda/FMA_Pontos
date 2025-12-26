@@ -10,6 +10,7 @@ import 'search_screen.dart';
 import 'favorites_screen.dart';
 import 'top_played_screen.dart';
 import 'admin_screen.dart';
+import 'privacy_policy_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
 import '../utils/snackbar_utils.dart';
@@ -266,7 +267,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Tema
                       Consumer<ThemeProvider>(
                         builder: (context, themeProvider, child) {
                           return ListTile(
@@ -294,8 +294,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         indent: 56,
                         color: colorScheme.outline.withValues(alpha: 0.2),
                       ),
-                      // Admin
-                      if (authService.isAdmin)
+                      ListTile(
+                        leading: Icon(
+                          Icons.privacy_tip_outlined,
+                          color: colorScheme.primary,
+                        ),
+                        title: const Text('Política de Privacidade'),
+                        subtitle: const Text(
+                          'Leia como seus dados são utilizados',
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.outline,
+                        ),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PrivacyPolicyScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      if (authService.isAdmin) ...[
+                        Divider(
+                          height: 1,
+                          indent: 56,
+                          color: colorScheme.outline.withValues(alpha: 0.2),
+                        ),
                         ListTile(
                           leading: Icon(
                             Icons.admin_panel_settings,
@@ -316,14 +343,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             );
                           },
-                          shape: RoundedRectangleBorder(
+                          shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(
-                              bottom: authService.isAnonymous
-                                  ? Radius.zero
-                                  : const Radius.circular(16),
+                              bottom: Radius.circular(16),
                             ),
                           ),
                         ),
+                      ],
                     ],
                   ),
                 ),
