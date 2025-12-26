@@ -494,44 +494,116 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               final categories = snapshot.data!;
 
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
                   final category = categories[index];
                   final colorScheme = Theme.of(context).colorScheme;
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CategoryScreen(category: category),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      color: colorScheme.surfaceContainer,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 4,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            category.name.capitalize(),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
+
+                  // Cores variadas baseadas no índice
+                  final hue = (index * 37) % 360;
+                  final accentColor = HSLColor.fromAHSL(
+                    1,
+                    hue.toDouble(),
+                    0.6,
+                    0.5,
+                  ).toColor();
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CategoryScreen(category: category),
                             ),
-                            textAlign: TextAlign.center,
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: colorScheme.surfaceContainerHighest,
+                            boxShadow: [
+                              BoxShadow(
+                                color: colorScheme.shadow.withValues(
+                                  alpha: 0.08,
+                                ),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                // Ícone
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: accentColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.music_note_rounded,
+                                    color: accentColor,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // Texto
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        category.name.capitalize(),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      FutureBuilder<int>(
+                                        future: syncRepo.getLyricsCount(
+                                          category.id,
+                                        ),
+                                        builder: (context, countSnapshot) {
+                                          final count = countSnapshot.data ?? 0;
+                                          return Text(
+                                            '$count ${count == 1 ? 'ponto' : 'pontos'}',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: colorScheme.outline,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Seta
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 18,
+                                  color: colorScheme.outline,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

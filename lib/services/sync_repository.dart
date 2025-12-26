@@ -381,4 +381,9 @@ class SyncRepository with ChangeNotifier {
   Future<List<Lyric>> searchLyrics(String query) =>
       _dbHelper.searchLyrics(query);
   Future<Lyric?> getLyric(String id) => _dbHelper.getLyricById(id);
+
+  Future<int> getLyricsCount(String categoryId) async {
+    final lyrics = await _dbHelper.readLyricsByCategory(categoryId);
+    return lyrics.length;
+  }
 }
