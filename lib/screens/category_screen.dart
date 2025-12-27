@@ -11,6 +11,7 @@ import 'search_screen.dart';
 import 'lyric_view_screen.dart';
 import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
+import '../widgets/app_info_bottom_sheet.dart';
 
 class CategoryScreen extends StatefulWidget {
   final Category category;
@@ -54,6 +55,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ? 'Faça login com Google para adicionar letras'
           : 'Você não tem permissão para esta ação',
       isError: true,
+      action: isAnonymous
+          ? SnackBarAction(
+              label: 'Entrar',
+              onPressed: () => showAppInfoBottomSheet(context),
+            )
+          : null,
     );
   }
 

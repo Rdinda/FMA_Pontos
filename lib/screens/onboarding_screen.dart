@@ -28,8 +28,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _goToNextPage() {
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeInOutCubic,
       );
     } else {
       _finishOnboarding();
@@ -60,8 +60,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _skip() {
     _pageController.animateToPage(
       _totalPages - 1,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeInOutCubic,
     );
   }
 
@@ -120,7 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     index: 0,
                     title: 'Firmeza e organização',
                     description:
-                        'Guarde seus pontos e letras com respeito e clareza para suas giras e trabalhos.',
+                        'Guarde seus pontos com facilidade para suas giras e trabalhos.',
                   ),
                   OnboardingSlide(
                     controller: _pageController,

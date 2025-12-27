@@ -6,7 +6,6 @@ class SnackbarUtils {
     required String message,
     bool isError = false,
     SnackBarAction? action,
-    Duration duration = const Duration(seconds: 3),
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -45,7 +44,7 @@ class SnackbarUtils {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         elevation: 6,
-        duration: duration,
+        duration: const Duration(seconds: 3),
         action: action != null
             ? SnackBarAction(
                 label: action.label,

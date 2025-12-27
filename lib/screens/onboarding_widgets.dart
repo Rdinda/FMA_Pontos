@@ -28,9 +28,10 @@ class OnboardingSlide extends StatelessWidget {
             ? (controller.page ?? index.toDouble())
             : index.toDouble();
         final delta = (page - index).abs().clamp(0.0, 1.0);
-        final opacity = (1.0 - delta).clamp(0.0, 1.0);
-        final translateY = 36.0 * delta;
-        final scale = 1.0 - (0.04 * delta);
+        final t = Curves.easeOutCubic.transform((1.0 - delta).clamp(0.0, 1.0));
+        final opacity = t;
+        final translateY = 36.0 * (1.0 - t);
+        final scale = 0.96 + (0.04 * t);
 
         return Opacity(
           opacity: opacity,
@@ -67,7 +68,7 @@ class OnboardingSlide extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Axé, com organização e respeito.',
+              'Axé, com organização.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
@@ -127,9 +128,10 @@ class OnboardingPrivacySlide extends StatelessWidget {
             ? (controller.page ?? index.toDouble())
             : index.toDouble();
         final delta = (page - index).abs().clamp(0.0, 1.0);
-        final opacity = (1.0 - delta).clamp(0.0, 1.0);
-        final translateY = 36.0 * delta;
-        final scale = 1.0 - (0.04 * delta);
+        final t = Curves.easeOutCubic.transform((1.0 - delta).clamp(0.0, 1.0));
+        final opacity = t;
+        final translateY = 36.0 * (1.0 - t);
+        final scale = 0.96 + (0.04 * t);
 
         return Opacity(
           opacity: opacity,
@@ -157,7 +159,7 @@ class OnboardingPrivacySlide extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Tratamos seus dados com responsabilidade e conforme a lei. Você pode ler a política completa e seguir com tranquilidade.',
+              'Tratamos seus dados com responsabilidade.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
@@ -165,29 +167,51 @@ class OnboardingPrivacySlide extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const PrivacyPolicyScreen(),
-                  ),
-                );
-              },
-              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
-              child: const Text('Ler Política de Privacidade completa'),
-            ),
-            const SizedBox(height: 8),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               value: accepted,
               onChanged: onAcceptedChanged,
               checkColor: colorScheme.onPrimary,
               activeColor: colorScheme.primary,
-              title: Text(
-                'Li e concordo com a Política de Privacidade e com o uso dos meus dados conforme descrito.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                  height: 1.25,
+              title: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Li e concordo com a ',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                        height: 1.25,
+                      ),
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PrivacyPolicyScreen(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.primary,
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        child: const Text('Política de Privacidade'),
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' e com o uso dos meus dados conforme descrito.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -207,9 +231,9 @@ class BreathingLogo extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(26),
       child: Image.asset(
-        'assets/images/splash.png',
-        width: 140,
-        height: 140,
+        'assets/images/maria.png',
+        width: 220,
+        height: 220,
         fit: BoxFit.cover,
       ),
     );

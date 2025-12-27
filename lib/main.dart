@@ -74,29 +74,37 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildLightTheme() {
+    final lightColorScheme = ColorScheme.fromSeed(
+      seedColor: primaryColor,
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: primaryColor,
+      onPrimary:
+          ThemeData.estimateBrightnessForColor(primaryColor) == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+    );
+
     return ThemeData(
       brightness: Brightness.light,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: Colors.grey[50],
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.light,
-      ),
+      colorScheme: lightColorScheme,
       textTheme: GoogleFonts.outfitTextTheme(),
       appBarTheme: AppBarTheme(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: lightColorScheme.primary,
+        foregroundColor: lightColorScheme.onPrimary,
         elevation: 2,
         titleTextStyle: GoogleFonts.outfit(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: lightColorScheme.onPrimary,
         ),
       ),
-      tabBarTheme: const TabBarThemeData(
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
-        indicatorColor: Colors.white,
+      tabBarTheme: TabBarThemeData(
+        labelColor: lightColorScheme.onPrimary,
+        unselectedLabelColor: lightColorScheme.onPrimary.withValues(alpha: 0.7),
+        indicatorColor: lightColorScheme.onPrimary,
       ),
       cardTheme: const CardThemeData(elevation: 2),
       useMaterial3: true,
@@ -127,6 +135,12 @@ class MyApp extends StatelessWidget {
     final darkColorScheme = ColorScheme.fromSeed(
       seedColor: primaryColor,
       brightness: Brightness.dark,
+    ).copyWith(
+      primary: primaryColor,
+      onPrimary:
+          ThemeData.estimateBrightnessForColor(primaryColor) == Brightness.dark
+              ? Colors.white
+              : Colors.black,
     );
 
     return ThemeData(
@@ -136,19 +150,19 @@ class MyApp extends StatelessWidget {
       colorScheme: darkColorScheme,
       textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
       appBarTheme: AppBarTheme(
-        backgroundColor: darkColorScheme.surface,
-        foregroundColor: darkColorScheme.onSurface,
+        backgroundColor: darkColorScheme.primary,
+        foregroundColor: darkColorScheme.onPrimary,
         elevation: 0,
         titleTextStyle: GoogleFonts.outfit(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: darkColorScheme.onSurface,
+          color: darkColorScheme.onPrimary,
         ),
       ),
       tabBarTheme: TabBarThemeData(
-        labelColor: darkColorScheme.primary,
-        unselectedLabelColor: darkColorScheme.onSurfaceVariant,
-        indicatorColor: darkColorScheme.primary,
+        labelColor: darkColorScheme.onPrimary,
+        unselectedLabelColor: darkColorScheme.onPrimary.withValues(alpha: 0.7),
+        indicatorColor: darkColorScheme.onPrimary,
       ),
       cardTheme: CardThemeData(
         elevation: 2,
