@@ -12,7 +12,7 @@ class DatabaseHelper {
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB(
-      'lyrics_v3.db',
+      'lyrics_v4.db',
     ); // Bump version/new file for migration
     return _database!;
   }
@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -55,7 +55,8 @@ CREATE TABLE lyrics (
   is_synced $boolType,
   is_deleted $boolType,
   audio_url $textNullable,
-  local_audio_path $textNullable
+  local_audio_path $textNullable,
+  youtube_link $textNullable
 )
 ''');
   }
@@ -66,6 +67,9 @@ CREATE TABLE lyrics (
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE lyrics ADD COLUMN local_audio_path TEXT');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE lyrics ADD COLUMN youtube_link TEXT');
     }
   }
 

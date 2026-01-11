@@ -153,6 +153,7 @@ class SyncRepository with ChangeNotifier {
           isDeleted: false,
           audioUrl: lyric.audioUrl,
           localAudioPath: preservedPath,
+          youtubeLink: lyric.youtubeLink,
         );
         await _dbHelper.upsertLyric(localLyric);
       }
@@ -224,6 +225,7 @@ class SyncRepository with ChangeNotifier {
             isDeleted: lyric.isDeleted,
             audioUrl: lyric.audioUrl,
             localAudioPath: savePath,
+            youtubeLink: lyric.youtubeLink,
           );
           await _dbHelper.upsertLyric(updated);
           completed++;
@@ -247,6 +249,7 @@ class SyncRepository with ChangeNotifier {
             isDeleted: lyric.isDeleted,
             audioUrl: lyric.audioUrl,
             localAudioPath: savePath,
+            youtubeLink: lyric.youtubeLink,
           );
 
           await _dbHelper.upsertLyric(updatedLyric);

@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/supabase_service.dart';
@@ -20,6 +21,7 @@ class LyricFormScreen extends StatefulWidget {
 
 class _LyricFormScreenState extends State<LyricFormScreen> {
   final _titleController = TextEditingController();
+  final _youtubeController = TextEditingController();
   final _contentController = TextEditingController();
   String? _audioUrl;
   bool _isUploadingAudio = false;
@@ -29,6 +31,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
     super.initState();
     if (widget.lyric != null) {
       _titleController.text = widget.lyric!.title;
+      _youtubeController.text = widget.lyric!.youtubeLink ?? '';
       _initContent(widget.lyric!.content);
       _audioUrl = widget.lyric!.audioUrl;
     }
@@ -61,6 +64,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
   @override
   void dispose() {
     _titleController.dispose();
+    _youtubeController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -102,6 +106,9 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
                   updatedAt: DateTime.now(),
                   audioUrl: _audioUrl,
                   isSynced: false,
+                  youtubeLink: _youtubeController.text.trim().isEmpty
+                      ? null
+                      : _youtubeController.text.trim(),
                 );
                 await repo.addLyric(updatedLyric);
               } catch (e) {
@@ -164,6 +171,9 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
           updatedAt: DateTime.now(),
           audioUrl: null, // Remove a URL do banco
           isSynced: false,
+          youtubeLink: _youtubeController.text.trim().isEmpty
+              ? null
+              : _youtubeController.text.trim(),
         );
         await repo.addLyric(updatedLyric);
       } catch (e) {
@@ -175,8 +185,20 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
   void _save() {
     final title = _titleController.text;
     final content = _contentController.text;
+    final youtubeUrl = _youtubeController.text.trim();
 
     if (title.isEmpty) return;
+
+    if (youtubeUrl.isNotEmpty) {
+      if (YoutubePlayer.convertUrlToId(youtubeUrl) == null) {
+        SnackbarUtils.show(
+          context,
+          message: 'Link do YouTube inválido.',
+          isError: true,
+        );
+        return;
+      }
+    }
 
     final repo = Provider.of<SyncRepository>(context, listen: false);
 
@@ -188,6 +210,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
         content: content,
         updatedAt: DateTime.now(),
         audioUrl: _audioUrl,
+        youtubeLink: youtubeUrl.isEmpty ? null : youtubeUrl,
       );
       repo.addLyric(newLyric);
     } else {
@@ -199,6 +222,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
         updatedAt: DateTime.now(),
         audioUrl: _audioUrl,
         isSynced: false, // Mark as unsynced
+        youtubeLink: youtubeUrl.isEmpty ? null : youtubeUrl,
       );
       repo.addLyric(updatedLyric);
     }
@@ -312,6 +336,18 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
                     ),
                   ),
               ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextField(
+              controller: _youtubeController,
+              decoration: const InputDecoration(
+                labelText: "Link do YouTube",
+                prefixIcon: Icon(Icons.video_library),
+                border: OutlineInputBorder(),
+              ),
             ),
           ),
           const SizedBox(height: 8),

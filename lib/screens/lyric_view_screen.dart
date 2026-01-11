@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'lyric_form_screen.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
@@ -20,19 +21,43 @@ class LyricViewScreen extends StatefulWidget {
 
 class _LyricViewScreenState extends State<LyricViewScreen> {
   late Lyric _lyric;
+  YoutubePlayerController? _youtubeController;
+  _PlayerMode _playerMode = _PlayerMode.none;
+
   @override
   void initState() {
     super.initState();
     _lyric = widget.lyric;
+    _initYoutubePlayer();
+  }
+
+  void _initYoutubePlayer() {
+    if (_lyric.youtubeLink != null) {
+      final videoId = YoutubePlayer.convertUrlToId(_lyric.youtubeLink!);
+      if (videoId != null) {
+        _youtubeController = YoutubePlayerController(
+          initialVideoId: videoId,
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: false,
+            enableCaption: true,
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
+    _youtubeController?.dispose();
     super.dispose();
   }
 
   Future<void> _togglePlay() async {
-    if (_lyric.audioUrl == null && _lyric.localAudioPath == null) return;
+    final hasAudio =
+        (_lyric.audioUrl?.trim().isNotEmpty ?? false) ||
+        (_lyric.localAudioPath?.trim().isNotEmpty ?? false);
+    if (!hasAudio) return;
 
     final audioService = Provider.of<AudioPlayerService>(
       context,
@@ -62,6 +87,19 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
       if (updated != null) {
         setState(() {
           _lyric = updated;
+          _youtubeController?.dispose();
+          _youtubeController = null;
+          _initYoutubePlayer();
+          final hasAudio =
+              (_lyric.audioUrl?.trim().isNotEmpty ?? false) ||
+              (_lyric.localAudioPath?.trim().isNotEmpty ?? false);
+          final hasVideo = _youtubeController != null;
+          if (_playerMode == _PlayerMode.audio && !hasAudio) {
+            _playerMode = _PlayerMode.none;
+          }
+          if (_playerMode == _PlayerMode.video && !hasVideo) {
+            _playerMode = _PlayerMode.none;
+          }
         });
       }
     }
@@ -180,6 +218,19 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
           if (updated != null && mounted) {
             setState(() {
               _lyric = updated;
+              _youtubeController?.dispose();
+              _youtubeController = null;
+              _initYoutubePlayer();
+              final hasAudio =
+                  (_lyric.audioUrl?.trim().isNotEmpty ?? false) ||
+                  (_lyric.localAudioPath?.trim().isNotEmpty ?? false);
+              final hasVideo = _youtubeController != null;
+              if (_playerMode == _PlayerMode.audio && !hasAudio) {
+                _playerMode = _PlayerMode.none;
+              }
+              if (_playerMode == _PlayerMode.video && !hasVideo) {
+                _playerMode = _PlayerMode.none;
+              }
             });
           }
         },
@@ -200,11 +251,14 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                   final position = isCurrentLyric
                       ? audioService.position
                       : Duration.zero;
+                  final hasAudio =
+                      (_lyric.audioUrl?.trim().isNotEmpty ?? false) ||
+                      (_lyric.localAudioPath?.trim().isNotEmpty ?? false);
+                  final canPlayVideo = _youtubeController != null;
 
                   return Column(
                     children: [
-                      if (_lyric.audioUrl != null ||
-                          _lyric.localAudioPath != null) ...[
+                      if (hasAudio || canPlayVideo) ...[
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16.0),
@@ -219,90 +273,234 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
                             children: [
                               Row(
                                 children: [
-                                  IconButton(
-                                    onPressed: _togglePlay,
-                                    icon: Icon(
-                                      isPlaying
-                                          ? Icons.pause_circle_filled
-                                          : Icons.play_circle_filled,
-                                    ),
-                                    iconSize: 48,
-                                    color: colorScheme.primary,
-                                  ),
-                                  // Botão de favoritar
-                                  Consumer<FavoritesService>(
-                                    builder: (context, favService, child) {
-                                      final isFav = favService.isFavorite(
-                                        _lyric.id,
-                                      );
-                                      return IconButton(
-                                        onPressed: () async {
-                                          final wasFav = favService.isFavorite(
-                                            _lyric.id,
-                                          );
-                                          await favService.toggleFavorite(
-                                            _lyric.id,
-                                          );
-                                          if (!context.mounted) return;
-                                          SnackbarUtils.show(
-                                            context,
-                                            message: wasFav
-                                                ? 'Removido dos favoritos'
-                                                : 'Adicionado aos favoritos',
-                                          );
-                                        },
-                                        icon: Icon(
-                                          isFav
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                        ),
-                                        iconSize: 28,
-                                        color: isFav
-                                            ? colorScheme.error
-                                            : colorScheme.onSurfaceVariant,
-                                        tooltip: isFav
-                                            ? 'Remover dos favoritos'
-                                            : 'Adicionar aos favoritos',
-                                      );
-                                    },
-                                  ),
                                   Expanded(
-                                    child: Slider(
-                                      min: 0,
-                                      max: duration.inSeconds.toDouble() > 0
-                                          ? duration.inSeconds.toDouble()
-                                          : 1.0,
-                                      value: position.inSeconds
-                                          .toDouble()
-                                          .clamp(
-                                            0,
-                                            duration.inSeconds.toDouble() > 0
-                                                ? duration.inSeconds.toDouble()
-                                                : 1.0,
-                                          ),
-                                      onChanged: (value) async {
-                                        if (isCurrentLyric) {
-                                          final newPosition = Duration(
-                                            seconds: value.toInt(),
-                                          );
-                                          await audioService.seek(newPosition);
-                                        }
-                                      },
+                                    child: FilledButton.icon(
+                                      onPressed: hasAudio
+                                          ? () async {
+                                              _youtubeController?.pause();
+                                              setState(() {
+                                                _playerMode = _PlayerMode.audio;
+                                              });
+                                            }
+                                          : null,
+                                      icon: const Icon(Icons.audiotrack),
+                                      label: const Text('Áudio'),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            _playerMode == _PlayerMode.audio
+                                            ? colorScheme.primary
+                                            : colorScheme
+                                                  .surfaceContainerHighest,
+                                        foregroundColor:
+                                            _playerMode == _PlayerMode.audio
+                                            ? colorScheme.onPrimary
+                                            : colorScheme.onSurface,
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: FilledButton.icon(
+                                      onPressed: canPlayVideo
+                                          ? () async {
+                                              if (audioService.isPlaying) {
+                                                await audioService
+                                                    .togglePlayPause();
+                                              }
+                                              setState(() {
+                                                _playerMode = _PlayerMode.video;
+                                              });
+                                            }
+                                          : null,
+                                      icon: const Icon(Icons.video_library),
+                                      label: const Text('Vídeo'),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            _playerMode == _PlayerMode.video
+                                            ? colorScheme.primary
+                                            : colorScheme
+                                                  .surfaceContainerHighest,
+                                        foregroundColor:
+                                            _playerMode == _PlayerMode.video
+                                            ? colorScheme.onPrimary
+                                            : colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_playerMode != _PlayerMode.none) ...[
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      onPressed: () async {
+                                        if (_playerMode == _PlayerMode.audio &&
+                                            audioService.isPlaying &&
+                                            audioService.currentLyric?.id ==
+                                                _lyric.id) {
+                                          await audioService.togglePlayPause();
+                                        }
+                                        if (_playerMode == _PlayerMode.video) {
+                                          _youtubeController?.pause();
+                                        }
+                                        setState(() {
+                                          _playerMode = _PlayerMode.none;
+                                        });
+                                      },
+                                      icon: const Icon(Icons.close),
+                                      tooltip: 'Fechar',
+                                    ),
+                                  ],
                                 ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
+                              const SizedBox(height: 12),
+                              if (_playerMode == _PlayerMode.none)
+                                Text(
+                                  'Escolha um player para reproduzir.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                              if (_playerMode == _PlayerMode.audio) ...[
+                                Row(
                                   children: [
-                                    Text(_formatDuration(position)),
-                                    Text(_formatDuration(duration)),
+                                    IconButton(
+                                      onPressed: _togglePlay,
+                                      icon: Icon(
+                                        isPlaying
+                                            ? Icons.pause_circle_filled
+                                            : Icons.play_circle_filled,
+                                      ),
+                                      iconSize: 48,
+                                      color: colorScheme.primary,
+                                    ),
+                                    Consumer<FavoritesService>(
+                                      builder: (context, favService, child) {
+                                        final isFav = favService.isFavorite(
+                                          _lyric.id,
+                                        );
+                                        return IconButton(
+                                          onPressed: () async {
+                                            final wasFav = favService
+                                                .isFavorite(_lyric.id);
+                                            await favService.toggleFavorite(
+                                              _lyric.id,
+                                            );
+                                            if (!context.mounted) return;
+                                            SnackbarUtils.show(
+                                              context,
+                                              message: wasFav
+                                                  ? 'Removido dos favoritos'
+                                                  : 'Adicionado aos favoritos',
+                                            );
+                                          },
+                                          icon: Icon(
+                                            isFav
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                          ),
+                                          iconSize: 28,
+                                          color: isFav
+                                              ? colorScheme.error
+                                              : colorScheme.onSurfaceVariant,
+                                          tooltip: isFav
+                                              ? 'Remover dos favoritos'
+                                              : 'Adicionar aos favoritos',
+                                        );
+                                      },
+                                    ),
+                                    Expanded(
+                                      child: Slider(
+                                        min: 0,
+                                        max: duration.inSeconds.toDouble() > 0
+                                            ? duration.inSeconds.toDouble()
+                                            : 1.0,
+                                        value: position.inSeconds
+                                            .toDouble()
+                                            .clamp(
+                                              0,
+                                              duration.inSeconds.toDouble() > 0
+                                                  ? duration.inSeconds
+                                                        .toDouble()
+                                                  : 1.0,
+                                            ),
+                                        onChanged: (value) async {
+                                          if (isCurrentLyric) {
+                                            final newPosition = Duration(
+                                              seconds: value.toInt(),
+                                            );
+                                            await audioService.seek(
+                                              newPosition,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
                                   ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(_formatDuration(position)),
+                                      Text(_formatDuration(duration)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              if (_playerMode == _PlayerMode.video &&
+                                  _youtubeController != null) ...[
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: YoutubePlayer(
+                                    controller: _youtubeController!,
+                                    showVideoProgressIndicator: true,
+                                    progressIndicatorColor: colorScheme.primary,
+                                    progressColors: ProgressBarColors(
+                                      playedColor: colorScheme.primary,
+                                      handleColor: colorScheme.primary,
+                                    ),
+                                    bottomActions: [
+                                      CurrentPosition(),
+                                      ProgressBar(isExpanded: true),
+                                      RemainingDuration(),
+                                      const PlaybackSpeedButton(),
+                                      FullScreenButton(),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      if (!hasAudio && !canPlayVideo) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Sem mídia para tocar. Adicione um arquivo de áudio MP3 ou um link do YouTube.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                             ],
@@ -342,3 +540,5 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
     );
   }
 }
+
+enum _PlayerMode { none, audio, video }

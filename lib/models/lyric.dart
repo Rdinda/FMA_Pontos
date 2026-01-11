@@ -8,6 +8,7 @@ class Lyric {
   final bool isDeleted;
   final String? audioUrl;
   final String? localAudioPath;
+  final String? youtubeLink;
 
   Lyric({
     required this.id,
@@ -19,6 +20,7 @@ class Lyric {
     this.isDeleted = false,
     this.audioUrl,
     this.localAudioPath,
+    this.youtubeLink,
   });
 
   // For Local DB
@@ -33,6 +35,7 @@ class Lyric {
       'is_deleted': isDeleted ? 1 : 0,
       'audio_url': audioUrl,
       'local_audio_path': localAudioPath,
+      'youtube_link': youtubeLink,
     };
   }
 
@@ -45,6 +48,7 @@ class Lyric {
       'content': content,
       'updated_at': updatedAt.toIso8601String(),
       'audio_url': audioUrl,
+      'youtube_link': youtubeLink,
     };
   }
 
@@ -61,6 +65,7 @@ class Lyric {
       isDeleted: (map['is_deleted'] ?? 0) == 1,
       audioUrl: map['audio_url']?.toString(),
       localAudioPath: map['local_audio_path']?.toString(),
+      youtubeLink: (map['youtube_link'] ?? map['youtube_url'])?.toString(),
     );
   }
 }

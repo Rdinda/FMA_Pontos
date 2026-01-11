@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -291,7 +292,17 @@ class AuthService extends ChangeNotifier {
       return false;
     } catch (e) {
       debugPrint('[AuthService] Google Sign In error: $e');
-      _error = 'Erro ao fazer login: ${e.toString()}';
+      if (e is PlatformException && e.code == 'sign_in_failed') {
+        final message = e.message ?? '';
+        if (message.contains('ApiException: 10')) {
+          _error =
+              'Falha no login Google (ApiException: 10). Isso normalmente indica configuração incorreta: package name/SHA-1/SHA-256 do app não conferem com o OAuth Client, ou o serverClientId (Web Client ID) não é do mesmo projeto.';
+        } else {
+          _error = 'Falha no login Google: $message';
+        }
+      } else {
+        _error = 'Erro ao fazer login: ${e.toString()}';
+      }
       return false;
     } finally {
       _isLoading = false;
