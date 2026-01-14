@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -34,11 +34,13 @@ class DatabaseHelper {
     const textType = 'TEXT NOT NULL';
     const textNullable = 'TEXT';
     const boolType = 'INTEGER NOT NULL DEFAULT 0';
+    const intType = 'INTEGER NOT NULL DEFAULT 0';
 
     await db.execute('''
 CREATE TABLE categories (
   id $idType,
   name $textType,
+  code $textType,
   updated_at $textType,
   is_synced $boolType,
   is_deleted $boolType
@@ -56,7 +58,8 @@ CREATE TABLE lyrics (
   is_deleted $boolType,
   audio_url $textNullable,
   local_audio_path $textNullable,
-  youtube_link $textNullable
+  youtube_link $textNullable,
+  sequence_number $intType
 )
 ''');
   }
@@ -70,6 +73,21 @@ CREATE TABLE lyrics (
     }
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE lyrics ADD COLUMN youtube_link TEXT');
+    }
+    if (oldVersion < 5) {
+      // Add code to categories
+      await db.execute('ALTER TABLE categories ADD COLUMN code TEXT');
+      // Populate code with simple logic (first 2 chars) for existing
+      await db.execute(
+        'UPDATE categories SET code = SUBSTR(name, 1, 2) WHERE code IS NULL',
+      );
+      // Ideally we want it NOT NULL, but SQLite ALTER TABLE is limited.
+      // We can rely on app logic to handle it or enforce it later.
+
+      // Add sequence_number to lyrics
+      await db.execute(
+        'ALTER TABLE lyrics ADD COLUMN sequence_number INTEGER NOT NULL DEFAULT 0',
+      );
     }
   }
 
@@ -91,6 +109,19 @@ CREATE TABLE lyrics (
       orderBy: 'name ASC',
     );
     return result.map((json) => Category.fromMap(json)).toList();
+  }
+
+  Future<Category?> getCategory(String id) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'categories',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (result.isNotEmpty) {
+      return Category.fromMap(result.first);
+    }
+    return null;
   }
 
   Future<List<Category>> getSyncedCategories() async {
@@ -245,5 +276,17 @@ CREATE TABLE lyrics (
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<int> getMaxSequenceNumber(String categoryId) async {
+    final db = await instance.database;
+    final result = await db.rawQuery(
+      'SELECT MAX(sequence_number) as max_seq FROM lyrics WHERE category_id = ?',
+      [categoryId],
+    );
+    if (result.isNotEmpty && result.first['max_seq'] != null) {
+      return result.first['max_seq'] as int;
+    }
+    return 0;
   }
 }

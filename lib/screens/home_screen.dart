@@ -99,10 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
       action: authService.isAnonymous
           ? SnackBarAction(
               label: 'Entrar',
-              onPressed: () => showAppInfoBottomSheet(
-                context,
-                version: _version,
-              ),
+              onPressed: () =>
+                  showAppInfoBottomSheet(context, version: _version),
             )
           : null,
     );
@@ -110,13 +108,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showAddCategoryDialog() {
     final nameController = TextEditingController();
+    final codeController = TextEditingController();
+
+    // Auto-generate code when name changes, if code is empty
+    nameController.addListener(() {
+      if (codeController.text.isEmpty) {
+        final text = nameController.text.trim();
+        if (text.isNotEmpty) {
+          // Take up to 2 characters
+          final len = text.length >= 2 ? 2 : text.length;
+          codeController.text = text.substring(0, len).toUpperCase();
+        }
+      }
+    });
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Nova Categoria"),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(labelText: "Nome", filled: true),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "Nome",
+                filled: true,
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(
+                labelText: "Código (Prefixo)",
+                filled: true,
+                helperText: "Ex: OX para Oxum (Único)",
+              ),
+              textCapitalization: TextCapitalization.characters,
+              maxLength: 4,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -125,10 +157,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (nameController.text.isNotEmpty) {
+              if (nameController.text.isNotEmpty &&
+                  codeController.text.isNotEmpty) {
                 final newCat = Category(
                   id: const Uuid().v4(),
-                  name: nameController.text,
+                  name: nameController.text.trim(),
+                  code: codeController.text.trim().toUpperCase(),
                   updatedAt: DateTime.now(),
                 );
                 Provider.of<SyncRepository>(
@@ -136,6 +170,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   listen: false,
                 ).addCategory(newCat);
                 Navigator.pop(ctx);
+              } else {
+                SnackbarUtils.show(
+                  context,
+                  message: 'Preencha nome e código',
+                  isError: true,
+                );
               }
             },
             child: const Text("Salvar"),
@@ -166,10 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (isWarning) {
           _lastPressedAt = now;
-          SnackbarUtils.show(
-            context,
-            message: 'Pressione novamente para sair',
-          );
+          SnackbarUtils.show(context, message: 'Pressione novamente para sair');
         } else {
           SystemNavigator.pop();
         }

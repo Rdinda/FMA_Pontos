@@ -9,6 +9,7 @@ class Lyric {
   final String? audioUrl;
   final String? localAudioPath;
   final String? youtubeLink;
+  final int sequenceNumber;
 
   Lyric({
     required this.id,
@@ -21,6 +22,7 @@ class Lyric {
     this.audioUrl,
     this.localAudioPath,
     this.youtubeLink,
+    this.sequenceNumber = 0,
   });
 
   // For Local DB
@@ -36,6 +38,7 @@ class Lyric {
       'audio_url': audioUrl,
       'local_audio_path': localAudioPath,
       'youtube_link': youtubeLink,
+      'sequence_number': sequenceNumber,
     };
   }
 
@@ -49,6 +52,7 @@ class Lyric {
       'updated_at': updatedAt.toIso8601String(),
       'audio_url': audioUrl,
       'youtube_link': youtubeLink,
+      'sequence_number': sequenceNumber,
     };
   }
 
@@ -66,6 +70,9 @@ class Lyric {
       audioUrl: map['audio_url']?.toString(),
       localAudioPath: map['local_audio_path']?.toString(),
       youtubeLink: (map['youtube_link'] ?? map['youtube_url'])?.toString(),
+      sequenceNumber: map['sequence_number'] is int
+          ? map['sequence_number']
+          : int.tryParse(map['sequence_number']?.toString() ?? '0') ?? 0,
     );
   }
 }

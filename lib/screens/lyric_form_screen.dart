@@ -109,6 +109,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
                   youtubeLink: _youtubeController.text.trim().isEmpty
                       ? null
                       : _youtubeController.text.trim(),
+                  sequenceNumber: widget.lyric!.sequenceNumber,
                 );
                 await repo.addLyric(updatedLyric);
               } catch (e) {
@@ -174,6 +175,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
           youtubeLink: _youtubeController.text.trim().isEmpty
               ? null
               : _youtubeController.text.trim(),
+          sequenceNumber: widget.lyric!.sequenceNumber,
         );
         await repo.addLyric(updatedLyric);
       } catch (e) {
@@ -182,7 +184,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     final title = _titleController.text;
     final content = _contentController.text;
     final youtubeUrl = _youtubeController.text.trim();
@@ -203,6 +205,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
     final repo = Provider.of<SyncRepository>(context, listen: false);
 
     if (widget.lyric == null) {
+      final seqNum = await repo.getNextSequenceNumber(widget.categoryId);
       final newLyric = Lyric(
         id: const Uuid().v4(),
         categoryId: widget.categoryId,
@@ -211,6 +214,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
         updatedAt: DateTime.now(),
         audioUrl: _audioUrl,
         youtubeLink: youtubeUrl.isEmpty ? null : youtubeUrl,
+        sequenceNumber: seqNum,
       );
       repo.addLyric(newLyric);
     } else {
@@ -223,11 +227,14 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
         audioUrl: _audioUrl,
         isSynced: false, // Mark as unsynced
         youtubeLink: youtubeUrl.isEmpty ? null : youtubeUrl,
+        sequenceNumber: widget.lyric!.sequenceNumber,
       );
       repo.addLyric(updatedLyric);
     }
 
-    Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void _delete() {

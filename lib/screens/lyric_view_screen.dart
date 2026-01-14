@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'lyric_form_screen.dart';
+import '../models/category.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
@@ -21,6 +22,7 @@ class LyricViewScreen extends StatefulWidget {
 
 class _LyricViewScreenState extends State<LyricViewScreen> {
   late Lyric _lyric;
+  Category? _category;
   YoutubePlayerController? _youtubeController;
   _PlayerMode _playerMode = _PlayerMode.none;
 
@@ -28,7 +30,18 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
   void initState() {
     super.initState();
     _lyric = widget.lyric;
+    _loadCategory();
     _initYoutubePlayer();
+  }
+
+  Future<void> _loadCategory() async {
+    final repo = Provider.of<SyncRepository>(context, listen: false);
+    final cat = await repo.getCategory(_lyric.categoryId);
+    if (mounted && cat != null) {
+      setState(() {
+        _category = cat;
+      });
+    }
   }
 
   void _initYoutubePlayer() {
@@ -161,7 +174,9 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          _lyric.title.toUpperCase(),
+          _category != null && _category!.code.isNotEmpty
+              ? "${_category!.code}${_lyric.sequenceNumber.toString().padLeft(2, '0')} - ${_lyric.title.toUpperCase()}"
+              : _lyric.title.toUpperCase(),
           style: GoogleFonts.montserrat(
             fontWeight: FontWeight.bold,
             fontSize: 20,

@@ -88,6 +88,7 @@ class SyncRepository with ChangeNotifier {
         final localCat = Category(
           id: cat.id,
           name: cat.name,
+          code: cat.code,
           updatedAt: cat.updatedAt,
           isSynced: true,
           isDeleted: false,
@@ -154,6 +155,7 @@ class SyncRepository with ChangeNotifier {
           audioUrl: lyric.audioUrl,
           localAudioPath: preservedPath,
           youtubeLink: lyric.youtubeLink,
+          sequenceNumber: lyric.sequenceNumber,
         );
         await _dbHelper.upsertLyric(localLyric);
       }
@@ -226,6 +228,7 @@ class SyncRepository with ChangeNotifier {
             audioUrl: lyric.audioUrl,
             localAudioPath: savePath,
             youtubeLink: lyric.youtubeLink,
+            sequenceNumber: lyric.sequenceNumber,
           );
           await _dbHelper.upsertLyric(updated);
           completed++;
@@ -250,6 +253,7 @@ class SyncRepository with ChangeNotifier {
             audioUrl: lyric.audioUrl,
             localAudioPath: savePath,
             youtubeLink: lyric.youtubeLink,
+            sequenceNumber: lyric.sequenceNumber,
           );
 
           await _dbHelper.upsertLyric(updatedLyric);
@@ -378,7 +382,14 @@ class SyncRepository with ChangeNotifier {
     }
   }
 
-  Future<List<Category>> getCategories() => _dbHelper.readAllCategories();
+  Future<List<Category>> getCategories() async {
+    return await _dbHelper.readAllCategories();
+  }
+
+  Future<Category?> getCategory(String id) async {
+    return await _dbHelper.getCategory(id);
+  }
+
   Future<List<Lyric>> getLyrics(String categoryId) =>
       _dbHelper.readLyricsByCategory(categoryId);
   Future<List<Lyric>> searchLyrics(String query) =>
@@ -388,5 +399,10 @@ class SyncRepository with ChangeNotifier {
   Future<int> getLyricsCount(String categoryId) async {
     final lyrics = await _dbHelper.readLyricsByCategory(categoryId);
     return lyrics.length;
+  }
+
+  Future<int> getNextSequenceNumber(String categoryId) async {
+    final max = await _dbHelper.getMaxSequenceNumber(categoryId);
+    return max + 1;
   }
 }

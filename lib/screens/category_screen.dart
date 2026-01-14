@@ -77,13 +77,28 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   void _editCategory() {
     final nameController = TextEditingController(text: widget.category.name);
+    final codeController = TextEditingController(text: widget.category.code);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Editar Categoria"),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(labelText: "Nome"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Nome"),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(labelText: "Código (Prefixo)"),
+              textCapitalization: TextCapitalization.characters,
+              maxLength: 4,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -94,7 +109,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             onPressed: () {
               final updatedCat = Category(
                 id: widget.category.id,
-                name: nameController.text,
+                name: nameController.text.trim(),
+                code: codeController.text.trim().toUpperCase(),
                 updatedAt: DateTime.now(),
               );
               Provider.of<SyncRepository>(
@@ -229,12 +245,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         horizontal: 16,
                         vertical: 8,
                       ),
-                      title: Text(
-                        lyric.title.capitalize(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${widget.category.code.isNotEmpty ? widget.category.code : '??'}${lyric.sequenceNumber.toString().padLeft(2, '0')}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            lyric.title.capitalize(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
                       ),
                       trailing: Icon(
                         Icons.arrow_forward_ios,
