@@ -129,6 +129,10 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  Future<void> pause() async {
+    await _audioHandler.pause();
+  }
+
   Future<void> seek(Duration position) async {
     await _audioHandler.seek(position);
   }

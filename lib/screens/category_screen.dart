@@ -173,6 +173,132 @@ class _CategoryScreenState extends State<CategoryScreen> {
     await audioService.playAll(lyrics);
   }
 
+  Widget _buildMusicalLyricTile(
+    BuildContext context,
+    Lyric lyric,
+    Category category,
+    AudioPlayerService audioService,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isPlaying =
+        audioService.currentLyric?.id == lyric.id && audioService.isPlaying;
+    final isCurrent = audioService.currentLyric?.id == lyric.id;
+    final hasAudio =
+        (lyric.audioUrl?.isNotEmpty ?? false) ||
+        (lyric.localAudioPath?.isNotEmpty ?? false);
+    final hasVideo = lyric.youtubeLink?.isNotEmpty ?? false;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: isCurrent
+            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isCurrent
+              ? colorScheme.primary.withValues(alpha: 0.5)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: isCurrent
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              if (isCurrent)
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+            ],
+          ),
+          child: Center(
+            child: isPlaying
+                ? Icon(Icons.graphic_eq, color: colorScheme.onPrimary)
+                : Text(
+                    lyric.sequenceNumber.toString(),
+                    style: TextStyle(
+                      color: isCurrent
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+          ),
+        ),
+        title: Text(
+          lyric.title.capitalize(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
+            color: isCurrent ? colorScheme.primary : colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Row(
+          children: [
+            if (hasAudio) ...[
+              Icon(Icons.music_note, size: 14, color: colorScheme.secondary),
+              const SizedBox(width: 4),
+            ],
+            if (hasVideo) ...[
+              Icon(Icons.videocam, size: 14, color: colorScheme.tertiary),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              "${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}",
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasAudio)
+              IconButton(
+                icon: Icon(
+                  isCurrent && isPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_filled,
+                  color: colorScheme.primary,
+                ),
+                onPressed: () {
+                  if (isCurrent && isPlaying) {
+                    audioService.pause();
+                  } else {
+                    audioService.play(lyric);
+                  }
+                },
+              ),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => LyricViewScreen(lyric: lyric)),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = Provider.of<SyncRepository>(context);
@@ -223,66 +349,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
             onRefresh: () async {
               await repo.syncData();
             },
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: lyrics.length,
-              itemBuilder: (ctx, i) {
-                final lyric = lyrics[i];
-                final colorScheme = Theme.of(context).colorScheme;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 4.0,
-                  ),
-                  child: Card(
-                    elevation: 2,
-                    color: colorScheme.surfaceContainer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${widget.category.code.isNotEmpty ? widget.category.code : '??'}${lyric.sequenceNumber.toString().padLeft(2, '0')}",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            lyric.title.capitalize(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      trailing: Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      onTap: () {
-                        // Open View Screen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => LyricViewScreen(lyric: lyric),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+            child: Consumer<AudioPlayerService>(
+              builder: (context, audioService, child) {
+                return ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: lyrics.length,
+                  itemBuilder: (ctx, i) {
+                    final lyric = lyrics[i];
+                    return _buildMusicalLyricTile(
+                      context,
+                      lyric,
+                      widget.category,
+                      audioService,
+                    );
+                  },
                 );
               },
             ),

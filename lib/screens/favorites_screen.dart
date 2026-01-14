@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/category.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
@@ -13,8 +14,13 @@ import '../utils/snackbar_utils.dart';
 class LyricWithCategory {
   final Lyric lyric;
   final String categoryName;
+  final String categoryCode;
 
-  LyricWithCategory({required this.lyric, required this.categoryName});
+  LyricWithCategory({
+    required this.lyric,
+    required this.categoryName,
+    required this.categoryCode,
+  });
 }
 
 class FavoritesScreen extends StatefulWidget {
@@ -162,73 +168,158 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: lyricsWithCategory.length,
-                itemBuilder: (context, index) {
-                  final item = lyricsWithCategory[index];
-                  final lyric = item.lyric;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 4.0,
-                    ),
-                    child: Card(
-                      elevation: 2,
-                      color: colorScheme.surfaceContainer,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.only(
-                          left: 4,
-                          right: 16,
+              return Consumer<AudioPlayerService>(
+                builder: (context, audioService, child) {
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: lyricsWithCategory.length,
+                    itemBuilder: (context, index) {
+                      final item = lyricsWithCategory[index];
+                      final lyric = item.lyric;
+                      final isPlaying =
+                          audioService.currentLyric?.id == lyric.id &&
+                          audioService.isPlaying;
+                      final isCurrent =
+                          audioService.currentLyric?.id == lyric.id;
+                      final hasAudio =
+                          (lyric.audioUrl?.isNotEmpty ?? false) ||
+                          (lyric.localAudioPath?.isNotEmpty ?? false);
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
                         ),
-                        leading: IconButton(
-                          onPressed: () async {
-                            await favoritesService.toggleFavorite(lyric.id);
-                            if (!context.mounted) return;
-                            SnackbarUtils.show(
+                        decoration: BoxDecoration(
+                          color: isCurrent
+                              ? colorScheme.primaryContainer.withValues(
+                                  alpha: 0.3,
+                                )
+                              : colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isCurrent
+                                ? colorScheme.primary.withValues(alpha: 0.5)
+                                : colorScheme.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
+                          ),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          leading: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: isCurrent
+                                  ? colorScheme.primary
+                                  : colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                if (isCurrent)
+                                  BoxShadow(
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                              ],
+                            ),
+                            child: Center(
+                              child: isPlaying
+                                  ? Icon(
+                                      Icons.graphic_eq,
+                                      color: colorScheme.onPrimary,
+                                    )
+                                  : Text(
+                                      lyric.sequenceNumber.toString(),
+                                      style: TextStyle(
+                                        color: isCurrent
+                                            ? colorScheme.onPrimary
+                                            : colorScheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          title: Text(
+                            lyric.title.capitalize(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: isCurrent
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: isCurrent
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurface,
+                            ),
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Text(
+                                "${item.categoryCode}${lyric.sequenceNumber.toString().padLeft(2, '0')} • ${item.categoryName.capitalize()}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: () async {
+                                  await favoritesService.toggleFavorite(
+                                    lyric.id,
+                                  );
+                                  if (!context.mounted) return;
+                                  SnackbarUtils.show(
+                                    context,
+                                    message: 'Removido dos favoritos',
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.favorite,
+                                  color: colorScheme.error,
+                                ),
+                                tooltip: 'Remover dos favoritos',
+                              ),
+                              if (hasAudio)
+                                IconButton(
+                                  icon: Icon(
+                                    isCurrent && isPlaying
+                                        ? Icons.pause_circle_filled
+                                        : Icons.play_circle_filled,
+                                    color: colorScheme.primary,
+                                  ),
+                                  onPressed: () {
+                                    if (isCurrent && isPlaying) {
+                                      audioService.pause();
+                                    } else {
+                                      audioService.play(lyric);
+                                    }
+                                  },
+                                ),
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.push(
                               context,
-                              message: 'Removido dos favoritos',
+                              MaterialPageRoute(
+                                builder: (_) => LyricViewScreen(lyric: lyric),
+                              ),
                             );
                           },
-                          icon: Icon(Icons.favorite, color: colorScheme.error),
-                          tooltip: 'Remover dos favoritos',
                         ),
-                        title: Text(
-                          lyric.title.capitalize(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        subtitle: Text(
-                          item.categoryName.capitalize(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => LyricViewScreen(lyric: lyric),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               );
@@ -246,18 +337,24 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   ) async {
     final List<LyricWithCategory> result = [];
 
-    // Buscar todas as categorias para criar um mapa de id -> nome
+    // Buscar todas as categorias para criar um mapa de id -> Category
     final categories = await repo.getCategories();
-    final categoryMap = <String, String>{};
+    final categoryMap = <String, Category>{};
     for (final cat in categories) {
-      categoryMap[cat.id] = cat.name;
+      categoryMap[cat.id] = cat;
     }
 
     for (final id in favoriteIds) {
       final lyric = await repo.getLyric(id);
       if (lyric != null) {
-        final categoryName = categoryMap[lyric.categoryId] ?? 'Categoria';
-        result.add(LyricWithCategory(lyric: lyric, categoryName: categoryName));
+        final category = categoryMap[lyric.categoryId];
+        result.add(
+          LyricWithCategory(
+            lyric: lyric,
+            categoryName: category?.name ?? 'Categoria',
+            categoryCode: category?.code ?? '??',
+          ),
+        );
       }
     }
 

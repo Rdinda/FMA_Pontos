@@ -169,19 +169,31 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadTopPlayed,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: _topPlayed.length,
-        itemBuilder: (context, index) {
-          final item = _topPlayed[index];
-          return _buildLyricTile(item, index + 1);
+      child: Consumer<AudioPlayerService>(
+        builder: (context, audioService, child) {
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: _topPlayed.length,
+            itemBuilder: (context, index) {
+              final item = _topPlayed[index];
+              return _buildLyricTile(item, index + 1, audioService);
+            },
+          );
         },
       ),
     );
   }
 
-  Widget _buildLyricTile(LyricWithStats item, int rank) {
+  Widget _buildLyricTile(
+    LyricWithStats item,
+    int rank,
+    AudioPlayerService audioService,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isPlaying =
+        audioService.currentLyric?.id == item.lyric.id &&
+        audioService.isPlaying;
+    final isCurrent = audioService.currentLyric?.id == item.lyric.id;
     final hasAudio =
         (item.lyric.audioUrl != null && item.lyric.audioUrl!.isNotEmpty) ||
         (item.lyric.localAudioPath != null &&
@@ -201,36 +213,68 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
       rankIcon = Icons.emoji_events_rounded;
     }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: isCurrent
+            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isCurrent
+              ? colorScheme.primary.withValues(alpha: 0.5)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: Container(
-          width: 40,
-          height: 40,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color:
                 rankColor?.withValues(alpha: 0.2) ??
-                colorScheme.surfaceContainerHighest,
+                (isCurrent
+                    ? colorScheme.primary
+                    : colorScheme.surfaceContainerHighest),
             borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              if (isCurrent)
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+            ],
           ),
           child: Center(
-            child: rankIcon != null
-                ? Icon(rankIcon, color: rankColor, size: 24)
-                : Text(
-                    '$rank',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+            child: isPlaying
+                ? Icon(
+                    Icons.graphic_eq,
+                    color: rankColor ?? colorScheme.onPrimary,
+                  )
+                : (rankIcon != null
+                      ? Icon(rankIcon, color: rankColor, size: 24)
+                      : Text(
+                          '$rank',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isCurrent
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurfaceVariant,
+                          ),
+                        )),
           ),
         ),
         title: Text(
           item.lyric.title.capitalize(),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
+            color: isCurrent ? colorScheme.primary : colorScheme.onSurface,
+          ),
         ),
         subtitle: Row(
           children: [
@@ -261,7 +305,7 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
             ),
             const SizedBox(width: 4),
             Text(
-              '${item.playCount} ${item.playCount == 1 ? 'vez' : 'vezes'}',
+              '${item.playCount}',
               style: TextStyle(
                 fontSize: 12,
                 color: colorScheme.primary,
@@ -270,29 +314,31 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
             ),
           ],
         ),
-        trailing: hasAudio
-            ? Consumer<AudioPlayerService>(
-                builder: (context, audioService, child) {
-                  final isThisPlaying =
-                      audioService.currentLyric?.id == item.lyric.id;
-                  final isPlaying = isThisPlaying && audioService.isPlaying;
-
-                  return IconButton(
-                    icon: Icon(
-                      isPlaying
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_filled,
-                      color: colorScheme.primary,
-                      size: 32,
-                    ),
-                    onPressed: () => audioService.play(item.lyric),
-                  );
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasAudio)
+              IconButton(
+                icon: Icon(
+                  isCurrent && isPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_filled,
+                  color: colorScheme.primary,
+                ),
+                onPressed: () {
+                  if (isCurrent && isPlaying) {
+                    audioService.pause();
+                  } else {
+                    audioService.play(item.lyric);
+                  }
                 },
-              )
-            : Icon(
-                Icons.music_off_rounded,
-                color: colorScheme.onSurfaceVariant,
               ),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
         onTap: () {
           Navigator.push(
             context,
