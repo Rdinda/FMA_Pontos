@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 import '../models/lyric.dart';
 import 'db_helper.dart';
@@ -56,6 +57,7 @@ class SyncRepository with ChangeNotifier {
       final unsyncedCategories = await _dbHelper.getUnsyncedCategories();
       for (var cat in unsyncedCategories) {
         if (cat.isDeleted) {
+          // Changed to Soft Delete in Supabase Service
           await _supabaseService.deleteCategory(cat.id);
           await _dbHelper.hardDeleteCategory(cat.id);
         } else {
@@ -67,11 +69,8 @@ class SyncRepository with ChangeNotifier {
       final unsyncedLyrics = await _dbHelper.getUnsyncedLyrics();
       for (var lyric in unsyncedLyrics) {
         if (lyric.isDeleted) {
-          // Assuming SupabaseService has or we access client
-          await _supabaseService.client
-              .from('lyrics')
-              .delete()
-              .eq('id', lyric.id);
+          // Changed to Soft Delete in Supabase Service
+          await _supabaseService.deleteLyric(lyric.id);
           await _dbHelper.hardDeleteLyric(lyric.id);
         } else {
           await _supabaseService.upsertLyric(lyric);
@@ -79,36 +78,53 @@ class SyncRepository with ChangeNotifier {
         }
       }
 
-      // 2. PULL Changes
-      final cloudCategories = await _supabaseService.fetchCategories();
-      final cloudCategoryIds = cloudCategories.map((c) => c.id).toSet();
+      // 2. PULL Changes (Incremental)
+      final prefs = await SharedPreferences.getInstance();
+      final lastSyncStr = prefs.getString('last_sync_timestamp');
+      final lastSync = lastSyncStr != null ? DateTime.parse(lastSyncStr) : null;
+
+      final cloudCategories = await _supabaseService.fetchCategories(
+        since: lastSync,
+      );
+      // Removed "Delete local synced items not in cloud" logic because we are now doing incremental sync
+      // and we rely on 'isDeleted' flag from cloud to handle deletions.
 
       // Upsert cloud items
       for (var cat in cloudCategories) {
-        final localCat = Category(
-          id: cat.id,
-          name: cat.name,
-          code: cat.code,
-          updatedAt: cat.updatedAt,
-          isSynced: true,
-          isDeleted: false,
-        );
-        await _dbHelper.upsertCategory(localCat);
-      }
-
-      // Delete local synced items not in cloud (Handle server wipe)
-      final localSyncedCats = await _dbHelper.getSyncedCategories();
-      for (var local in localSyncedCats) {
-        if (!cloudCategoryIds.contains(local.id)) {
-          await _dbHelper.hardDeleteCategory(local.id);
+        if (cat.isDeleted) {
+          await _dbHelper.hardDeleteCategory(cat.id);
+        } else {
+          final localCat = Category(
+            id: cat.id,
+            name: cat.name,
+            code: cat.code,
+            updatedAt: cat.updatedAt,
+            isSynced: true,
+            isDeleted: false,
+          );
+          await _dbHelper.upsertCategory(localCat);
         }
       }
 
-      final cloudLyrics = await _supabaseService.fetchLyrics();
-      final cloudLyricIds = cloudLyrics.map((l) => l.id).toSet();
+      final cloudLyrics = await _supabaseService.fetchLyrics(since: lastSync);
 
       // Upsert cloud items
       for (var lyric in cloudLyrics) {
+        if (lyric.isDeleted) {
+          // Handle deletion
+          if (lyric.audioUrl != null) {
+            // Optionally delete audio file? We don't have local path in cloud model.
+            // We need to look up local DB.
+            final local = await _dbHelper.getLyricById(lyric.id);
+            if (local != null && local.localAudioPath != null) {
+              final file = File(local.localAudioPath!);
+              if (await file.exists()) await file.delete();
+            }
+          }
+          await _dbHelper.hardDeleteLyric(lyric.id);
+          continue;
+        }
+
         // Check if we already have this lyric and preserve local path if exists
         // Actually, dbHelper.upsertLyric replaces. We should check if we need to preserve something or if the cloud one has new data.
         // For audio path, the Cloud doesn't know about local paths. So we should probably merge or handle path persistence.
@@ -160,21 +176,11 @@ class SyncRepository with ChangeNotifier {
         await _dbHelper.upsertLyric(localLyric);
       }
 
-      // Delete local synced items not in cloud
-      final localSyncedLyrics = await _dbHelper.getSyncedLyrics();
-      for (var local in localSyncedLyrics) {
-        if (!cloudLyricIds.contains(local.id)) {
-          // Also delete local audio file if exists?
-          // Yes, good practice to clean up style.
-          if (local.localAudioPath != null) {
-            final file = File(local.localAudioPath!);
-            if (await file.exists()) {
-              await file.delete();
-            }
-          }
-          await _dbHelper.hardDeleteLyric(local.id);
-        }
-      }
+      // Save new sync timestamp
+      await prefs.setString(
+        'last_sync_timestamp',
+        DateTime.now().toIso8601String(),
+      );
 
       // 3. Download Missing Audios
       await _downloadMissingAudios();

@@ -196,7 +196,7 @@ CREATE TABLE lyrics (
       'lyrics',
       where: 'category_id = ? AND is_deleted = 0',
       whereArgs: [categoryId],
-      orderBy: 'title ASC',
+      orderBy: 'sequence_number ASC',
     );
     return result.map((json) => Lyric.fromMap(json)).toList();
   }

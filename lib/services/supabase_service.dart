@@ -9,8 +9,12 @@ class SupabaseService {
 
   // --- Categories ---
 
-  Future<List<Category>> fetchCategories() async {
-    final response = await client.from('categories').select();
+  Future<List<Category>> fetchCategories({DateTime? since}) async {
+    var query = client.from('categories').select();
+    if (since != null) {
+      query = query.gt('updated_at', since.toIso8601String());
+    }
+    final response = await query;
     return (response as List).map((json) => Category.fromMap(json)).toList();
   }
 
@@ -19,21 +23,24 @@ class SupabaseService {
   }
 
   Future<void> deleteCategory(String id) async {
-    // Delete related songs first to avoid FK issues (if any, though schema didn't explicit FK on songs)
-    // Delete playlists pointing to this category?
-    try {
-      await client.from('categories').delete().eq('id', id);
-    } catch (e) {
-      // If delete fails, it might be due to FK constraints (like playlists)
-      // We log it but locally we might still have issues
-      rethrow;
-    }
+    // Soft delete implementation: Update is_deleted = true
+    await client
+        .from('categories')
+        .update({
+          'is_deleted': true,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', id);
   }
 
   // --- Lyrics ---
 
-  Future<List<Lyric>> fetchLyrics() async {
-    final response = await client.from('lyrics').select();
+  Future<List<Lyric>> fetchLyrics({DateTime? since}) async {
+    var query = client.from('lyrics').select();
+    if (since != null) {
+      query = query.gt('updated_at', since.toIso8601String());
+    }
+    final response = await query;
     return (response as List).map((json) => Lyric.fromMap(json)).toList();
   }
 
@@ -42,7 +49,13 @@ class SupabaseService {
   }
 
   Future<void> deleteLyric(String id) async {
-    await client.from('lyrics').delete().eq('id', id);
+    await client
+        .from('lyrics')
+        .update({
+          'is_deleted': true,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', id);
   }
 
   // --- Storage ---
