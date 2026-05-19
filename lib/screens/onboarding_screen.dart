@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen.dart';
 import 'onboarding_widgets.dart';
+import 'privacy_policy_screen.dart';
 import '../utils/snackbar_utils.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -49,6 +50,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_completed', true);
+    await prefs.setString(
+      'privacy_policy_version',
+      PrivacyPolicyScreen.policyVersion,
+    );
 
     if (!mounted) return;
 

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="metrics">
+  <meta name="reversa-producer-agent" content="reversa-docs-analyst">
+  <meta name="reversa-template" content="metricas">
+  <title>Métricas | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="assets/css/docs.css">
+  
+  <script src="assets/vendor/highcharts.js"></script>
+  <script src="assets/vendor/highcharts-treemap.js"></script>
+  <script src="assets/vendor/highcharts-sankey.js"></script>
+    
+</head>
+<body data-page-id="metricas" data-visual-style="sober">
+  <header class="site-header">
+    <a href="index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Métricas</h1>
+    
+    <p class="lead">Dashboard de LOC, complexidade e dependências.</p>
+    <div class="charts-grid">
+      <div id="chart-treemap" class="chart-box"></div>
+      <div id="chart-bars" class="chart-box"></div>
+      <div id="chart-sankey" class="chart-box chart-wide"></div>
+    </div>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+  <script>
+  (function(){
+    const M = window.RV_DATA.metrics || {};
+    if (!window.Highcharts) {
+      document.querySelector('.charts-grid').innerHTML = '<p class="warn">Highcharts indisponível. Rode o Publisher com rede.</p>';
+      return;
+    }
+  Highcharts.setOptions({ chart: { backgroundColor: '#1a1d23' }, title: { style: { color: '#e8eaed' } } });
+  if (M.treemap_loc_by_folder) {
+    Highcharts.chart('chart-treemap', {
+      chart: { type: 'treemap' },
+      title: { text: 'LOC por pasta' },
+      series: [{ type: 'treemap', layoutAlgorithm: 'squarified', data: M.treemap_loc_by_folder.map(r => ({ name: r.folder, value: r.loc })) }]
+    });
+  }
+  if (M.top_complexity) {
+    Highcharts.chart('chart-bars', {
+      chart: { type: 'bar' },
+      title: { text: 'Top complexidade' },
+      xAxis: { categories: M.top_complexity.map(x => x.module), labels: { style: { color: '#9aa0a6' } } },
+      yAxis: { title: { text: 'LOC' }, labels: { style: { color: '#9aa0a6' } } },
+      series: [{ name: 'LOC', data: M.top_complexity.map(x => x.loc), color: '#5c7cfa' }]
+    });
+  }
+  if (M.sankey_nodes && M.sankey_links) {
+    Highcharts.chart('chart-sankey', {
+      title: { text: 'Dependências entre módulos' },
+      series: [{ keys: ['from','to','weight'], type: 'sankey', data: M.sankey_links.map(l => [l.from, l.to, 1]), nodes: M.sankey_nodes.map(n => ({ id: n.id, name: n.id })) }]
+    });
+  }
+  })();
+  </script>
+    
+</body>
+</html>

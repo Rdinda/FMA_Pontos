@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T12:00:00Z",
+  "totalLoc": 22762,
+  "moduleCount": 11,
+  "treemap_loc_by_folder": [
+    {"folder": "supabase", "loc": 14548, "modules": 1},
+    {"folder": "lib/screens", "loc": 3824, "modules": 1},
+    {"folder": "lib/services", "loc": 1918, "modules": 1},
+    {"folder": "lib/widgets", "loc": 807, "modules": 1},
+    {"folder": "ios", "loc": 719, "modules": 1},
+    {"folder": "lib/models", "loc": 271, "modules": 1},
+    {"folder": "android", "loc": 252, "modules": 1},
+    {"folder": "lib", "loc": 180, "modules": 1},
+    {"folder": ".github/workflows", "loc": 97, "modules": 1},
+    {"folder": "lib/providers", "loc": 86, "modules": 1},
+    {"folder": "lib/utils", "loc": 60, "modules": 1}
+  ],
+  "top_complexity": [
+    {"id": "supabase-data", "name": "supabase-data", "complexity": "high", "complexityScore": 3, "loc": 14548},
+    {"id": "screens", "name": "screens", "complexity": "high", "complexityScore": 3, "loc": 3824},
+    {"id": "services", "name": "services", "complexity": "high", "complexityScore": 3, "loc": 1918},
+    {"id": "widgets", "name": "widgets", "complexity": "medium", "complexityScore": 2, "loc": 807},
+    {"id": "platform-ios", "name": "platform-ios", "complexity": "medium", "complexityScore": 2, "loc": 719},
+    {"id": "models", "name": "models", "complexity": "medium", "complexityScore": 2, "loc": 271},
+    {"id": "platform-android", "name": "platform-android", "complexity": "medium", "complexityScore": 2, "loc": 252},
+    {"id": "app-bootstrap", "name": "app-bootstrap", "complexity": "medium", "complexityScore": 2, "loc": 180}
+  ],
+  "histogram_loc": {
+    "bins": [0, 100, 500, 1000, 2000, 5000, 20000],
+    "counts": [3, 3, 2, 1, 1, 1],
+    "labels": ["≤100", "101–500", "501–1000", "1001–2000", "2001–5000", "5001–20000", ">20000"]
+  },
+  "sankey_nodes": [
+    {"id": "app-bootstrap"},
+    {"id": "screens"},
+    {"id": "services"},
+    {"id": "models"},
+    {"id": "widgets"},
+    {"id": "providers"},
+    {"id": "utils"},
+    {"id": "supabase-data"},
+    {"id": "platform-android"},
+    {"id": "platform-ios"},
+    {"id": "release-pipeline"}
+  ],
+  "sankey_links": [
+    {"source": "app-bootstrap", "target": "services", "value": 180},
+    {"source": "app-bootstrap", "target": "providers", "value": 180},
+    {"source": "app-bootstrap", "target": "screens", "value": 180},
+    {"source": "screens", "target": "services", "value": 3824},
+    {"source": "screens", "target": "models", "value": 3824},
+    {"source": "screens", "target": "widgets", "value": 3824},
+    {"source": "screens", "target": "utils", "value": 3824},
+    {"source": "services", "target": "models", "value": 1918},
+    {"source": "services", "target": "supabase-data", "value": 1918},
+    {"source": "services", "target": "platform-android", "value": 1918},
+    {"source": "services", "target": "platform-ios", "value": 1918},
+    {"source": "widgets", "target": "services", "value": 807},
+    {"source": "widgets", "target": "providers", "value": 807},
+    {"source": "widgets", "target": "screens", "value": 807},
+    {"source": "platform-android", "target": "release-pipeline", "value": 252},
+    {"source": "release-pipeline", "target": "platform-android", "value": 97},
+    {"source": "release-pipeline", "target": "app-bootstrap", "value": 97}
+  ],
+  "language_distribution": [
+    {"language": "dart", "modules": 7, "loc": 7146},
+    {"language": "sql", "modules": 1, "loc": 14548},
+    {"language": "swift", "modules": 1, "loc": 719},
+    {"language": "kotlin", "modules": 1, "loc": 252},
+    {"language": "yaml", "modules": 1, "loc": 97}
+  ]
+}

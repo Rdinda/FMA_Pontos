@@ -1,0 +1,192 @@
+{
+  "generated_at": "2026-05-18T22:49:45-03:00",
+  "project_root": "C:\\Users\\rdinda\\Documents\\GitHub\\FMA_Pontos",
+  "languages": [
+    {
+      "name": "Dart",
+      "extensions": [
+        ".dart"
+      ],
+      "file_count": 33
+    },
+    {
+      "name": "SQL",
+      "extensions": [
+        ".sql"
+      ],
+      "file_count": 8
+    },
+    {
+      "name": "Kotlin",
+      "extensions": [
+        ".kt",
+        ".kts"
+      ],
+      "file_count": 4
+    },
+    {
+      "name": "Swift",
+      "extensions": [
+        ".swift"
+      ],
+      "file_count": 2
+    },
+    {
+      "name": "PowerShell",
+      "extensions": [
+        ".ps1"
+      ],
+      "file_count": 2
+    },
+    {
+      "name": "YAML",
+      "extensions": [
+        ".yaml",
+        ".yml"
+      ],
+      "file_count": 4
+    }
+  ],
+  "primary_language": "Dart",
+  "frameworks": [
+    {
+      "name": "Flutter",
+      "version": "SDK; CI uses 3.38.5",
+      "source": "pubspec.yaml, .github/workflows/release-app.yml"
+    },
+    {
+      "name": "Supabase Flutter",
+      "version": "^2.8.2",
+      "source": "pubspec.yaml"
+    },
+    {
+      "name": "Provider",
+      "version": "^6.1.2",
+      "source": "pubspec.yaml"
+    },
+    {
+      "name": "sqflite",
+      "version": "^2.4.1",
+      "source": "pubspec.yaml"
+    },
+    {
+      "name": "audio_service",
+      "version": "^0.18.18",
+      "source": "pubspec.yaml"
+    },
+    {
+      "name": "audioplayers",
+      "version": "^6.0.0",
+      "source": "pubspec.yaml"
+    },
+    {
+      "name": "youtube_player_flutter",
+      "version": "^9.1.3",
+      "source": "pubspec.yaml"
+    },
+    {
+      "name": "google_sign_in",
+      "version": "6.2.1",
+      "source": "pubspec.yaml"
+    }
+  ],
+  "package_manager": "pub",
+  "entry_points": [
+    {
+      "path": "lib/main.dart",
+      "type": "app_entry"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/fmapontos/app/MainActivity.kt",
+      "type": "android_entry"
+    },
+    {
+      "path": "ios/Runner/AppDelegate.swift",
+      "type": "ios_entry"
+    },
+    {
+      "path": "run-dev.ps1",
+      "type": "dev_script"
+    },
+    {
+      "path": "up-version.ps1",
+      "type": "release_script"
+    }
+  ],
+  "config_files": [
+    ".env.example",
+    "analysis_options.yaml",
+    "devtools_options.yaml",
+    "pubspec.yaml",
+    "pubspec.lock",
+    "supabase/config.toml",
+    "android/build.gradle.kts",
+    "android/app/build.gradle.kts",
+    "android/gradle.properties",
+    "android/key.properties.example",
+    "ios/Runner/Info.plist",
+    "ios/Flutter/Debug.xcconfig",
+    "ios/Flutter/Release.xcconfig"
+  ],
+  "ci_cd": [
+    ".github/workflows/release-app.yml"
+  ],
+  "docker": {},
+  "database_hints": [
+    {
+      "path": "supabase/supabase_schema.sql",
+      "type": "sql_schema"
+    },
+    {
+      "path": "supabase/migrations/",
+      "type": "migrations_dir"
+    },
+    {
+      "path": "supabase/seed.sql",
+      "type": "seed_sql"
+    },
+    {
+      "path": "base/seed_letras.json",
+      "type": "seed_json"
+    },
+    {
+      "path": "lib/services/db_helper.dart",
+      "type": "sqlite_helper"
+    }
+  ],
+  "test_framework": "flutter_test",
+  "test_file_count": 1,
+  "modules": [
+    "app-bootstrap",
+    "screens",
+    "services",
+    "models",
+    "widgets",
+    "providers",
+    "utils",
+    "supabase-data",
+    "platform-android",
+    "platform-ios",
+    "release-pipeline"
+  ],
+  "total_files": 122,
+  "organization_suggestion": {
+    "granularity": "feature",
+    "rationale": "O código Flutter está organizado por camadas técnicas e não há roteamento centralizado ou pastas de domínio dominantes; specs por feature devem refletir melhor o comportamento do app.",
+    "signals": [],
+    "features": [
+      "acervo-categorias",
+      "busca",
+      "favoritos",
+      "visualizacao-letra",
+      "edicao-letra",
+      "reproducao-audio",
+      "reproducao-youtube",
+      "sincronizacao-offline",
+      "autenticacao",
+      "administracao",
+      "estatisticas-mais-tocadas",
+      "onboarding"
+    ]
+  }
+}

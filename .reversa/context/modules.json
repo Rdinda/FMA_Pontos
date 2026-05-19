@@ -1,0 +1,200 @@
+{
+  "generated_at": "2026-05-19T01:56:25Z",
+  "modules": [
+    {
+      "name": "app-bootstrap",
+      "path": "lib/main.dart",
+      "purpose": "Inicializar Supabase, áudio, providers, tema, localização e tela inicial do Flutter.",
+      "primary_files": ["lib/main.dart"],
+      "functions": [
+        {"name": "main", "file": "lib/main.dart", "params": [], "returns": "Future<void>", "confidence": "confirmed"},
+        {"name": "MyApp.build", "file": "lib/main.dart", "params": ["BuildContext context"], "returns": "Widget", "confidence": "confirmed"}
+      ],
+      "entities": [],
+      "business_rules": [
+        {"description": "SUPABASE_URL e SUPABASE_ANON_KEY precisam existir via --dart-define antes de renderizar o app.", "location": "lib/main.dart", "confidence": "confirmed"}
+      ],
+      "dependencies": ["services", "providers", "screens"],
+      "algorithms": ["Inicialização sequencial Supabase -> AudioService -> Provider tree -> MaterialApp"],
+      "complexity": "medium"
+    },
+    {
+      "name": "screens",
+      "path": "lib/screens",
+      "purpose": "Implementar fluxos de UI para splash, onboarding, home, categorias, letras, busca, favoritos, mais tocados e administração.",
+      "primary_files": ["lib/screens/splash_screen.dart", "lib/screens/home_screen.dart", "lib/screens/category_screen.dart", "lib/screens/lyric_form_screen.dart", "lib/screens/lyric_view_screen.dart", "lib/screens/admin_screen.dart"],
+      "functions": [
+        {"name": "SplashScreen._checkPermissionsAndNavigate", "file": "lib/screens/splash_screen.dart", "params": [], "returns": "Future<void>", "confidence": "confirmed"},
+        {"name": "HomeScreen._onTabTapped", "file": "lib/screens/home_screen.dart", "params": ["int index"], "returns": "void", "confidence": "confirmed"},
+        {"name": "LyricFormScreen._save", "file": "lib/screens/lyric_form_screen.dart", "params": [], "returns": "Future<void>", "confidence": "confirmed"},
+        {"name": "LyricViewScreen._initYoutubePlayer", "file": "lib/screens/lyric_view_screen.dart", "params": [], "returns": "void", "confidence": "confirmed"}
+      ],
+      "entities": [
+        {"name": "LyricWithCategory", "fields": [{"name": "lyric", "type": "Lyric", "required": true}, {"name": "categoryName", "type": "String", "required": true}, {"name": "categoryCode", "type": "String", "required": true}], "confidence": "confirmed"}
+      ],
+      "business_rules": [
+        {"description": "Onboarding só termina após aceite da política de privacidade.", "location": "lib/screens/onboarding_screen.dart", "confidence": "confirmed"},
+        {"description": "Link de YouTube inválido bloqueia salvamento da letra.", "location": "lib/screens/lyric_form_screen.dart", "confidence": "confirmed"},
+        {"description": "Ações de criação/edição/exclusão dependem das permissões expostas por AuthService.", "location": "lib/screens/home_screen.dart, lib/screens/category_screen.dart, lib/screens/lyric_view_screen.dart", "confidence": "confirmed"}
+      ],
+      "dependencies": ["services", "models", "widgets", "utils"],
+      "algorithms": ["Navegação imperativa por índices de bottom navigation", "Conversão de JSON legado de conteúdo para texto plano", "Seleção exclusiva entre player de áudio e player YouTube"],
+      "complexity": "high"
+    },
+    {
+      "name": "services",
+      "path": "lib/services",
+      "purpose": "Fornecer persistência, sincronização, autenticação, armazenamento de mídia, player, estatísticas, favoritos, administração e atualização.",
+      "primary_files": ["lib/services/db_helper.dart", "lib/services/sync_repository.dart", "lib/services/auth_service.dart", "lib/services/audio_player_service.dart", "lib/services/supabase_service.dart", "lib/services/play_stats_service.dart", "lib/services/favorites_service.dart", "lib/services/admin_service.dart", "lib/services/update_service.dart"],
+      "functions": [
+        {"name": "SyncRepository.syncData", "file": "lib/services/sync_repository.dart", "params": [], "returns": "Future<void>", "confidence": "confirmed"},
+        {"name": "DatabaseHelper._upgradeDB", "file": "lib/services/db_helper.dart", "params": ["Database db", "int oldVersion", "int newVersion"], "returns": "Future", "confidence": "confirmed"},
+        {"name": "AuthService.hasRole", "file": "lib/services/auth_service.dart", "params": ["String requiredRole"], "returns": "bool", "confidence": "confirmed"},
+        {"name": "AudioPlayerService.playAll", "file": "lib/services/audio_player_service.dart", "params": ["List<Lyric> lyrics"], "returns": "Future<void>", "confidence": "confirmed"},
+        {"name": "UpdateService._compareVersions", "file": "lib/services/update_service.dart", "params": ["String current", "String latest"], "returns": "bool", "confidence": "confirmed"}
+      ],
+      "entities": [
+        {"name": "LyricPlayStats", "fields": [{"name": "lyricId", "type": "String", "required": true}, {"name": "playCount", "type": "int", "required": true}, {"name": "lastPlayedAt", "type": "DateTime?", "required": false}], "confidence": "confirmed"},
+        {"name": "UpdateInfo", "fields": [{"name": "version", "type": "String", "required": true}, {"name": "url", "type": "String", "required": true}, {"name": "changelog", "type": "String", "required": true}, {"name": "hasUpdate", "type": "bool", "required": true}], "confidence": "confirmed"}
+      ],
+      "business_rules": [
+        {"description": "Sincronização não inicia se já estiver rodando ou se estiver offline.", "location": "lib/services/sync_repository.dart", "confidence": "confirmed"},
+        {"description": "Reprodução prioriza áudio local sobre URL remota.", "location": "lib/services/audio_player_service.dart", "confidence": "confirmed"},
+        {"description": "Nome de arquivo de áudio é sanitizado antes do upload.", "location": "lib/services/supabase_service.dart", "confidence": "confirmed"}
+      ],
+      "dependencies": ["models", "supabase-data", "platform-android", "platform-ios"],
+      "algorithms": ["Push/pull incremental", "Download sequencial com progresso", "Fallback manual de contador de plays", "Comparação semântica simples de versão"],
+      "complexity": "high"
+    },
+    {
+      "name": "models",
+      "path": "lib/models",
+      "purpose": "Definir entidades de domínio e seus mapeamentos para SQLite/Supabase/UI.",
+      "primary_files": ["lib/models/category.dart", "lib/models/lyric.dart", "lib/models/user_info.dart", "lib/models/audit_log.dart"],
+      "functions": [
+        {"name": "Category.toMap", "file": "lib/models/category.dart", "params": [], "returns": "Map<String,dynamic>", "confidence": "confirmed"},
+        {"name": "Lyric.fromMap", "file": "lib/models/lyric.dart", "params": ["Map<String,dynamic> map"], "returns": "Lyric", "confidence": "confirmed"}
+      ],
+      "entities": [
+        {"name": "Category", "fields": [{"name": "id", "type": "String", "required": true}, {"name": "name", "type": "String", "required": true}, {"name": "code", "type": "String", "required": true}], "confidence": "confirmed"},
+        {"name": "Lyric", "fields": [{"name": "id", "type": "String", "required": true}, {"name": "categoryId", "type": "String", "required": true}, {"name": "title", "type": "String", "required": true}, {"name": "content", "type": "String", "required": true}], "confidence": "confirmed"},
+        {"name": "UserInfo", "fields": [{"name": "id", "type": "String", "required": true}, {"name": "email", "type": "String", "required": true}, {"name": "role", "type": "String", "required": true}], "confidence": "confirmed"},
+        {"name": "AuditLog", "fields": [{"name": "id", "type": "String", "required": true}, {"name": "tableName", "type": "String", "required": true}, {"name": "action", "type": "String", "required": true}], "confidence": "confirmed"}
+      ],
+      "business_rules": [
+        {"description": "Campos ausentes em mapas recebem fallback seguro para string vazia, data atual ou defaults.", "location": "lib/models/*.dart", "confidence": "confirmed"}
+      ],
+      "dependencies": [],
+      "algorithms": ["Serialização/deserialização entre camelCase e snake_case"],
+      "complexity": "medium"
+    },
+    {
+      "name": "widgets",
+      "path": "lib/widgets",
+      "purpose": "Componentes reutilizáveis para player persistente, skeleton loading e informações do app/conta.",
+      "primary_files": ["lib/widgets/category_player_widget.dart", "lib/widgets/skeleton_widget.dart", "lib/widgets/app_info_bottom_sheet.dart"],
+      "functions": [
+        {"name": "CategoryPlayerWidget.build", "file": "lib/widgets/category_player_widget.dart", "params": ["BuildContext context"], "returns": "Widget", "confidence": "confirmed"},
+        {"name": "showAppInfoBottomSheet", "file": "lib/widgets/app_info_bottom_sheet.dart", "params": ["BuildContext context"], "returns": "Future<void>", "confidence": "confirmed"}
+      ],
+      "entities": [],
+      "business_rules": [
+        {"description": "Player de categoria só aparece/interage conforme estado de AudioPlayerService.", "location": "lib/widgets/category_player_widget.dart", "confidence": "confirmed"}
+      ],
+      "dependencies": ["services", "providers", "screens"],
+      "algorithms": ["Animação shimmer/skeleton via AnimationController", "Formatação mm:ss de duração"],
+      "complexity": "medium"
+    },
+    {
+      "name": "providers",
+      "path": "lib/providers",
+      "purpose": "Gerenciar estado global de tema e persistir preferência local.",
+      "primary_files": ["lib/providers/theme_provider.dart"],
+      "functions": [
+        {"name": "ThemeProvider.cycleTheme", "file": "lib/providers/theme_provider.dart", "params": [], "returns": "Future<void>", "confidence": "confirmed"}
+      ],
+      "entities": [],
+      "business_rules": [
+        {"description": "Tema alterna em ciclo system -> light -> dark -> system.", "location": "lib/providers/theme_provider.dart", "confidence": "confirmed"}
+      ],
+      "dependencies": [],
+      "algorithms": ["Persistência de ThemeMode.index em SharedPreferences"],
+      "complexity": "low"
+    },
+    {
+      "name": "utils",
+      "path": "lib/utils",
+      "purpose": "Fornecer utilitários simples de UI e string.",
+      "primary_files": ["lib/utils/snackbar_utils.dart", "lib/utils/string_extensions.dart"],
+      "functions": [
+        {"name": "SnackbarUtils.show", "file": "lib/utils/snackbar_utils.dart", "params": ["BuildContext context", "String message", "bool isError", "SnackBarAction? action"], "returns": "void", "confidence": "confirmed"},
+        {"name": "StringExtension.capitalize", "file": "lib/utils/string_extensions.dart", "params": [], "returns": "String", "confidence": "confirmed"}
+      ],
+      "entities": [],
+      "business_rules": [],
+      "dependencies": [],
+      "algorithms": ["Snackbar remove a atual antes de exibir a nova", "Capitalização simples do primeiro caractere"],
+      "complexity": "low"
+    },
+    {
+      "name": "supabase-data",
+      "path": "supabase",
+      "purpose": "Definir schema remoto, políticas RLS, storage de áudio, seeds e migrations.",
+      "primary_files": ["supabase/supabase_schema.sql", "supabase/seed.sql", "supabase/migrations/20260114120000_add_prefix_and_sequence.sql"],
+      "functions": [],
+      "entities": [
+        {"name": "categories", "fields": [{"name": "id", "type": "uuid/text", "required": true}, {"name": "name", "type": "text", "required": true}, {"name": "code", "type": "text", "required": true}], "confidence": "confirmed"},
+        {"name": "lyrics", "fields": [{"name": "id", "type": "uuid/text", "required": true}, {"name": "category_id", "type": "uuid/text", "required": true}, {"name": "title", "type": "text", "required": true}], "confidence": "confirmed"},
+        {"name": "user_roles", "fields": [{"name": "id", "type": "uuid/text", "required": true}, {"name": "email", "type": "text", "required": true}, {"name": "role", "type": "text", "required": true}], "confidence": "confirmed"},
+        {"name": "lyric_play_stats", "fields": [{"name": "lyric_id", "type": "uuid/text", "required": true}, {"name": "play_count", "type": "integer", "required": true}], "confidence": "confirmed"}
+      ],
+      "business_rules": [
+        {"description": "Storage de áudio aceita MP3 e usa roles para upload/update/delete.", "location": "supabase/supabase_schema.sql", "confidence": "confirmed"}
+      ],
+      "dependencies": [],
+      "algorithms": ["RLS e policies por role", "Migrations datadas para YouTube e sequence_number"],
+      "complexity": "high"
+    },
+    {
+      "name": "platform-android",
+      "path": "android",
+      "purpose": "Configurar host Android, build Gradle, assinatura e recursos nativos.",
+      "primary_files": ["android/app/build.gradle.kts", "android/settings.gradle.kts", "android/app/src/main/AndroidManifest.xml", "android/app/src/main/kotlin/com/fmapontos/app/MainActivity.kt"],
+      "functions": [],
+      "entities": [],
+      "business_rules": [
+        {"description": "Release pode usar keystore via android/key.properties quando disponível.", "location": "android/app/build.gradle.kts, android/key.properties.example", "confidence": "inferred"}
+      ],
+      "dependencies": ["release-pipeline"],
+      "algorithms": [],
+      "complexity": "medium"
+    },
+    {
+      "name": "platform-ios",
+      "path": "ios",
+      "purpose": "Configurar host iOS, Info.plist, assets e workspace Xcode do app Flutter.",
+      "primary_files": ["ios/Runner/AppDelegate.swift", "ios/Runner/Info.plist", "ios/Flutter/Debug.xcconfig", "ios/Flutter/Release.xcconfig"],
+      "functions": [],
+      "entities": [],
+      "business_rules": [],
+      "dependencies": [],
+      "algorithms": [],
+      "complexity": "medium"
+    },
+    {
+      "name": "release-pipeline",
+      "path": ".github/workflows",
+      "purpose": "Compilar APK release assinado em tags e publicar artefato no GitHub Releases.",
+      "primary_files": [".github/workflows/release-app.yml", "run-dev.ps1", "up-version.ps1"],
+      "functions": [],
+      "entities": [],
+      "business_rules": [
+        {"description": "Workflow roda apenas em push de tags v*.", "location": ".github/workflows/release-app.yml", "confidence": "confirmed"},
+        {"description": "Build release exige secrets SUPABASE_URL e SUPABASE_ANON_KEY.", "location": ".github/workflows/release-app.yml", "confidence": "confirmed"}
+      ],
+      "dependencies": ["platform-android", "app-bootstrap"],
+      "algorithms": ["Cache Flutter/Pub/Gradle", "Decodificação opcional de keystore", "Renomeação e publicação de APK"],
+      "complexity": "medium"
+    }
+  ]
+}

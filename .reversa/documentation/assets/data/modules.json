@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T12:00:00Z",
+  "modules": [
+    {
+      "id": "app-bootstrap",
+      "name": "app-bootstrap",
+      "folder": "lib",
+      "loc": 180,
+      "complexity": "medium",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "screens",
+      "name": "screens",
+      "folder": "lib/screens",
+      "loc": 3824,
+      "complexity": "high",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "services",
+      "name": "services",
+      "folder": "lib/services",
+      "loc": 1918,
+      "complexity": "high",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "models",
+      "name": "models",
+      "folder": "lib/models",
+      "loc": 271,
+      "complexity": "medium",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "widgets",
+      "name": "widgets",
+      "folder": "lib/widgets",
+      "loc": 807,
+      "complexity": "medium",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "providers",
+      "name": "providers",
+      "folder": "lib/providers",
+      "loc": 86,
+      "complexity": "low",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "utils",
+      "name": "utils",
+      "folder": "lib/utils",
+      "loc": 60,
+      "complexity": "low",
+      "type": "code",
+      "language": "dart"
+    },
+    {
+      "id": "supabase-data",
+      "name": "supabase-data",
+      "folder": "supabase",
+      "loc": 14548,
+      "complexity": "high",
+      "type": "code",
+      "language": "sql"
+    },
+    {
+      "id": "platform-android",
+      "name": "platform-android",
+      "folder": "android",
+      "loc": 252,
+      "complexity": "medium",
+      "type": "code",
+      "language": "kotlin"
+    },
+    {
+      "id": "platform-ios",
+      "name": "platform-ios",
+      "folder": "ios",
+      "loc": 719,
+      "complexity": "medium",
+      "type": "code",
+      "language": "swift"
+    },
+    {
+      "id": "release-pipeline",
+      "name": "release-pipeline",
+      "folder": ".github/workflows",
+      "loc": 97,
+      "complexity": "medium",
+      "type": "code",
+      "language": "yaml"
+    }
+  ]
+}

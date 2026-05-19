@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T12:00:00Z",
+  "features": [
+    {
+      "id": "acervo-categorias",
+      "title": "Acervo e Categorias",
+      "summary": "Listagem, criação, edição, exclusão lógica e navegação de categorias do acervo de pontos, com SQLite local e sync Supabase."
+    },
+    {
+      "id": "administracao",
+      "title": "Administração",
+      "summary": "Área admin para gestão de user_roles e consulta de audit_logs, acessível apenas a usuários com role admin."
+    },
+    {
+      "id": "autenticacao",
+      "title": "Autenticação",
+      "summary": "Sessão Supabase anônima ou Google, RBAC em user_roles, verificadores de permissão e atualização de role em tempo real."
+    },
+    {
+      "id": "busca",
+      "title": "Busca",
+      "summary": "Busca local de letras por título ou conteúdo no SQLite sincronizado, sem chamada remota direta."
+    },
+    {
+      "id": "edicao-letra",
+      "title": "Edição de Letra",
+      "summary": "Criação, edição, remoção, validação de YouTube e anexação de áudio de pontos via formulário offline-first."
+    },
+    {
+      "id": "estatisticas-mais-tocados",
+      "title": "Estatísticas / Mais Tocados",
+      "summary": "Ranking global de reproduções com lyric_play_stats no Supabase e metadados de letras no SQLite local."
+    },
+    {
+      "id": "favoritos",
+      "title": "Favoritos",
+      "summary": "Marcação local de letras como favoritas na chave favorite_lyrics, sem autenticação nem sync remoto."
+    },
+    {
+      "id": "onboarding-privacidade",
+      "title": "Onboarding e Privacidade",
+      "summary": "Fluxo inicial de 3 páginas com aceite obrigatório da política de privacidade e versionamento do consentimento."
+    },
+    {
+      "id": "release-update",
+      "title": "Release e Atualização",
+      "summary": "Checagem de novas versões Android via GitHub Releases API e diálogo na Home para download do APK."
+    },
+    {
+      "id": "reproducao-audio",
+      "title": "Reprodução de Áudio",
+      "summary": "Playback de MP3 local ou remoto, playlists, player compacto e integração com audio_service e estatísticas."
+    },
+    {
+      "id": "reproducao-youtube",
+      "title": "Reprodução YouTube",
+      "summary": "Vídeo YouTube embutido na visualização da letra, com exclusividade mútua em relação ao player de áudio."
+    },
+    {
+      "id": "sincronizacao-offline",
+      "title": "Sincronização Offline",
+      "summary": "Estratégia offline-first com fila is_synced, push/pull incremental, soft delete e download de áudios."
+    },
+    {
+      "id": "visualizacao-letra",
+      "title": "Visualização de Letra",
+      "summary": "Tela de detalhe com conteúdo, referência de categoria, áudio, YouTube, favoritos e ações editoriais RBAC."
+    }
+  ]
+}

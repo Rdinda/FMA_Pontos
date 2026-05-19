@@ -103,3 +103,6 @@ keystore.base64.txt
 # Environment files (contain secrets)
 .env
 !.env.example
+# Reversa
+.reversa/config.user.toml
+_reversa_sdd/

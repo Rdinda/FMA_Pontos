@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="diagram">
+  <meta name="reversa-producer-agent" content="reversa-docs-mapper">
+  <meta name="reversa-template" content="modulos">
+  <title>Mapa de Módulos | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="assets/css/docs.css">
+  <script src="assets/vendor/d3.v7.min.js"></script>
+</head>
+<body data-page-id="modulos" data-visual-style="sober">
+  <header class="site-header">
+    <a href="index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Mapa de Módulos</h1>
+    
+    <p class="lead">Grafo force-directed de dependências entre módulos.</p>
+    <div id="graph" class="viz-wrap"></div>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+  <script>
+  (function(){
+    const mods = (window.RV_DATA.modules && window.RV_DATA.modules.modules) || [];
+    const edges = (window.RV_DATA.deps && window.RV_DATA.deps.edges) || [];
+    const el = document.getElementById('graph');
+    if (!window.d3 || !mods.length) { el.innerHTML = '<p class="warn">D3 ou dados indisponíveis.</p>'; return; }
+    const w = el.clientWidth || 1100, h = 560;
+    const nodes = mods.map(m => ({ id: m.id, name: m.name, loc: m.loc }));
+    const links = edges.map(e => ({ source: e.source, target: e.target }));
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
+    const sim = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(90))
+      .force('charge', d3.forceManyBody().strength(-280))
+      .force('center', d3.forceCenter(w/2, h/2));
+    const link = svg.append('g').selectAll('line').data(links).join('line').attr('stroke', '#5c7cfa').attr('stroke-opacity', 0.5);
+    const node = svg.append('g').selectAll('circle').data(nodes).join('circle')
+      .attr('r', d => 6 + Math.sqrt(d.loc || 1) / 8)
+      .attr('fill', '#e8eaed');
+    const label = svg.append('g').selectAll('text').data(nodes).join('text')
+      .text(d => d.id).attr('font-size', 10).attr('fill', '#9aa0a6');
+    sim.on('tick', () => {
+      link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+      node.attr('cx', d => d.x).attr('cy', d => d.y);
+      label.attr('x', d => d.x + 8).attr('y', d => d.y + 4);
+    });
+  })();
+  </script>
+    
+</body>
+</html>

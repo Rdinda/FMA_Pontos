@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T12:00:00Z",
+  "terms": [
+    {
+      "id": "ponto-letra",
+      "term": "Ponto / Letra",
+      "definition": "Registro textual de um ponto cantado de Umbanda, opcionalmente com áudio MP3 e link de vídeo YouTube."
+    },
+    {
+      "id": "categoria",
+      "term": "Categoria",
+      "definition": "Agrupamento de pontos por linha, orixá ou outra taxonomia do acervo; possui nome e código curto único."
+    },
+    {
+      "id": "codigo-categoria",
+      "term": "Código da categoria",
+      "definition": "Prefixo curto (ex.: OX) usado com sequence_number para referências legíveis como OX01."
+    },
+    {
+      "id": "sequence-number",
+      "term": "Sequência da letra",
+      "definition": "Número ordinal da letra dentro da categoria, atribuído como MAX(sequence_number)+1 ao criar."
+    },
+    {
+      "id": "sincronizacao",
+      "term": "Sincronização",
+      "definition": "Ciclo offline-first: PUSH de alterações locais, PULL incremental por updated_at e download de MP3s ausentes."
+    },
+    {
+      "id": "soft-delete",
+      "term": "Soft delete",
+      "definition": "Exclusão lógica via is_deleted=1 e is_synced=0, propagada ao Supabase antes do hard delete local."
+    },
+    {
+      "id": "sync-repository",
+      "term": "SyncRepository",
+      "definition": "Fachada única de CRUD de categorias e letras; delega SQLite a DatabaseHelper e remoto a SupabaseService."
+    },
+    {
+      "id": "offline-first",
+      "term": "Offline-first",
+      "definition": "SQLite (lyrics_v4.db) como fonte operacional imediata; Supabase sincroniza quando há conectividade."
+    },
+    {
+      "id": "rbac",
+      "term": "RBAC",
+      "definition": "Controle de acesso por papéis user, moderator e admin em user_roles, com policies RLS no Postgres."
+    },
+    {
+      "id": "usuario-anonimo",
+      "term": "Usuário anônimo",
+      "definition": "Sessão Supabase sem Google; pode consultar o acervo mas não criar, editar ou excluir conteúdo."
+    },
+    {
+      "id": "moderador",
+      "term": "Moderador",
+      "definition": "Papel que adiciona e edita categorias e letras, sem permissão de exclusão."
+    },
+    {
+      "id": "admin",
+      "term": "Admin",
+      "definition": "Papel com exclusão de conteúdo e acesso à área administrativa de usuários e audit_logs."
+    },
+    {
+      "id": "favorito",
+      "term": "Favorito (Gostei)",
+      "definition": "Marcação local em SharedPreferences (favorite_lyrics); não sincroniza com o backend."
+    },
+    {
+      "id": "mais-tocados",
+      "term": "Mais tocados",
+      "definition": "Ranking remoto em lyric_play_stats, incrementado ao iniciar reprodução de áudio via PlayStatsService."
+    },
+    {
+      "id": "rls",
+      "term": "RLS",
+      "definition": "Row Level Security no Supabase Postgres; restringe leitura/escrita por role e usuário autenticado."
+    },
+    {
+      "id": "is-synced",
+      "term": "is_synced",
+      "definition": "Flag SQLite que indica se a mutação local já foi propagada com sucesso ao Supabase."
+    },
+    {
+      "id": "last-sync-timestamp",
+      "term": "last_sync_timestamp",
+      "definition": "Cursor incremental em SharedPreferences; PULL busca registros com updated_at maior que esse valor."
+    },
+    {
+      "id": "audio-player-service",
+      "term": "AudioPlayerService",
+      "definition": "Serviço de reprodução que prioriza localAudioPath sobre audioUrl e integra audio_service/audioplayers."
+    },
+    {
+      "id": "youtube-link",
+      "term": "YouTube link",
+      "definition": "URL opcional por letra; convertida em videoId para YoutubePlayerController na tela de detalhe."
+    },
+    {
+      "id": "provider",
+      "term": "Provider",
+      "definition": "Padrão ChangeNotifier (Provider) para estado global de tema, auth, sync e player no app Flutter."
+    }
+  ]
+}

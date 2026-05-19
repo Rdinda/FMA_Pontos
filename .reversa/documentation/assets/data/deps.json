@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T12:00:00Z",
+  "edges": [
+    {"source": "app-bootstrap", "target": "services"},
+    {"source": "app-bootstrap", "target": "providers"},
+    {"source": "app-bootstrap", "target": "screens"},
+    {"source": "screens", "target": "services"},
+    {"source": "screens", "target": "models"},
+    {"source": "screens", "target": "widgets"},
+    {"source": "screens", "target": "utils"},
+    {"source": "services", "target": "models"},
+    {"source": "services", "target": "supabase-data"},
+    {"source": "services", "target": "platform-android"},
+    {"source": "services", "target": "platform-ios"},
+    {"source": "widgets", "target": "services"},
+    {"source": "widgets", "target": "providers"},
+    {"source": "widgets", "target": "screens"},
+    {"source": "platform-android", "target": "release-pipeline"},
+    {"source": "release-pipeline", "target": "platform-android"},
+    {"source": "release-pipeline", "target": "app-bootstrap"}
+  ],
+  "cycles": [
+    ["widgets", "screens"],
+    ["release-pipeline", "platform-android"]
+  ]
+}

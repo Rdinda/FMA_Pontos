@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="feature">
+  <meta name="reversa-producer-agent" content="reversa-docs-storyteller">
+  <meta name="reversa-template" content="feature-estatisticas-mais-tocados">
+  <title>Estatísticas / Mais Tocados | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="../assets/css/docs.css">
+  
+</head>
+<body data-page-id="features-estatisticas-mais-tocados" data-visual-style="sober">
+  <header class="site-header">
+    <a href="../index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Estatísticas / Mais Tocados</h1>
+    
+    <p class="lead">Ranking global de reproduções com lyric_play_stats no Supabase e metadados de letras no SQLite local.</p>
+    <div class='spec-body'><p>  — Esta unit cobre o ranking global de letras mais reproduzidas: contador remoto em Supabase (`lyric_play_stats`), incremento ao iniciar playback de áudio e tela **Mais Tocados** com lista ranqueada.  
+  — `PlayStatsService` centraliza RPC/fallback de incremento, consulta do top N e contagem por letra.  
+  — Metadados da letra (título, categoria) vêm do **SQLite local**; contagens vêm do **Supabase**.  
+  — Reprodução YouTube **não** incrementa estatísticas (apenas `AudioPlayerService`).  
+  — Tabela `lyric_play_stats` existe em produção (backup 2026-01-21).  
+  — RPC `increment_play_count` **não existe** no backup de produção; caminho efetivo é **fallback client-side** (`_incrementPlayCountFallback`). App tenta RPC primeiro e cai no fallback.  
+  — Migration proposta em `_reversa_sdd/supabase-extracted/increment_play_count-proposed.sql` para alinhar servidor.
+
+Referência: ADR 006 — `_reversa_sdd/adrs/006-favorites-play-stats.md`.</p></div>
+    <p><a href="../glossario.html">Glossário</a> · <a href="../modulos.html">Módulos</a></p>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+</body>
+</html>

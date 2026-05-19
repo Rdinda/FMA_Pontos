@@ -9,6 +9,16 @@ class SupabaseService {
 
   // --- Categories ---
 
+  Future<Category?> fetchCategoryById(String id) async {
+    final response = await client
+        .from('categories')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+    if (response == null) return null;
+    return Category.fromMap(response);
+  }
+
   Future<List<Category>> fetchCategories({DateTime? since}) async {
     var query = client.from('categories').select();
     if (since != null) {
@@ -34,6 +44,16 @@ class SupabaseService {
   }
 
   // --- Lyrics ---
+
+  Future<Lyric?> fetchLyricById(String id) async {
+    final response = await client
+        .from('lyrics')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+    if (response == null) return null;
+    return Lyric.fromMap(response);
+  }
 
   Future<List<Lyric>> fetchLyrics({DateTime? since}) async {
     var query = client.from('lyrics').select();

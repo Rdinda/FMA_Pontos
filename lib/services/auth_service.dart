@@ -40,7 +40,9 @@ class AuthService extends ChangeNotifier {
 
   // Sistema de Roles
   String _userRole = 'user';
+  bool _isActive = true;
   String get userRole => _userRole;
+  bool get isActive => _isActive;
 
   // Verificadores de permissão
   bool get canAddLyrics => !isAnonymous && hasRole('user');
@@ -83,10 +85,17 @@ class AuthService extends ChangeNotifier {
 
       // Buscar role do usuário quando logar
       if (_currentUser != null && !(_currentUser!.isAnonymous)) {
-        await _fetchUserRole();
+        final active = await _fetchUserRole();
+        if (!active) {
+          await signOut();
+          _error = 'Sua conta está desativada. Entre em contato com o administrador.';
+          notifyListeners();
+          return;
+        }
         _subscribeToRoleChanges();
       } else {
         _userRole = 'user';
+        _isActive = true;
       }
 
       notifyListeners();
@@ -94,6 +103,7 @@ class AuthService extends ChangeNotifier {
       if (event == AuthChangeEvent.signedOut) {
         debugPrint('[AuthService] User signed out');
         _userRole = 'user';
+        _isActive = true;
         _unsubscribeFromRoleChanges();
       }
     });
@@ -102,8 +112,13 @@ class AuthService extends ChangeNotifier {
     _currentUser = session?.user;
 
     if (_currentUser != null && !(_currentUser!.isAnonymous)) {
-      await _fetchUserRole();
-      _subscribeToRoleChanges();
+      final active = await _fetchUserRole();
+      if (!active) {
+        await signOut();
+        _error = 'Sua conta está desativada. Entre em contato com o administrador.';
+      } else {
+        _subscribeToRoleChanges();
+      }
     }
 
     _isInitialized = true;
@@ -114,27 +129,43 @@ class AuthService extends ChangeNotifier {
     );
   }
 
-  /// Busca a role do usuário no banco de dados
-  Future<void> _fetchUserRole() async {
+  /// Busca role e status ativo. Retorna false se conta desativada.
+  Future<bool> _fetchUserRole() async {
     try {
       final response = await _client
           .from('user_roles')
-          .select('role')
+          .select('role, is_active')
           .eq('id', _currentUser!.id)
           .maybeSingle();
 
       if (response != null) {
         _userRole = response['role'] as String;
-        debugPrint('[AuthService] User role: $_userRole');
-      } else {
-        // Usuário novo, criar registro com role padrão
-        _userRole = 'user';
-        await _createUserRole();
+        _isActive = response['is_active'] as bool? ?? true;
+        debugPrint('[AuthService] User role: $_userRole, active: $_isActive');
+        return _isActive;
       }
+
+      _userRole = 'user';
+      _isActive = true;
+      await _createUserRole();
+      return true;
     } catch (e) {
       debugPrint('[AuthService] Error fetching role: $e');
       _userRole = 'user';
+      _isActive = true;
+      return true;
     }
+  }
+
+  Future<bool> _ensureUserIsActive() async {
+    if (_currentUser == null || _currentUser!.isAnonymous) return true;
+    final active = await _fetchUserRole();
+    if (!active) {
+      _error = 'Sua conta está desativada. Entre em contato com o administrador.';
+      await signOut();
+      notifyListeners();
+    }
+    return active;
   }
 
   /// Cria registro de role para novo usuário
@@ -176,10 +207,23 @@ class AuthService extends ChangeNotifier {
               '[AuthService] Role change detected: ${payload.newRecord}',
             );
             final newRole = payload.newRecord['role'] as String;
-            if (_userRole != newRole) {
+            final newActive = payload.newRecord['is_active'] as bool? ?? true;
+            final roleChanged = _userRole != newRole;
+            final activeChanged = _isActive != newActive;
+            if (roleChanged) {
               _userRole = newRole;
               debugPrint('[AuthService] Role updated to: $_userRole');
+            }
+            if (activeChanged) {
+              _isActive = newActive;
+            }
+            if (roleChanged || activeChanged) {
               notifyListeners();
+            }
+            if (!_isActive) {
+              _error =
+                  'Sua conta foi desativada. Entre em contato com o administrador.';
+              signOut();
             }
           },
         )
@@ -285,6 +329,9 @@ class AuthService extends ChangeNotifier {
         debugPrint(
           '[AuthService] Google login successful: ${_currentUser!.email}',
         );
+        if (!await _ensureUserIsActive()) {
+          return false;
+        }
         return true;
       }
 

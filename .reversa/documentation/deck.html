@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="narrative">
+  <meta name="reversa-producer-agent" content="reversa-docs-storyteller">
+  <meta name="reversa-template" content="deck">
+  <title>Deck | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="assets/css/docs.css">
+  
+</head>
+<body data-page-id="deck" data-visual-style="sober">
+  <header class="site-header">
+    <a href="index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Deck</h1>
+    
+    <div class="deck-viewer"><section class="deck-slide active" data-i="0"><h2>FMA Pontos</h2><p>App Flutter offline-first para pontos e letras musicais/litúrgicas.</p></section><section class="deck-slide" data-i="1"><h2>Stack</h2><p>Flutter + SQLite + Supabase + Google OAuth + GitHub Releases.</p></section><section class="deck-slide" data-i="2"><h2>Módulos</h2><p>11 módulos mapeados: screens e services concentram a complexidade.</p></section><section class="deck-slide" data-i="3"><h2>Sync</h2><p>PUSH/PULL incremental com soft delete; merge por campo é regra alvo.</p></section><section class="deck-slide" data-i="4"><h2>Segurança</h2><p>RBAC user/moderator/admin; apenas logados escrevem no servidor.</p></section><section class="deck-slide" data-i="5"><h2>Próximo passo</h2><p>Explore features/, métricas e arquitetura 3D.</p></section></div>
+    <div class="deck-controls">
+      <button type="button" id="deck-prev">Anterior</button>
+      <span id="deck-indicator">1 / 6</span>
+      <button type="button" id="deck-next">Próximo</button>
+    </div>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+  <script>
+  (function(){
+    const slides = document.querySelectorAll('.deck-slide');
+    let i = 0;
+    function show(n) {
+      slides.forEach((s,j) => s.classList.toggle('active', j === n));
+      document.getElementById('deck-indicator').textContent = (n+1) + ' / ' + slides.length;
+    }
+    document.getElementById('deck-prev').onclick = () => { i = Math.max(0, i-1); show(i); };
+    document.getElementById('deck-next').onclick = () => { i = Math.min(slides.length-1, i+1); show(i); };
+    show(0);
+  })();
+  </script>
+    
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="feature">
+  <meta name="reversa-producer-agent" content="reversa-docs-storyteller">
+  <meta name="reversa-template" content="feature-autenticacao">
+  <title>Autenticação | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="../assets/css/docs.css">
+  
+</head>
+<body data-page-id="features-autenticacao" data-visual-style="sober">
+  <header class="site-header">
+    <a href="../index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Autenticação</h1>
+    
+    <p class="lead">Sessão Supabase anônima ou Google, RBAC em user_roles, verificadores de permissão e atualização de role em tempo real.</p>
+    <div class='spec-body'><p>  — Esta unit cobre identidade do usuário no app móvel Flutter: sessão Supabase (anônima ou Google), carregamento de papel RBAC em `user_roles`, verificadores de permissão consumidos pela UI e atualização em tempo real de role.  
+  — `AuthService` é um `ChangeNotifier` registrado em `main.dart` via `Provider`; telas consultam `isAnonymous`, `canAddLyrics`, `canEditLyrics`, etc.  
+  — Na abertura do app, `SplashScreen` chama `ensureAuthenticated()` para garantir sessão (anônima se necessário) antes de onboarding ou home.  
+  — Login Google é opcional, acionado pelo bottom sheet de informações (`showAppInfoBottomSheet`).  
+  — `upgradeToEmail` existe no serviço mas não é referenciado por nenhuma tela (funcionalidade latente).  
+  — Usuário com `is_active = false` **deve ter login bloqueado** (decisão stakeholder, Roberto 2026-05-20).  
+  — No legado, `AuthService` ainda não verifica `is_active` após fetch de role — gap de implementação.
+
+Referência: ADR 002 — `_reversa_sdd/adrs/002-rbac-google-admin.md`.</p></div>
+    <p><a href="../glossario.html">Glossário</a> · <a href="../modulos.html">Módulos</a></p>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="narrative">
+  <meta name="reversa-producer-agent" content="reversa-docs-storyteller">
+  <meta name="reversa-template" content="glossario">
+  <title>Glossário | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="assets/css/docs.css">
+  
+</head>
+<body data-page-id="glossario" data-visual-style="sober">
+  <header class="site-header">
+    <a href="index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Glossário</h1>
+    
+    <p class="lead">Conceitos do domínio FMA Pontos.</p>
+    <input type="search" id="gloss-search" placeholder="Buscar termo..." class="search-input">
+    <div id="gloss-list" class="gloss-list"></div>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+  <script>
+  (function(){
+    const items = (window.RV_DATA.glossary && window.RV_DATA.glossary.terms) || [];
+    const list = document.getElementById('gloss-list');
+    const input = document.getElementById('gloss-search');
+    function render(q) {
+      list.innerHTML = '';
+      const f = q ? items.filter(t => t.term.toLowerCase().includes(q) || t.definition.toLowerCase().includes(q)) : items;
+      f.forEach(t => {
+        const d = document.createElement('details');
+        d.className = 'gloss-item';
+        d.innerHTML = '<summary>' + t.term + '</summary><p>' + t.definition + '</p>';
+        list.appendChild(d);
+      });
+    }
+    input.addEventListener('input', () => render(input.value.toLowerCase()));
+    render('');
+  })();
+  </script>
+    
+</body>
+</html>

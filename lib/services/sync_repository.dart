@@ -8,6 +8,7 @@ import '../models/category.dart';
 import '../models/lyric.dart';
 import 'db_helper.dart';
 import 'supabase_service.dart';
+import 'sync_merge.dart';
 
 class SyncRepository with ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
@@ -53,30 +54,7 @@ class SyncRepository with ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. PUSH Changes
-      final unsyncedCategories = await _dbHelper.getUnsyncedCategories();
-      for (var cat in unsyncedCategories) {
-        if (cat.isDeleted) {
-          // Changed to Soft Delete in Supabase Service
-          await _supabaseService.deleteCategory(cat.id);
-          await _dbHelper.hardDeleteCategory(cat.id);
-        } else {
-          await _supabaseService.upsertCategory(cat);
-          await _dbHelper.markCategorySynced(cat.id);
-        }
-      }
-
-      final unsyncedLyrics = await _dbHelper.getUnsyncedLyrics();
-      for (var lyric in unsyncedLyrics) {
-        if (lyric.isDeleted) {
-          // Changed to Soft Delete in Supabase Service
-          await _supabaseService.deleteLyric(lyric.id);
-          await _dbHelper.hardDeleteLyric(lyric.id);
-        } else {
-          await _supabaseService.upsertLyric(lyric);
-          await _dbHelper.markLyricSynced(lyric.id);
-        }
-      }
+      await _pushPendingChanges();
 
       // 2. PULL Changes (Incremental)
       final prefs = await SharedPreferences.getInstance();
@@ -94,14 +72,20 @@ class SyncRepository with ChangeNotifier {
         if (cat.isDeleted) {
           await _dbHelper.hardDeleteCategory(cat.id);
         } else {
-          final localCat = Category(
-            id: cat.id,
-            name: cat.name,
-            code: cat.code,
-            updatedAt: cat.updatedAt,
-            isSynced: true,
-            isDeleted: false,
-          );
+          final existing = await _dbHelper.getCategory(cat.id);
+          Category localCat;
+          if (existing != null && !existing.isSynced) {
+            localCat = SyncMerge.mergeCategory(existing, cat);
+          } else {
+            localCat = Category(
+              id: cat.id,
+              name: cat.name,
+              code: cat.code,
+              updatedAt: cat.updatedAt,
+              isSynced: existing == null || existing.isSynced,
+              isDeleted: false,
+            );
+          }
           await _dbHelper.upsertCategory(localCat);
         }
       }
@@ -132,10 +116,7 @@ class SyncRepository with ChangeNotifier {
         // If we upsert, we overwrite local path with null! BAD.
         // FIX: Read existing local lyric first.
 
-        // Read existing local lyric first.
-        // Optimization: In real app we should have a more efficient query.
-        final allLocal = await _dbHelper.readAllLyrics();
-        final existing = allLocal.where((l) => l.id == lyric.id).firstOrNull;
+        final existing = await _dbHelper.getLyricById(lyric.id);
 
         String? preservedPath = existing?.localAudioPath;
 
@@ -160,21 +141,33 @@ class SyncRepository with ChangeNotifier {
           }
         }
 
-        final localLyric = Lyric(
-          id: lyric.id,
-          categoryId: lyric.categoryId,
-          title: lyric.title,
-          content: lyric.content,
-          updatedAt: lyric.updatedAt,
-          isSynced: true,
-          isDeleted: false,
-          audioUrl: lyric.audioUrl,
-          localAudioPath: preservedPath,
-          youtubeLink: lyric.youtubeLink,
-          sequenceNumber: lyric.sequenceNumber,
-        );
+        Lyric localLyric;
+        if (existing != null && !existing.isSynced) {
+          localLyric = SyncMerge.mergeLyric(
+            existing,
+            lyric,
+            preservedLocalAudioPath: preservedPath,
+          );
+        } else {
+          localLyric = Lyric(
+            id: lyric.id,
+            categoryId: lyric.categoryId,
+            title: lyric.title,
+            content: lyric.content,
+            updatedAt: lyric.updatedAt,
+            isSynced: existing == null || existing.isSynced,
+            isDeleted: false,
+            audioUrl: lyric.audioUrl,
+            localAudioPath: preservedPath,
+            youtubeLink: lyric.youtubeLink,
+            sequenceNumber: lyric.sequenceNumber,
+          );
+        }
         await _dbHelper.upsertLyric(localLyric);
       }
+
+      // Reenvia alterações produzidas por merge no PULL
+      await _pushPendingChanges();
 
       // Save new sync timestamp
       await prefs.setString(
@@ -189,6 +182,46 @@ class SyncRepository with ChangeNotifier {
     } finally {
       _isSyncing = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _pushPendingChanges() async {
+    final unsyncedCategories = await _dbHelper.getUnsyncedCategories();
+    for (var cat in unsyncedCategories) {
+      if (cat.isDeleted) {
+        await _supabaseService.deleteCategory(cat.id);
+        await _dbHelper.hardDeleteCategory(cat.id);
+      } else {
+        var toPush = cat;
+        final remote = await _supabaseService.fetchCategoryById(cat.id);
+        if (remote != null && !remote.isDeleted) {
+          toPush = SyncMerge.mergeCategory(cat, remote);
+          await _dbHelper.upsertCategory(toPush);
+        }
+        await _supabaseService.upsertCategory(toPush);
+        await _dbHelper.markCategorySynced(cat.id);
+      }
+    }
+
+    final unsyncedLyrics = await _dbHelper.getUnsyncedLyrics();
+    for (var lyric in unsyncedLyrics) {
+      if (lyric.isDeleted) {
+        await _supabaseService.deleteLyric(lyric.id);
+        await _dbHelper.hardDeleteLyric(lyric.id);
+      } else {
+        var toPush = lyric;
+        final remote = await _supabaseService.fetchLyricById(lyric.id);
+        if (remote != null && !remote.isDeleted) {
+          toPush = SyncMerge.mergeLyric(
+            lyric,
+            remote,
+            preservedLocalAudioPath: lyric.localAudioPath,
+          );
+          await _dbHelper.upsertLyric(toPush);
+        }
+        await _supabaseService.upsertLyric(toPush);
+        await _dbHelper.markLyricSynced(lyric.id);
+      }
     }
   }
 
@@ -315,61 +348,15 @@ class SyncRepository with ChangeNotifier {
   }
 
   Future<void> deleteLyric(String id) async {
-    // We need to know if there's audio to delete it from cloud storage
-    // But we only have ID. Let's try to find it in local DB first.
-    // Helper doesn't have getById.
-    // Let's implement a quick query here or assume we can ignore if not found?
-    // Better to be safe. I'll add getLyricById to DatabaseHelper.
-    // Wait, I can't modify DatabaseHelper in this step easily unless I do another tool call.
-    // I can do a raw query via dbHelper.database if exposed? No, it's a getter Future<Database>.
-
-    // Workaround: We will use `_dbHelper.readAllLyrics` and find? Too slow.
-    // Optimal: Add `getLyricById` to `DatabaseHelper`. I'll do that in next step.
-    // For now, let's just add the call to delete audio logic assuming we have the URL or can get it?
-    // Actually, I will pause this and update DatabaseHelper first.
-    // Wait, I am in a tool call for `sync_repository.dart`.
-    // I will try to implement the logic to delete audio IF I can get the URL.
-    // Since I cannot get the URL easily without a DB query, I will chain the tasks.
-
-    // Let's assume for this step I'm just adding the call to delete from supabase DB.
-    // The user wants audio deleted from storage.
-    // I need the lyric text/url.
-
-    // Strategy:
-    // 1. Fetch lyric from local DB.
-    // 2. If present and has audioUrl, delete from storage.
-    // 3. Delete from cloud DB (or soft delete).
-
-    // Since I can't read by ID yet, I will use `readAllLyrics` (inefficient but works for now as dataset is small-ish) OR I modify DB helper first.
-    // I will modify DB helper first. This tool call will be invalid if I don't write.
-    // I will make NO changes to this file in this step and switch to DB helper.
-    // Actually, I can just write the improved version now assuming `getLyricById` exists and then ADD it to db_helper in the NEXT step.
-    // No, that will cause analysis error until next step.
-
-    // Okay, I will use `_supabaseService.client` to select it from cloud before deleting?
-    // Yes, that works for online deletions!
-
     await _dbHelper.softDeleteLyric(id);
     notifyListeners();
     if (!_isOffline) {
-      try {
-        // Fetch lyric from cloud to get audio_url before deleting
-        final data = await _supabaseService.client
-            .from('lyrics')
-            .select('audio_url')
-            .eq('id', id)
-            .maybeSingle();
-
-        if (data != null && data['audio_url'] != null) {
-          await _supabaseService.deleteAudioByUrl(data['audio_url']);
-        }
-
-        await _supabaseService.client.from('lyrics').delete().eq('id', id);
-
-        await _dbHelper.hardDeleteLyric(id);
-      } catch (e) {
-        debugPrint("Failed to delete lyric cloud: $e");
-      }
+      _supabaseService
+          .deleteLyric(id)
+          .then((_) => _dbHelper.hardDeleteLyric(id))
+          .catchError((e) {
+            debugPrint("Failed to delete lyric cloud: $e");
+          });
     }
   }
 

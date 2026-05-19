@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
     id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email text NOT NULL,
     role text NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
+    is_active boolean NOT NULL DEFAULT true,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     updated_at timestamp with time zone NOT NULL DEFAULT now()
 );

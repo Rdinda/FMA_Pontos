@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T14:00:00Z",
+  "reversa": {
+    "version": "1.2.43"
+  },
+  "projectName": "FMA_Pontos",
+  "interview": {
+    "readerProfile": "novo_dev",
+    "depth": "full",
+    "visualStyle": "sober"
+  },
+  "seed": {
+    "hash": "sha256:9166119877915c1326691ea1959dc66a68580ce786ead859cd0257321f1f29dc",
+    "source": "project_name",
+    "explicitOverride": null
+  },
+  "knowledgeSources": {
+    "soul": false,
+    "chronicle": false,
+    "topology": true,
+    "sddSpecs": [
+      "acervo-categorias",
+      "administracao",
+      "autenticacao",
+      "busca",
+      "edicao-letra",
+      "estatisticas-mais-tocados",
+      "favoritos",
+      "onboarding-privacidade",
+      "release-update",
+      "reproducao-audio",
+      "reproducao-youtube",
+      "sincronizacao-offline",
+      "visualizacao-letra"
+    ],
+    "sourceCode": true
+  },
+  "pagesPlanned": [
+    "index.html",
+    "arquitetura.html",
+    "modulos.html",
+    "topologia.html",
+    "metricas.html",
+    "glossario.html",
+    "deck.html",
+    "features/acervo-categorias.html",
+    "features/administracao.html",
+    "features/autenticacao.html",
+    "features/busca.html",
+    "features/edicao-letra.html",
+    "features/estatisticas-mais-tocados.html",
+    "features/favoritos.html",
+    "features/onboarding-privacidade.html",
+    "features/release-update.html",
+    "features/reproducao-audio.html",
+    "features/reproducao-youtube.html",
+    "features/sincronizacao-offline.html",
+    "features/visualizacao-letra.html"
+  ],
+  "pagesOmitted": [
+    {
+      "page": "timeline.html",
+      "reason": "ausencia de .reversa/chronicle.md"
+    }
+  ]
+}

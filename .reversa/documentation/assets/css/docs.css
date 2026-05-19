@@ -1,0 +1,28 @@
+:root {
+  --bg: #0f1114; --panel: #1a1d23; --text: #e8eaed; --muted: #9aa0a6;
+  --accent: #5c7cfa; --border: #2d323b;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, Segoe UI, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+.site-header { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--panel); flex-wrap: wrap; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.site-nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+.site-nav a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.site-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+.lead { color: var(--muted); font-size: 1.05rem; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.viz-wrap, #graph, #city-canvas { width: 100%; max-width: 100%; background: var(--panel); border-radius: 8px; border: 1px solid var(--border); }
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.chart-box { min-height: 320px; background: var(--panel); border-radius: 8px; border: 1px solid var(--border); }
+.chart-wide { grid-column: 1 / -1; min-height: 380px; }
+.topo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.search-input { width: 100%; max-width: 400px; padding: 0.5rem; margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; }
+.gloss-item { margin-bottom: 0.5rem; }
+.deck-slide { display: none; min-height: 280px; }
+.deck-slide.active { display: block; }
+.deck-controls { margin-top: 1rem; display: flex; gap: 1rem; align-items: center; }
+.hero { text-align: center; padding: 2rem 0; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+.warn { color: #f39c12; }
+.site-footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
+@media (max-width: 768px) { .charts-grid, .topo-grid { grid-template-columns: 1fr; } }

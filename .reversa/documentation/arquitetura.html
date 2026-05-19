@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="diagram">
+  <meta name="reversa-producer-agent" content="reversa-docs-mapper">
+  <meta name="reversa-template" content="arquitetura">
+  <title>Arquitetura 3D | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="assets/css/docs.css">
+  
+  <script src="assets/vendor/three.min.js"></script>
+  <script src="assets/vendor/OrbitControls.js"></script>
+    
+</head>
+<body data-page-id="arquitetura" data-visual-style="sober">
+  <header class="site-header">
+    <a href="index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Arquitetura 3D</h1>
+    
+    <p class="lead">Code City: cada módulo é um prédio. Arraste para orbitar, scroll para zoom.</p>
+    <div class="viz-wrap"><canvas id="city-canvas" width="1200" height="640"></canvas></div>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+  <script>
+  (function(){
+    const mods = (window.RV_DATA && window.RV_DATA.modules && window.RV_DATA.modules.modules) || [];
+    const edges = (window.RV_DATA && window.RV_DATA.deps && window.RV_DATA.deps.edges) || [];
+    const canvas = document.getElementById('city-canvas');
+    if (!window.THREE || !mods.length) {
+      canvas.parentElement.innerHTML = '<p class="warn">Biblioteca Three.js ou dados indisponíveis.</p>';
+      return;
+    }
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f1114);
+    const camera = new THREE.PerspectiveCamera(55, canvas.clientWidth / 640, 0.1, 2000);
+    camera.position.set(40, 35, 50);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(canvas.clientWidth, 640);
+    const light = new THREE.DirectionalLight(0xffffff, 0.9);
+    light.position.set(30, 50, 20);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040, 0.6));
+    const maxLoc = Math.max(...mods.map(m => m.loc || 1));
+    const grid = Math.ceil(Math.sqrt(mods.length));
+    mods.forEach((m, i) => {
+      const h = 2 + (m.loc / maxLoc) * 18;
+      const cs = {low:1, medium:2, high:3};
+      const w = 2 + (cs[m.complexity] || 1) * 1.2;
+      const geo = new THREE.BoxGeometry(w, h, w);
+      const col = m.complexity === 'high' ? 0xe74c3c : m.complexity === 'medium' ? 0xf39c12 : 0x5c7cfa;
+      const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col }));
+      mesh.position.set((i % grid) * 6 - grid * 3, h / 2, Math.floor(i / grid) * 6 - grid * 3);
+      mesh.userData = m;
+      scene.add(mesh);
+    });
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+    animate();
+  })();
+  </script>
+    
+</body>
+</html>

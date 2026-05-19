@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
 import '../models/user_info.dart';
 import '../models/audit_log.dart';
 import '../services/admin_service.dart';
@@ -278,21 +280,40 @@ class _AdminScreenState extends State<AdminScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Administração'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.people), text: 'Usuários'),
-            Tab(icon: Icon(Icons.history), text: 'Logs'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildUsersTab(), _buildLogsTab()],
-      ),
+    return Consumer<AuthService>(
+      builder: (context, auth, _) {
+        if (!auth.isAdmin) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Administração')),
+            body: const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Acesso negado. Esta área é restrita a administradores.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Administração'),
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(icon: Icon(Icons.people), text: 'Usuários'),
+                Tab(icon: Icon(Icons.history), text: 'Logs'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [_buildUsersTab(), _buildLogsTab()],
+          ),
+        );
+      },
     );
   }
 

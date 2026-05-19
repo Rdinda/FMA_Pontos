@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T12:00:00Z",
+  "projectName": "FMA_Pontos",
+  "tagline": "Acervo digital offline-first de pontos e letras de Umbanda",
+  "sections": {
+    "Propósito": "Organizar, consultar e reproduzir pontos/letras de Umbanda em dispositivos móveis, com experiência offline-first e sincronização Supabase quando online.",
+    "Arquitetura": "App Flutter (Provider/ChangeNotifier) com SQLite local como fonte operacional e Supabase para auth, Postgres, storage de MP3 e estatísticas. Release Android via GitHub Actions em tags v*.",
+    "Entidades centrais": "Category (agrupamento com código), Lyric (título, conteúdo, áudio, YouTube, sequence_number), UserInfo/user_roles (RBAC), LyricPlayStats e AuditLog.",
+    "Fluxos principais": "Splash → onboarding/privacidade → Home com categorias; sync manual/automático; visualização com áudio ou YouTube; busca e favoritos locais; admin para papéis e logs.",
+    "Decisões fundadoras": "Offline-first com soft delete; sessão anônima para leitura; Google OAuth para escrita; distribuição Android por APK via GitHub Releases; política de privacidade versionada."
+  },
+  "concepts": [
+    {"term": "Ponto", "definition": "Letra ou ponto cantado do acervo espiritual catalogado no app."},
+    {"term": "Categoria", "definition": "Taxonomia que agrupa pontos e fornece o prefixo do código de referência."},
+    {"term": "Sincronização", "definition": "Orquestração PUSH/PULL entre SQLite e Supabase com cursor last_sync_timestamp."}
+  ]
+}

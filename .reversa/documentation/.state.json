@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "lastCheckpoint": "2026-05-19T04:22:54.954163+00:00",
+  "completedAgents": [
+    "reversa-docs-mapper",
+    "reversa-docs-analyst",
+    "reversa-docs-storyteller",
+    "reversa-docs-publisher"
+  ],
+  "pendingAgents": [],
+  "pagesGenerated": [
+    "arquitetura.html",
+    "deck.html",
+    "glossario.html",
+    "index.html",
+    "metricas.html",
+    "modulos.html",
+    "topologia.html",
+    "features/acervo-categorias.html",
+    "features/administracao.html",
+    "features/autenticacao.html",
+    "features/busca.html",
+    "features/edicao-letra.html",
+    "features/estatisticas-mais-tocados.html",
+    "features/favoritos.html",
+    "features/onboarding-privacidade.html",
+    "features/release-update.html",
+    "features/reproducao-audio.html",
+    "features/reproducao-youtube.html",
+    "features/sincronizacao-offline.html",
+    "features/visualizacao-letra.html"
+  ],
+  "pagesOmitted": [
+    {
+      "page": "timeline.html",
+      "reason": "ausencia de .reversa/chronicle.md"
+    }
+  ],
+  "cdnFallbackUsed": true,
+  "vendorMissing": [],
+  "pipelineDurationMs": 0,
+  "smokeTestFailed": false,
+  "smokeTestErrors": []
+}

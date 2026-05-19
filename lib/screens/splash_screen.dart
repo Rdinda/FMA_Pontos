@@ -8,6 +8,7 @@ import '../services/sync_repository.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -48,13 +49,16 @@ class _SplashScreenState extends State<SplashScreen> {
     await authService.ensureAuthenticated();
 
     final prefs = await SharedPreferences.getInstance();
-    final hasCompletedOnboarding =
-        prefs.getBool('onboarding_completed') ?? false;
+    final acceptedPolicyVersion =
+        prefs.getString('privacy_policy_version') ?? '';
+    final hasValidConsent =
+        (prefs.getBool('onboarding_completed') ?? false) &&
+        acceptedPolicyVersion == PrivacyPolicyScreen.policyVersion;
 
     if (!mounted) return;
 
     final nextScreen =
-        hasCompletedOnboarding ? const HomeScreen() : const OnboardingScreen();
+        hasValidConsent ? const HomeScreen() : const OnboardingScreen();
 
     Navigator.of(
       context,

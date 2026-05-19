@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="reversa-category" content="feature">
+  <meta name="reversa-producer-agent" content="reversa-docs-storyteller">
+  <meta name="reversa-template" content="feature-sincronizacao-offline">
+  <title>Sincronização Offline | FMA Pontos Docs</title>
+  <link rel="stylesheet" href="../assets/css/docs.css">
+  
+</head>
+<body data-page-id="features-sincronizacao-offline" data-visual-style="sober">
+  <header class="site-header">
+    <a href="../index.html" class="seal-link" aria-label="Início">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" width="32" height="32">
+  <rect width="32" height="32" fill="#1a1d23"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#5c7cfa" stroke-width="2"/>
+  <text x="32" y="36" text-anchor="middle" fill="#e8eaed" font-size="10" font-family="monospace">91661198</text>
+</svg>
+      
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <!-- NAV_LINKS -->
+    </nav>
+  </header>
+  <main class="site-main">
+    <h1>Sincronização Offline</h1>
+    
+    <p class="lead">Estratégia offline-first com fila is_synced, push/pull incremental, soft delete e download de áudios.</p>
+    <div class='spec-body'><p>  — Esta unit cobre a estratégia offline-first do app: persistência local em SQLite, fila de alterações não sincronizadas, push/pull incremental com Supabase, soft delete, download de áudios e detecção de conectividade.  
+  — `SyncRepository` é a fachada única para CRUD de categorias e letras consumida pelas telas; delega persistência a `DatabaseHelper` e remoto a `SupabaseService`.  
+  — O cursor incremental usa `SharedPreferences` → chave `last_sync_timestamp`.  
+  — Política de conflito definida pelo stakeholder: **merge por campo** quando edição local não sincronizada e alteração remota coexistem (validação Roberto, 2026-05-20).  
+  — O legado implementa last-write-wins implícito no PULL/PUSH; merge explícito **não está implementado** — é requisito alvo para reimplementação.
+
+Referência: ADR 001 — `_reversa_sdd/adrs/001-offline-first-sync-soft-delete.md`.</p></div>
+    <p><a href="../glossario.html">Glossário</a> · <a href="../modulos.html">Módulos</a></p>
+    
+  </main>
+  <footer class="site-footer">
+    <small>Gerado pelo Reversa Docs em 2026-05-19T04:22:54Z</small>
+  </footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/nav.js"></script>
+  
+</body>
+</html>
