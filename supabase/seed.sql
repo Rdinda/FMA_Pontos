@@ -1,26 +1,27 @@
 begin;
 
-insert into public.categories (id, name, updated_at) values
-('68be09dc-e73d-ff41-1589-220baaea442d', $catname0$Caboclos$catname0$, now()),
-('30923a92-0f1f-c859-b221-6f1ecffe0a6b', $catname1$Egunitá _ Oroiná$catname1$, now()),
-('bcaeffc1-057c-46a9-2d7c-49d0d4d97716', $catname2$Iansã$catname2$, now()),
-('a8f987ed-6b8e-a6d7-3d59-f1853ab2e8e5', $catname3$Iemanjá$catname3$, now()),
-('b92d98f8-159a-c815-271e-0c44a053ff02', $catname4$Logun Edé$catname4$, now()),
-('4f76dcef-433a-b1d1-b74b-cc24a54be4c6', $catname5$Nanã Buruquê$catname5$, now()),
-('fc694bba-8c71-f762-b0f3-705b93a5c8ad', $catname6$Obaluaiê$catname6$, now()),
-('733c52d2-4676-0982-e37c-e8ed27eb14cd', $catname7$Obá$catname7$, now()),
-('3aa816f2-5a7f-aaa2-ea9a-200a4f71cc6e', $catname8$Ogum$catname8$, now()),
-('4e5aeee6-7861-cac7-db20-4a43b8402230', $catname9$Oiá Tempo _ Logunã$catname9$, now()),
-('dd50b86b-6507-420e-115b-460ed55724c1', $catname10$Omulu$catname10$, now()),
-('e4df098d-ac14-6633-ded8-0d2ab271a4c6', $catname11$Ossain$catname11$, now()),
-('aac65700-2760-4f83-0702-b8009120587d', $catname12$Oxalá$catname12$, now()),
-('5ded97da-d6ce-c352-9ffe-80042e55c80d', $catname13$Oxossi$catname13$, now()),
-('845f426a-315f-16b0-d00a-60471b18abf6', $catname14$Oxum$catname14$, now()),
-('ff90bc57-689a-9af6-54b5-1c66af310ceb', $catname15$Oxumarê$catname15$, now()),
-('1133e4d7-5f35-9e21-9c76-9518b0c3488e', $catname16$Pretos Velhos$catname16$, now()),
-('654413a1-1c02-de9b-908d-abc47f2b8e6f', $catname17$Xangô$catname17$, now())
+insert into public.categories (id, name, code, updated_at) values
+('68be09dc-e73d-ff41-1589-220baaea442d', $catname0$Caboclos$catname0$, 'CA', now()),
+('30923a92-0f1f-c859-b221-6f1ecffe0a6b', $catname1$Egunitá _ Oroiná$catname1$, 'EG', now()),
+('bcaeffc1-057c-46a9-2d7c-49d0d4d97716', $catname2$Iansã$catname2$, 'IA', now()),
+('a8f987ed-6b8e-a6d7-3d59-f1853ab2e8e5', $catname3$Iemanjá$catname3$, 'IE', now()),
+('b92d98f8-159a-c815-271e-0c44a053ff02', $catname4$Logun Edé$catname4$, 'LO', now()),
+('4f76dcef-433a-b1d1-b74b-cc24a54be4c6', $catname5$Nanã Buruquê$catname5$, 'NA', now()),
+('fc694bba-8c71-f762-b0f3-705b93a5c8ad', $catname6$Obaluaiê$catname6$, 'OB', now()),
+('733c52d2-4676-0982-e37c-e8ed27eb14cd', $catname7$Obá$catname7$, 'OB1', now()),
+('3aa816f2-5a7f-aaa2-ea9a-200a4f71cc6e', $catname8$Ogum$catname8$, 'OG', now()),
+('4e5aeee6-7861-cac7-db20-4a43b8402230', $catname9$Oiá Tempo _ Logunã$catname9$, 'OI', now()),
+('dd50b86b-6507-420e-115b-460ed55724c1', $catname10$Omulu$catname10$, 'OM', now()),
+('e4df098d-ac14-6633-ded8-0d2ab271a4c6', $catname11$Ossain$catname11$, 'OS', now()),
+('aac65700-2760-4f83-0702-b8009120587d', $catname12$Oxalá$catname12$, 'OX', now()),
+('5ded97da-d6ce-c352-9ffe-80042e55c80d', $catname13$Oxossi$catname13$, 'OX1', now()),
+('845f426a-315f-16b0-d00a-60471b18abf6', $catname14$Oxum$catname14$, 'OX2', now()),
+('ff90bc57-689a-9af6-54b5-1c66af310ceb', $catname15$Oxumarê$catname15$, 'OX3', now()),
+('1133e4d7-5f35-9e21-9c76-9518b0c3488e', $catname16$Pretos Velhos$catname16$, 'PR', now()),
+('654413a1-1c02-de9b-908d-abc47f2b8e6f', $catname17$Xangô$catname17$, 'XA', now())
 on conflict (id) do update set
   name = excluded.name,
+  code = excluded.code,
   updated_at = excluded.updated_at;
 
 insert into public.lyrics (id, category_id, title, content, youtube_link, updated_at) values

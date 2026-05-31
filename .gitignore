@@ -102,3 +102,5 @@ keystore.base64.txt
 
 # Environment files (contain secrets)
 .env
+dart_defines.json
+screenshot.png

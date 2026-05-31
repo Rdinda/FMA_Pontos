@@ -31,12 +31,17 @@ if ([string]::IsNullOrEmpty($supabaseUrl) -or [string]::IsNullOrEmpty($supabaseK
     exit 1
 }
 
+Write-Host "Gerando dart_defines.json a partir do .env..." -ForegroundColor Green
+@{
+    SUPABASE_URL      = $supabaseUrl
+    SUPABASE_ANON_KEY = $supabaseKey
+} | ConvertTo-Json | Set-Content -Path "dart_defines.json" -Encoding utf8
+
 Write-Host "Iniciando app com credenciais do .env..." -ForegroundColor Green
 
 $flutterArgs = @(
     "run",
-    "--dart-define=SUPABASE_URL=$supabaseUrl",
-    "--dart-define=SUPABASE_ANON_KEY=$supabaseKey"
+    "--dart-define-from-file=dart_defines.json"
 )
 
 if ($Device) {
