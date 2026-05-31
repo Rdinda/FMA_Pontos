@@ -27,6 +27,10 @@
 | `HomeScreen._showAddCategoryDialog` | `()` | `void` | 🟢 UI de criação com auto-sugestão de código. |
 | `CategoryScreen._editCategory` | `()` | `void` | 🟢 UI de edição. |
 | `CategoryScreen._deleteCategory` | `()` | `void` | 🟢 Confirma e chama exclusão. |
+| `categoryArtworkPath` | `(Category)` | `String?` | 🟢 Resolve WebP em `assets/images/categories/`. |
+| `CategoryCard` | widget | UI | 🟢 Grid Home/AllCategories com arte ou gradiente. |
+| `AllCategoriesScreen` | tela | UI | 🟢 Lista completa; `StreamingScaffold` + refresh. |
+| `PlayStatsService.rankCategoriesByAccess` | `(categories, lyricsCountFor, limit)` | `Future<List<Category>>` | 🟢 Destaques na Home (default limit 4). |
 
 ### Dados
 

@@ -194,7 +194,7 @@ sequenceDiagram
 | Instância | `GoogleSignIn.instance` (singleton v7) | 🟢 |
 | Inicialização | `initialize(serverClientId: ...)` em `_init` | 🟢 |
 | Login interativo | `authenticate()` | 🟢 |
-| `serverClientId` | Web Client ID em `auth_service.dart` | 🟢 |
+| `serverClientId` | `GOOGLE_SERVER_CLIENT_ID` via `--dart-define` ou fallback em `auth_service.dart` | 🟢 |
 | Token Supabase | `idToken` via `googleUser.authentication` (getter) | 🟢 |
 
 ## RLS e Policies (`user_roles`)
@@ -212,7 +212,7 @@ sequenceDiagram
 | Item | Severidade | Notas |
 |------|------------|-------|
 | `upgradeToEmail` sem UI | 🟡 | API pronta, fluxo morto |
-| `serverClientId` hardcoded | 🟡 | Deveria vir de `--dart-define` em builds |
+| `GOOGLE_SERVER_CLIENT_ID` | 🟢 | `String.fromEnvironment` em `AuthService._init`; opcional em `.env` / `run-dev.ps1` → `dart_defines.json`; fallback Web Client ID no código |
 | Divergência UI vs RLS | 🟡 | Policies remotas podem mudar fora do repo |
 
 ## Contratos de Interface (`AuthService`)

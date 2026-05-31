@@ -72,8 +72,11 @@ class AuthService extends ChangeNotifier {
   Future<void> _init() async {
     try {
       await _googleSignIn.initialize(
-        serverClientId:
-            '971288561592-7422rneb4iv0ptem2hdlvsmd96pfsfi0.apps.googleusercontent.com',
+        serverClientId: const String.fromEnvironment(
+          'GOOGLE_SERVER_CLIENT_ID',
+          defaultValue:
+              '674450422802-j9vle9l5ufp90m0av0pph3reoup6eeqf.apps.googleusercontent.com',
+        ),
       );
     } catch (e) {
       debugPrint('[AuthService] Error initializing GoogleSignIn: $e');

@@ -1,10 +1,12 @@
-# Estatísticas / Mais Tocados — Design
+# Estatísticas / Mais Acessados — Design
+
+> **Delta 2026-05-31:** Métrica alterada de reprodução no player para **acesso à letra** (`LyricViewScreen.initState` → `incrementAccessCount`). Coluna `play_count` e RPC `increment_play_count` mantidas (semântica de acesso no app). `AudioPlayerService` não incrementa mais stats.
 
 ## Decisão Arquitetural
 
 🟢 **CONFIRMADO** — **Contador global remoto** em Postgres (Supabase), separado de favoritos locais.  
 🟢 **CONFIRMADO** — **Híbrido read path**: stats remotos + join com SQLite para título/categoria.  
-🟢 **CONFIRMADO** — Incremento **fire-and-forget** desacoplado do pipeline de áudio.  
+🟢 **CONFIRMADO** — Incremento **fire-and-forget** ao abrir visualização da letra (`LyricViewScreen`).  
 🟢 **CONFIRMADO** — Estratégia **RPC-first com fallback** para compatibilidade com deploys sem função SQL.  
 🔴 **LACUNA** — RPC `increment_play_count` deve ser criada no Supabase para atomicidade e segurança.
 
@@ -15,8 +17,9 @@
 | `PlayStatsService` | Service | Incremento e queries de stats | `SupabaseClient`, `DatabaseHelper` |
 | `LyricPlayStats` | Model | Linha de stats remota | — |
 | `LyricWithStats` | DTO | Lyric + playCount + categoryName | `Lyric` |
-| `AudioPlayerService` | Produtor de eventos | Chama incremento ao tocar | `PlayStatsService` |
+| `LyricViewScreen` | Produtor de eventos | Chama incremento ao abrir letra | `PlayStatsService` |
 | `TopPlayedScreen` | UI | Ranking, play all, refresh | `PlayStatsService`, `AudioPlayerService` |
+| `HomeScreen` | UI hub | Preview “Mais Acessados” (8 itens) + destaque categorias | `PlayStatsService`, `SyncRepository` |
 | `CategoryPlayerWidget` | UI rodapé | Player compacto na tela | `Provider` |
 
 ## Schema Remoto — `lyric_play_stats`
@@ -77,6 +80,17 @@ flowchart TD
 | `_playCurrentTrack()` | Sempre ao iniciar faixa da playlist |
 
 🟢 **CONFIRMADO** — `play()` no ramo `else` (toggle pause/resume) **não** incrementa.
+
+## Destaques na Home — `rankCategoriesByAccess`
+
+🟢 **CONFIRMADO** — `HomeScreen._loadHomeData()` chama `rankCategoriesByAccess(categories, lyricsCountFor: repo.getLyricsCount, limit: 4)`.
+
+| Prioridade | Critério de ordenação |
+|------------|----------------------|
+| 1 | Soma de `play_count` por `category_id` em `lyric_play_stats` (via `getPlayCountByCategory`) |
+| 2 (fallback) | Contagem de letras por categoria quando não há dados de reprodução |
+
+🟢 **CONFIRMADO** — Preview “Mais Tocados” na mesma tela usa `getTopPlayed(limit: 8)`.
 
 ## Fluxo `getTopPlayed`
 

@@ -6,7 +6,7 @@ Gerado pelo Reversa Scout em 2026-05-18T22:49:45-03:00.
 
 - Package: `pontos`
 - Descrição: `Um aplicativo para gerenciar pontos de umbanda`
-- Versão: `1.0.19`
+- Versão: `1.0.20`
 - Publicação: `publish_to: none`
 - SDK Dart: `^3.10.4`
 - Gerenciador de pacotes: `pub`
@@ -39,6 +39,7 @@ Gerado pelo Reversa Scout em 2026-05-18T22:49:45-03:00.
 | `google_sign_in` | `^7.2.0` | Login Google (API v7 — singleton + `authenticate`). |
 | `shared_preferences` | `^2.5.4` | Preferências locais. |
 | `youtube_player_flutter` | `^9.1.3` | Player de vídeos YouTube. |
+| `toastification` | `^3.2.0` | Toasts overlay (substitui `ScaffoldMessenger` em `SnackbarUtils`). |
 
 ## Dependências de Desenvolvimento
 

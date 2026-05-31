@@ -19,7 +19,7 @@ Esta política descreve como o aplicativo FMA Pontos ("Aplicativo"), de Roberto 
 • Login com Google: nome, e-mail e foto de perfil fornecidos pelo provedor OAuth.
 • Uso do acervo: pontos, letras, categorias, favoritos e preferências salvas no dispositivo (SQLite).
 • Sincronização: os dados do acervo que você cria ou edita são replicados no Supabase (PostgreSQL) quando há conexão.
-• Estatísticas de reprodução: contagem de execuções de letras (tabela lyric_play_stats), quando você ouve um ponto com áudio.
+• Estatísticas de acesso: contagem de visualizações de letras (tabela lyric_play_stats), quando você abre um ponto.
 • Sessão anônima: antes do login, o Supabase pode criar uma sessão anônima apenas para leitura do acervo público; escritas exigem login.
 
 Não coletamos CPF, telefone, localização GPS nem dados de marketing nesta versão do app.

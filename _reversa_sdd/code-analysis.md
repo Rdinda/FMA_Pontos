@@ -18,9 +18,9 @@ Gerado pelo Reversa Archaeologist em 2026-05-19T01:56:25Z.
 | `screens` | `lib/screens/*.dart` | Alta | Implementa fluxos de navegação, CRUD, mídia, onboarding, busca, favoritos, top tocados e admin. |
 | `services` | `lib/services/*.dart` | Alta | Concentra persistência, sincronização, autenticação, áudio, storage, estatísticas e release check. |
 | `models` | `lib/models/*.dart` | Média | Define entidades e serialização para SQLite/Supabase. |
-| `widgets` | `lib/widgets/*.dart` | Média | Componentes compartilhados: player fixo, skeletons e bottom sheet de conta/app. |
+| `widgets` | `lib/widgets/*.dart`, `lib/widgets/streaming/*.dart` | Média-Alta | Player, streaming scaffold/nav/cards, bottom sheet de conta. |
 | `providers` | `lib/providers/theme_provider.dart` | Baixa | Estado de tema com persistência local. |
-| `utils` | `lib/utils/*.dart` | Baixa | Snackbar padronizado e extensão de string. |
+| `utils` | `lib/utils/*.dart` | Baixa-Média | Toasts (`toastification`), `category_artwork`, extensão de string. |
 | `supabase-data` | `supabase/*.sql`, `supabase/migrations/*.sql` | Alta | Schema remoto, RLS, storage, seeds e migrations. |
 | `platform-android` | `android/**` | Média | Configuração/build Android e host Flutter. |
 | `platform-ios` | `ios/**` | Média | Configuração/host iOS. |
@@ -39,9 +39,11 @@ Fluxo:
 3. Inicializa `Supabase`.
 4. Cria `AudioPlayerService` via `AudioService.init`.
 5. Injeta `ThemeProvider`, `AuthService`, `SyncRepository`, `FavoritesService` e `AudioPlayerService`.
-6. Renderiza `MaterialApp` em pt-BR com `theme`/`darkTheme` de `AppTheme.buildLightTheme()` / `AppTheme.buildDarkTheme()`, `themeMode` do `ThemeProvider` (default `ThemeMode.dark` sem prefs), `SplashScreen` inicial.
+6. Envolve `MaterialApp` com `ToastificationWrapper` (toasts inferiores, margem 110dp).
+7. Renderiza `MaterialApp` em pt-BR com `theme`/`darkTheme` de `AppTheme`, `themeMode` do `ThemeProvider` (default dark), `SplashScreen` inicial.
 
-🟢 **CONFIRMADO** — Re-extração 2026-05-31: tema global em `lib/theme/app_theme.dart` + tokens `lib/theme/app_colors.dart`; `main.dart` não define mais `ThemeData` inline nem roxo `#6200EE`.
+🟢 **CONFIRMADO** — Re-extração 2026-05-31: tema em `app_theme.dart` + `app_colors.dart`; `streaming_tokens.dart` para layout.
+🟢 **CONFIRMADO** — Re-extração 2026-05-31 (rodada 2): feedback via `toastification`; Home com grid `CategoryCard` e `AllCategoriesScreen`.
 
 ### Splash, Autenticação e Onboarding
 

@@ -1,47 +1,65 @@
-# Tela: Buscar Letras
+# Tela: Buscar
 
 | Campo | Valor |
 |-------|-------|
 | Arquivo | `lib/screens/search_screen.dart` |
-| Estado capturado | Vazio (inicial) |
+| Scaffold | `StreamingScaffold` (`navContext: standard`) |
+| Estado capturado | Browse categorias (sem query) |
+| Screenshot | 2026-05-31 |
 | Confiança | 🟢 CONFIRMADO |
 
 ## Propósito
 
-Busca global por título ou trecho de letra em todas as categorias.
+Busca global por nome/trecho de letra e descoberta por categorias (grid ilustrado estilo Spotify Browse).
 
 ## App bar
 
 | Elemento | Descrição |
 |----------|-----------|
-| Leading | Voltar |
-| Título | “Buscar Letras” |
+| Leading | `arrow_back_rounded` verde |
+| Título app | **“FMA Pontos”** verde bold, central |
+| Título página | **“Buscar”** — `headlineMedium` branco, abaixo da app bar |
 
-## Formulário de busca
+## Campo de busca
 
-| Campo | Tipo | Placeholder | Obrigatório |
-|-------|------|-------------|-------------|
-| Query | `TextField` | “Pesquisar por nome ou trecho” | Não (vazio = sem resultados) |
+| Propriedade | Valor |
+|-------------|-------|
+| Componente | `StreamingSearchField` |
+| Placeholder | **“O que você quer ouvir?”** |
+| Ícone | Lupa à esquerda |
+| Fundo | `surfaceContainerHighest` pill full-width |
 
-- Ícone lupa à esquerda
-- Busca disparada por submit / botão (não visível no screenshot vazio)
+## Conteúdo — browse (sem query)
 
-## Área de resultados
+| Elemento | Descrição |
+|----------|-----------|
+| Seção | **“Navegar por todas as categorias”** |
+| Layout | Grid 2 colunas |
+| Card | `BentoCategoryCard` — ilustração + label canto inferior |
+| Categorias visíveis | Caboclos · Egunitá _ Oroiná · Iansã · Iemanjá (+ parcial na dobra) |
+| Tap | `CategoryScreen(category)` |
+
+## Conteúdo — com query (código, não capturado)
 
 | Estado | Visual |
 |--------|--------|
-| Inicial (screenshot) | Branco vazio abaixo do campo |
-| Loading | Indicador + “Buscando…” |
-| Com resultados | Lista similar à CategoryScreen — título, código, ícones mídia |
-| Sem resultados | Mensagem “Nenhum ponto encontrado” |
-| Erro | Mensagem de erro + retry 🟡 INFERIDO |
+| Loading | Indicador central |
+| Resultados | `TrackListTile` por letra encontrada |
+| Vazio | Mensagem sem resultados |
+| Erro | Mensagem + snackbar |
 
-## Interações por resultado
+## Bottom navigation
 
-- Tap → `LyricViewScreen`
-- Play inline se áudio disponível
+| Índice | Label | Estado no screenshot |
+|--------|-------|----------------------|
+| 0 | Início | Inativo |
+| 1 | Buscar | **Ativo (verde)** |
+| 2 | Top | Inativo |
+| 3 | Gostei | Inativo |
+| 4 | Admin | Inativo (admin) |
 
 ## Navegação
 
-- **Entrada:** Tab Buscar (Home ou CategoryScreen)
-- **Saída:** LyricViewScreen ou back
+- Voltar → pop
+- Card categoria → `CategoryScreen`
+- Resultado → `LyricViewScreen`

@@ -1,59 +1,82 @@
-# Tela: Categoria (Lista de Letras)
+# Tela: Categoria (playlist)
 
 | Campo | Valor |
 |-------|-------|
 | Arquivo | `lib/screens/category_screen.dart` |
-| Estado capturado | Preenchido — Caboclos |
+| Scaffold | `StreamingScaffold` (`navContext: category`) |
+| Exemplo capturado | Caboclos |
+| Estado | Preenchido — 213 pontos |
+| Screenshot | 2026-05-31 |
 | Confiança | 🟢 CONFIRMADO |
 
 ## Propósito
 
-Exibir todos os pontos/letras de uma categoria; permitir reprodução inline, abrir detalhe e adicionar nova letra.
+Apresentar o acervo de uma categoria como playlist: hero visual, play all, lista numerada e ações de moderação.
 
 ## App bar
 
 | Elemento | Descrição |
 |----------|-----------|
-| Leading | `arrow_back` → volta à Home |
-| Título | Nome da categoria (“Caboclos”) |
-| Actions | `play_circle` — toca playlist da categoria (CategoryPlayerWidget) |
+| Leading | Voltar verde |
+| Título | **“FMA Pontos”** verde central |
+| Actions | `edit` e `delete` (quando `canEditCategories` / `canDeleteCategories`) |
 
-## Lista de letras
+## Hero (`_CategoryHero`)
 
-| Parte | Conteúdo |
-|-------|----------|
-| Leading | Número sequencial (`sequenceNumber`) em quadrado cinza; vira equalizer se tocando |
-| Title | Título capitalizado, ellipsis 1 linha |
-| Subtitle | Código `{category.code}{seq:02}` — ex: CA01, CA02 |
-| Subtitle icons | `music_note` se áudio; `videocam` se YouTube |
-| Trailing | Play/pause inline + chevron |
-| Tap | → `LyricViewScreen` |
+| Elemento | Descrição |
+|----------|-----------|
+| Arte | Ilustração Caboclo full-bleed (`categoryArtworkPath`) |
+| Título | **“Caboclos”** — branco, grande, sobre imagem |
+| Subtítulo | **“213 pontos • 639 min”** (contagem + duração agregada) |
+| Gradiente | Fade da imagem para fundo preto da lista |
 
-**Itens visíveis:** CA01–CA08 (Caboclo 7 flechas, Aldeia do Pai Tupinambá, Cabocla Iara, etc.)
+## Barra de ações (abaixo do hero)
 
-## Bottom navigation (3 itens)
+| Elemento | Descrição |
+|----------|-----------|
+| Esquerda | Ícones editar / excluir (outline branco) |
+| Direita | **FAB play** — círculo verde grande, ícone play preto |
+| Ação play | Inicia playlist da categoria via `AudioPlayerService` |
 
-| Tab | Label | Ação |
-|-----|-------|------|
-| 0 | Home | `popUntil` first route |
-| 1 | Buscar | Push SearchScreen |
-| 2 | Letra | Push LyricFormScreen (requer login + role user) |
+## Lista de faixas
 
-## Permissões (não visíveis)
+| Coluna | Conteúdo |
+|--------|----------|
+| # | Índice 1, 2, 3… (cinza) |
+| Título | Nome do ponto truncado (branco) |
+| Subtítulo | Código ex. `CA00` (cinza) — 🟡 screenshot mostra `CA00`; código real usa `CA01`… |
+| Trailing | `more_vert` → menu: favoritar, excluir (RBAC) |
+| Tap linha | `LyricViewScreen` |
+| Componente | `TrackListTile` |
 
-- Long-press / menu: editar/excluir categoria (moderador/admin)
-- Tab Letra bloqueada: snackbar “Faça login com Google…”
+**Faixas visíveis:** Caboclo Pena Dourada…, Aldeia do Pai Tupinambá, etc.
+
+## Bottom navigation (6 itens)
+
+| Índice | Label | Função |
+|--------|-------|--------|
+| 0 | Início | `popUntil` Home |
+| 1 | Buscar | `SearchScreen` |
+| 2 | Top | `TopPlayedScreen` |
+| 3 | Gostei | `FavoritesScreen` |
+| 4 | Categoria | Editar categoria (dialog) |
+| 5 | Letra | `LyricFormScreen` (criar) |
+
+No screenshot: **Início** destacado em verde (índice 0 selecionado no contexto categoria).
 
 ## Estados
 
 | Estado | Visual |
 |--------|--------|
-| Loading | Indicador central |
+| Loading | `CircularProgressIndicator` |
 | Vazio | Mensagem sem letras |
-| Preenchido | Lista scrollável (screenshot) |
-| Item tocando | Leading animado + título bold verde (`primary`) |
+| Preenchido | Hero + lista (capture) |
 
 ## Navegação
 
-- **Entrada:** Tap categoria na Home
-- **Saída:** LyricViewScreen, SearchScreen, LyricFormScreen, Home (back ou tab)
+```mermaid
+flowchart LR
+  CAT[Categoria] --> LYR[LyricViewScreen]
+  CAT --> FORM[LyricFormScreen]
+  HOME[Home] --> CAT
+```

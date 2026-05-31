@@ -58,8 +58,8 @@
 
 > Execute estes agentes quando os recursos estiverem disponíveis — podem rodar em qualquer fase.
 
-- [x] ✅ **Visor** — Análise de interface via screenshots
-- [ ] **Data Master** — Análise completa do banco de dados
+- [x] ✅ **Visor** — Análise de interface via screenshots (atualizado 2026-05-31 — novo design streaming, 6 telas)
+- [x] ✅ **Data Master** — Análise completa do banco (`db_cluster-21-01-2026@04-10-08.backup`, 2026-05-31)
 - [ ] **Design System** — Extração de tokens de design
 - [ ] **Tracer** — Análise dinâmica (requer sistema acessível)
 

@@ -6,6 +6,7 @@ import '../models/category.dart';
 import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
+import '../services/play_stats_service.dart';
 import '../services/auth_service.dart';
 import '../services/favorites_service.dart';
 import '../utils/lyric_sync.dart';
@@ -31,11 +32,13 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
   Category? _category;
   YoutubePlayerController? _youtubeController;
   _PlayerMode _playerMode = _PlayerMode.none;
+  final PlayStatsService _playStatsService = PlayStatsService();
 
   @override
   void initState() {
     super.initState();
     _lyric = widget.lyric;
+    _playStatsService.incrementAccessCount(_lyric.id);
     _loadCategory();
     _initYoutubePlayer();
     WidgetsBinding.instance.addPostFrameCallback((_) {

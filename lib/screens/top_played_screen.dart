@@ -129,7 +129,7 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           children: const [
             SizedBox(height: 120),
-            Center(child: Text('Nenhum ponto tocado ainda')),
+            Center(child: Text('Nenhum ponto acessado ainda')),
           ],
         ),
       );
@@ -147,13 +147,13 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Mais Tocados',
+                    'Mais Acessados',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'Sua sintonia mais ouvida',
+                    'Os pontos que você mais abriu',
                     style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
@@ -282,8 +282,8 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
                       rank: rank,
                       title: lyric.title.capitalize(),
                       subtitle: category != null
-                          ? '${statsItem.playCount} ${statsItem.playCount == 1 ? 'reprodução' : 'reproduções'} • ${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}'
-                          : '${statsItem.playCount} reproduções',
+                          ? '${statsItem.playCount} ${statsItem.playCount == 1 ? 'acesso' : 'acessos'} • ${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}'
+                          : '${statsItem.playCount} acessos',
                       isCurrent: isCurrent,
                       isPlaying: isPlaying,
                       onTap: () {

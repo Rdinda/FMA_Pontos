@@ -10,7 +10,8 @@ flowchart TD
   F --> G["AudioPlayerService.create"]
   G --> H["runApp(MyApp)"]
   H --> I["MultiProvider"]
-  I --> J["MaterialApp pt-BR"]
+  I --> TW["ToastificationWrapper margin 110dp"]
+  TW --> J["MaterialApp pt-BR"]
   J --> J1["theme / darkTheme: AppTheme"]
   J1 --> J2["themeMode: ThemeProvider"]
   J2 --> K["SplashScreen"]
@@ -34,7 +35,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  ENV[".env"] --> PS["run-dev.ps1"]
+  ENV[".env SUPABASE_* + GOOGLE_SERVER_CLIENT_ID opcional"] --> PS["run-dev.ps1"]
   PS --> JSON["dart_defines.json"]
   JSON --> RUN["flutter run --dart-define-from-file=dart_defines.json"]
   IDE[".vscode/launch.json FMA Pontos dev"] --> RUN

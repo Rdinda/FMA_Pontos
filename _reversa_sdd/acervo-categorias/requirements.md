@@ -47,6 +47,9 @@
 | RF-10 | 🟢 O sistema deve excluir logicamente categoria e letras associadas antes de sync. | Must | Dado uma categoria com letras, quando `softDeleteCategory(id)` executa, então categoria e letras recebem `is_deleted = 1`, `is_synced = 0`, `updated_at = now`. |
 | RF-11 | 🟢 O sistema deve remover fisicamente categoria e letras após exclusão remota bem-sucedida. | Should | Dado sync online e delete remoto concluído, quando `hardDeleteCategory(id)` executa, então letras da categoria e categoria são removidas do SQLite. |
 | RF-12 | 🟢 O sistema deve abrir a tela de letras ao tocar em uma categoria. | Must | Dado uma categoria na Home, quando o usuário toca nela, então navega para `CategoryScreen(category)`. |
+| RF-13 | 🟢 A Home deve exibir até 4 categorias em destaque (grid 2×2) priorizando reproduções. | Should | Dado `lyric_play_stats` com dados, quando `HomeScreen` carrega, então `PlayStatsService.rankCategoriesByAccess` ordena por plays; senão, por contagem de letras. |
+| RF-14 | 🟢 O usuário deve acessar todas as categorias pela seta da seção “Categorias”. | Should | Dado Home, quando toca na seta, então abre `AllCategoriesScreen` com grid completo e pull-to-refresh (`syncData`). |
+| RF-15 | 🟢 Cards de categoria devem exibir arte WebP quando mapeada. | Should | Dado categoria com entrada em `category_artwork.dart`, quando `CategoryCard` renderiza, então usa `assets/images/categories/*.webp`; senão gradiente por índice. |
 
 ## Requisitos Não Funcionais
 

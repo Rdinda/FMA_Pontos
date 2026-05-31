@@ -70,7 +70,7 @@ Referência: ADR 002 — `_reversa_sdd/adrs/002-rbac-google-admin.md`.
 | Tipo | Requisito inferido | Evidência no código | Confiança |
 |------|--------------------|---------------------|-----------|
 | Segurança | Autenticação delegada ao Supabase Auth + OAuth Google. | `supabase_flutter`, `signInWithIdToken` | 🟢 |
-| Segurança | `serverClientId` (Web Client ID) fixo no código para obter `idToken`. | `auth_service.dart` L17-18 | 🟢 |
+| Segurança | `serverClientId` via `GOOGLE_SERVER_CLIENT_ID` (`--dart-define` / `.env`) com fallback no código. | `auth_service.dart` `_init` | 🟢 |
 | Disponibilidade | Falha ao buscar role não impede app; fallback `user`. | catch em `_fetchUserRole` | 🟢 |
 | UX | Estado de carregamento bloqueia botões durante login. | `_isLoading`, `isLoading` na UI | 🟢 |
 | Observabilidade | Eventos auth logados via `debugPrint`. | `[AuthService]` prefix | 🟢 |

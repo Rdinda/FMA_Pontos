@@ -330,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: StreamingTokens.spacingLg),
                   _SectionHeader(
-                    title: 'Mais Tocados',
+                    title: 'Mais Acessados',
                     onArrowTap: () {
                       Navigator.push(
                         context,
@@ -343,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (_topPlayed.isEmpty) ...[
                     const SizedBox(height: StreamingTokens.spacingMd),
                     Text(
-                      'Nenhum ponto tocado ainda',
+                      'Nenhum ponto acessado ainda',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

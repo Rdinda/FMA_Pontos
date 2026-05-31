@@ -50,6 +50,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Sign debug builds with release keystore so Google Sign-In matches Console SHA-1
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
         release {
             // Use release signing config if available, otherwise use debug
             signingConfig = if (keystorePropertiesFile.exists()) {

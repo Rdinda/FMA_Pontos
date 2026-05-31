@@ -17,7 +17,7 @@
 | `SupabaseService` | Service remoto | Upsert/delete remoto e storage de áudio | Supabase PostgREST/Storage |
 | `YoutubePlayer` | Validador | Validar links YouTube via `convertUrlToId` | `youtube_player_flutter` |
 | `FilePicker` | Integração nativa | Selecionar arquivo de áudio | `file_picker` |
-| `SnackbarUtils` | UI util | Feedback de upload, erro e remoção | Scaffold |
+| `SnackbarUtils` | UI util | Feedback de upload, erro e remoção | `toastification` (global wrapper em `main.dart`) |
 
 ## Modos do Formulário
 

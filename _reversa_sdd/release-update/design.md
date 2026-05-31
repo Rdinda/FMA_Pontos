@@ -131,7 +131,7 @@ flowchart LR
 
 | Fonte | Exemplo | Uso |
 |-------|---------|-----|
-| `pubspec.yaml` `version` | `1.0.19` | PackageInfo.version no app |
+| `pubspec.yaml` `version` | `1.0.20` | PackageInfo.version no app |
 | Git tag | `v1.0.20` | Release GitHub |
 | `versionCode` Android | do Flutter tooling | Play/sideload increment |
 

@@ -44,8 +44,8 @@
 
 | Semântica | Implementação | Onde | Confiança |
 |-----------|---------------|------|-----------|
-| Erro / permissão | `colorScheme.error` + `onError` | `SnackbarUtils` (`isError: true`) | 🟢 |
-| Sucesso / info | `colorScheme.primaryContainer` + `onPrimaryContainer` | `SnackbarUtils` (padrão) | 🟢 |
+| Erro / permissão | `#E07A6B` (salmon/coral Stitch) | `SnackbarUtils` via `toastification` (`isError: true`) | 🟢 |
+| Sucesso / info | `AppColors.primaryContainer` + texto branco | `SnackbarUtils` via `toastification` (padrão) | 🟢 |
 | Destrutivo (texto) | `Colors.red` | Diálogos "Excluir" | 🟢 |
 | Favorito ativo | `colorScheme.error` | Ícone coração preenchido no player | 🟢 |
 | Badge role admin | `#1DB954` (`AppColors.roleAdmin`) | `RoleBadge` em `admin_screen` | 🟢 |

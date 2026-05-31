@@ -2,7 +2,7 @@
 
 > Documento consolidado gerado pelo agente **Design System** (Reversa).  
 > Stack UI: **Flutter Material 3** + **google_fonts**.  
-> Data: 2026-05-20 · **Re-extração visual:** 2026-05-31 (feature `001-novo-visual-streaming`)
+> Data: 2026-05-20 · **Re-extração visual:** 2026-05-31 · **Rodada 2:** 2026-05-31 (Home grid, toasts, artes)
 
 ## Visão geral
 
@@ -10,8 +10,10 @@
 
 - `lib/theme/app_colors.dart` — tokens de cor (brand, surfaces, badges de role)
 - `lib/theme/app_theme.dart` — `ThemeData` light/dark Material 3
+- `lib/theme/streaming_tokens.dart` — espaçamentos, raios e alturas de layout streaming
 - `lib/providers/theme_provider.dart` — modo claro/escuro/sistema + persistência
-- `lib/widgets/streaming/*` — componentes visuais reutilizáveis (card, bottom nav, search, role badge)
+- `lib/widgets/streaming/*` — scaffold, nav, cards, search, player mini, track tile, role badge
+- `package:toastification` — toasts globais via `ToastificationWrapper` + `SnackbarUtils`
 - Padrões de tela em `lib/screens/*.dart` e utilitário `lib/utils/snackbar_utils.dart`
 
 Identidade visual: **verde streaming** (`#1DB954` / `#53E076`), fundo escuro `#131313`, tipografia **Plus Jakarta Sans** unificada (shell, letras, admin).
@@ -79,12 +81,16 @@ Tabela completa em [`tokens.md`](tokens.md).
 | App shell | `lib/main.dart`, `app_theme.dart` | Light/dark M3 | 🟢 |
 | Theme switcher | `theme_provider.dart`, `app_info_bottom_sheet.dart` | cycle system→light→ dark | 🟢 |
 | Bottom navigation | `streaming_bottom_nav.dart`, telas | 5 destinos Home; 3 em Category | 🟢 |
-| Card streaming | `streaming_card.dart` | Lista categorias/letras | 🟢 |
+| Card streaming | `streaming_card.dart` | Lista genérica | 🟢 |
+| Card categoria | `category_card.dart` | Grid Home/AllCategories; arte WebP ou gradiente | 🟢 |
+| Scaffold streaming | `streaming_scaffold.dart` | AppBar + body + bottom nav + mini-player | 🟢 |
+| Nav streaming | `streaming_navigation.dart` | Índices e `StreamingAppBar` | 🟢 |
+| Tile faixa | `track_list_tile.dart` | Lista numerada em `CategoryScreen` | 🟢 |
 | Campo busca | `streaming_search_field.dart` | Busca pill escuro | 🟢 |
 | Badge de role | `role_badge.dart` | admin/moderator/user | 🟢 |
-| Lista de categoria/letra | `category_screen.dart`, `favorites_screen.dart`, etc. | Tile com play, borda ativa quando tocando | 🟢 |
+| Lista de categoria/letra | `category_screen.dart`, `favorites_screen.dart`, etc. | `TrackListTile`; borda ativa quando tocando | 🟢 |
 | Player compacto | `category_player_widget.dart` | Playlist ativa; letra expansível; favorito | 🟢 |
-| Snackbar | `snackbar_utils.dart` | Sucesso (`primaryContainer`) / erro | 🟢 |
+| Toast feedback | `snackbar_utils.dart` + `toastification` | Sucesso verde container / erro `#E07A6B`; margem 110dp inferior | 🟢 |
 | Bottom sheet info | `app_info_bottom_sheet.dart` | Login, tema, versão | 🟢 |
 | Onboarding | `onboarding_screen.dart`, `onboarding_widgets.dart` | Slides animados, checkbox privacidade | 🟢 |
 | Splash | `splash_screen.dart` | Fundo escuro, loader verde | 🟢 |
@@ -98,6 +104,7 @@ Tabela completa em [`tokens.md`](tokens.md).
 | Asset | Caminho | Uso | Confiança |
 |-------|---------|-----|------------|
 | Splash | `assets/images/splash.png` | Tela inicial | 🟢 |
+| Artes de categoria | `assets/images/categories/*.webp` | `CategoryCard` via `category_artwork.dart` | 🟢 |
 | Maria (onboarding) | `assets/images/maria.png` | Logo animado | 🟢 |
 | Launcher | `mipmap/ic_launcher` | Notificação áudio | 🟢 |
 | Splash nativa Android | `android/.../launch_background.xml` | Fundo `#131313` | 🟢 |
@@ -107,7 +114,9 @@ Tabela completa em [`tokens.md`](tokens.md).
 | Área | Arquivos |
 |------|----------|
 | Tokens de cor | `lib/theme/app_colors.dart` |
+| Tokens de layout | `lib/theme/streaming_tokens.dart` |
 | Tema global | `lib/theme/app_theme.dart` |
+| Artes por categoria | `lib/utils/category_artwork.dart` |
 | Modo escuro/claro | `lib/providers/theme_provider.dart` |
 | Feedback | `lib/utils/snackbar_utils.dart` |
 | Player UI | `lib/widgets/category_player_widget.dart` |

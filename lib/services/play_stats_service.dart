@@ -4,7 +4,8 @@ import '../models/category.dart';
 import '../models/lyric.dart';
 import '../database/db_helper.dart';
 
-/// Modelo para estatísticas de reprodução de um ponto
+/// Modelo para estatísticas de acesso a um ponto.
+/// [playCount] mapeia a coluna `play_count` (contador de visualizações).
 class LyricPlayStats {
   final String lyricId;
   final int playCount;
@@ -40,29 +41,28 @@ class LyricWithStats {
   });
 }
 
-/// Serviço para gerenciar estatísticas de reprodução de pontos
+/// Serviço para estatísticas de acesso a pontos (visualização da letra).
 class PlayStatsService {
   final SupabaseClient _client = Supabase.instance.client;
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-  /// Incrementa o contador de reproduções para um ponto
-  Future<void> incrementPlayCount(String lyricId) async {
+  /// Incrementa o contador de acessos quando o usuário abre a letra.
+  /// Usa `play_count` / RPC `increment_play_count` no Supabase (semântica de acesso).
+  Future<void> incrementAccessCount(String lyricId) async {
     try {
-      // Usar upsert para criar ou atualizar o registro
       await _client.rpc(
         'increment_play_count',
         params: {'p_lyric_id': lyricId},
       );
-      debugPrint('[PlayStatsService] Play count incremented for: $lyricId');
+      debugPrint('[PlayStatsService] Access count incremented for: $lyricId');
     } catch (e) {
-      // Se a função RPC não existir, usar fallback com upsert manual
       debugPrint('[PlayStatsService] RPC failed, using fallback: $e');
-      await _incrementPlayCountFallback(lyricId);
+      await _incrementAccessCountFallback(lyricId);
     }
   }
 
-  /// Fallback: incrementa contador manualmente se RPC não existir
-  Future<void> _incrementPlayCountFallback(String lyricId) async {
+  /// Fallback: incrementa contador manualmente se RPC não existir.
+  Future<void> _incrementAccessCountFallback(String lyricId) async {
     try {
       // Primeiro, tenta buscar o registro existente
       final existing = await _client
@@ -94,15 +94,14 @@ class PlayStatsService {
         '[PlayStatsService] Fallback increment successful for: $lyricId',
       );
     } catch (e) {
-      debugPrint('[PlayStatsService] Error incrementing play count: $e');
-      // Não lançar erro para não interromper a reprodução
+      debugPrint('[PlayStatsService] Error incrementing access count: $e');
     }
   }
 
-  /// Retorna os pontos mais tocados com informações completas
+  /// Retorna os pontos mais acessados com informações completas.
   Future<List<LyricWithStats>> getTopPlayed({int limit = 20}) async {
     try {
-      // Buscar estatísticas ordenadas por play_count
+      // Buscar estatísticas ordenadas por play_count (contador de acessos)
       final statsResponse = await _client
           .from('lyric_play_stats')
           .select()
@@ -137,12 +136,12 @@ class PlayStatsService {
 
       return result;
     } catch (e) {
-      debugPrint('[PlayStatsService] Error fetching top played: $e');
+      debugPrint('[PlayStatsService] Error fetching top accessed: $e');
       return [];
     }
   }
 
-  /// Agrega reproduções por categoria (via lyric_play_stats + lyrics locais).
+  /// Agrega acessos por categoria (via lyric_play_stats + lyrics locais).
   Future<Map<String, int>> getPlayCountByCategory() async {
     try {
       final statsResponse = await _client
@@ -166,15 +165,15 @@ class PlayStatsService {
       }
       return byCategory;
     } catch (e) {
-      debugPrint('[PlayStatsService] Error aggregating category plays: $e');
+      debugPrint('[PlayStatsService] Error aggregating category access: $e');
       return {};
     }
   }
 
   /// Categorias mais acessadas para a Home.
   ///
-  /// Primário: soma de [lyric_play_stats.play_count] por category_id.
-  /// Fallback: total de pontos por categoria quando não há reproduções.
+  /// Primário: soma de acessos ([lyric_play_stats.play_count]) por category_id.
+  /// Fallback: total de pontos por categoria quando não há dados de acesso.
   Future<List<Category>> rankCategoriesByAccess(
     List<Category> categories, {
     required Future<int> Function(String categoryId) lyricsCountFor,
@@ -182,14 +181,14 @@ class PlayStatsService {
   }) async {
     if (categories.isEmpty) return [];
 
-    final playByCategory = await getPlayCountByCategory();
-    final hasPlayData = playByCategory.values.any((v) => v > 0);
+    final accessByCategory = await getPlayCountByCategory();
+    final hasAccessData = accessByCategory.values.any((v) => v > 0);
 
     final sorted = List<Category>.from(categories);
-    if (hasPlayData) {
+    if (hasAccessData) {
       sorted.sort(
-        (a, b) => (playByCategory[b.id] ?? 0).compareTo(
-          playByCategory[a.id] ?? 0,
+        (a, b) => (accessByCategory[b.id] ?? 0).compareTo(
+          accessByCategory[a.id] ?? 0,
         ),
       );
     } else {
@@ -205,7 +204,7 @@ class PlayStatsService {
     return sorted.take(limit).toList();
   }
 
-  /// Retorna as estatísticas de um ponto específico
+  /// Retorna quantidade de acessos de um ponto específico.
   Future<int> getPlayCount(String lyricId) async {
     try {
       final response = await _client
@@ -216,7 +215,7 @@ class PlayStatsService {
 
       return response?['play_count'] ?? 0;
     } catch (e) {
-      debugPrint('[PlayStatsService] Error getting play count: $e');
+      debugPrint('[PlayStatsService] Error getting access count: $e');
       return 0;
     }
   }

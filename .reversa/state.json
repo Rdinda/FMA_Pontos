@@ -198,22 +198,39 @@
       }
     },
     "visor": {
-      "completed_at": "2026-05-21T17:32:00Z",
+      "completed_at": "2026-05-31T22:30:00Z",
+      "trigger": "novo_design_streaming_screenshots",
       "files": [
-        "_reversa_sdd/acervo-categorias/screens.md",
-        "_reversa_sdd/busca/screens.md",
-        "_reversa_sdd/visualizacao-letra/screens.md",
-        "_reversa_sdd/edicao-letra/screens.md",
         "_reversa_sdd/ui/inventory.md",
-        "_reversa_sdd/ui/flow.md"
+        "_reversa_sdd/ui/flow.md",
+        "_reversa_sdd/ui/screens/home.md",
+        "_reversa_sdd/ui/screens/buscar-letras.md",
+        "_reversa_sdd/ui/screens/categoria.md",
+        "_reversa_sdd/ui/screens/visualizacao-letra.md",
+        "_reversa_sdd/ui/screens/favoritos.md",
+        "_reversa_sdd/ui/screens/admin.md"
       ],
       "summary": {
-        "screens_documented": 5,
+        "screens_documented": 6,
+        "screenshots": 6,
+        "design_era": "streaming-2026-05-31",
         "features_mapped": [
           "acervo-categorias",
           "busca",
           "visualizacao-letra",
-          "edicao-letra"
+          "favoritos",
+          "administracao",
+          "design-system"
+        ],
+        "still_missing_screenshots": [
+          "splash",
+          "onboarding",
+          "top-played",
+          "lyric-form",
+          "all-categories",
+          "privacy-policy",
+          "player-with-audio",
+          "admin-auditoria-tab"
         ]
       }
     },
@@ -249,6 +266,72 @@
           "is_active enforcement confirmed"
         ],
         "estimated_confidence_delta": "+2pp on touched units"
+      }
+    },
+    "data_master": {
+      "completed_at": "2026-05-31T23:00:00Z",
+      "source": "db_cluster-21-01-2026@04-10-08.backup",
+      "files": [
+        "_reversa_sdd/database/data-dictionary.md",
+        "_reversa_sdd/database/relationships.md",
+        "_reversa_sdd/database/erd.md",
+        "_reversa_sdd/database/business-rules.md",
+        "_reversa_sdd/database/procedures.md"
+      ],
+      "summary": {
+        "public_tables": 5,
+        "categories_rows": 18,
+        "lyrics_rows_approx": 948,
+        "user_roles_rows": 3,
+        "lyric_play_stats_rows": 0,
+        "increment_play_count_in_prod": false,
+        "is_active_confirmed": true,
+        "audit_triggers_confirmed": true,
+        "soft_delete_remote": false
+      }
+    },
+    "re_extraction_2026_05_31_round2": {
+      "completed_at": "2026-05-31T18:00:00Z",
+      "trigger": "user_re_extraction",
+      "files": [
+        "_reversa_sdd/re-extraction-2026-05-31-round2.md",
+        "_reversa_sdd/dependencies.md",
+        "_reversa_sdd/design-system/tokens.md",
+        "_reversa_sdd/design-system/design-system.md",
+        "_reversa_sdd/design-system/color-palette.md",
+        "_reversa_sdd/flowcharts/app-bootstrap.md",
+        "_reversa_sdd/flowcharts/utils.md",
+        "_reversa_sdd/code-analysis.md",
+        "_reversa_sdd/acervo-categorias/requirements.md",
+        "_reversa_sdd/acervo-categorias/design.md",
+        "_reversa_sdd/estatisticas-mais-tocados/design.md",
+        "_reversa_sdd/autenticacao/design.md",
+        "_reversa_sdd/edicao-letra/design.md",
+        "_reversa_sdd/release-update/design.md",
+        "_reversa_sdd/ui/inventory.md"
+      ],
+      "summary": {
+        "modules_updated": [
+          "app-bootstrap",
+          "utils",
+          "widgets",
+          "screens",
+          "acervo-categorias",
+          "estatisticas-mais-tocados",
+          "autenticacao",
+          "release-update",
+          "design-system"
+        ],
+        "key_deltas": [
+          "toastification toasts",
+          "StreamingTokens",
+          "CategoryCard category artwork webp",
+          "AllCategoriesScreen",
+          "Home featured categories rankCategoriesByAccess",
+          "GOOGLE_SERVER_CLIENT_ID env",
+          "version 1.0.20"
+        ],
+        "estimated_confidence_delta": "+1pp on touched units"
       }
     },
     "re_extraction_2026_05_31_visual": {

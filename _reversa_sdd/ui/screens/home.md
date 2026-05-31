@@ -1,63 +1,92 @@
-# Tela: Home (Acervo de Categorias)
+# Tela: Home (Início)
 
 | Campo | Valor |
 |-------|-------|
 | Arquivo | `lib/screens/home_screen.dart` |
-| Estado capturado | Preenchido |
+| Scaffold | `StreamingScaffold` (`navContext: home`) |
+| Estado capturado | Preenchido — grid + empty “Mais Tocados” |
+| Screenshot | 2026-05-31 |
 | Confiança | 🟢 CONFIRMADO |
 
 ## Propósito
 
-Hub principal: listar categorias de pontos com contagem e acesso rápido às demais áreas do app.
+Hub principal estilo streaming: saudação personalizada, categorias em destaque (até 4), preview do ranking e acesso rápido às demais áreas via bottom nav.
 
-## App bar
+## Layout (de cima para baixo)
+
+### Barra superior
 
 | Elemento | Descrição |
 |----------|-----------|
-| Título | “Filhos de Maria das Almas” |
-| Leading | — |
-| Actions | Ícone offline (condicional), avatar Google ou ícone info |
+| Leading | Avatar circular (foto Google quando logado) |
+| Título | **“FMA Pontos”** — verde, bold (`FontWeight.w900`) |
+| Actions | Ícone sino (`notifications_outlined`) — outline branco |
 
-## Lista de categorias
+### Hero (`_GreetingBanner`)
 
-Cada item (`ListTile` / card):
+| Elemento | Descrição |
+|----------|-----------|
+| Fundo | Ilustração full-width (categoria/arte rotativa ou Preta Velha) |
+| Texto | “Boa noite, Roberto” (dinâmico: Bom dia / Boa tarde / Boa noite + primeiro nome) |
+| Estilo | Branco sobre imagem, canto inferior esquerdo |
 
-| Parte | Conteúdo |
-|-------|----------|
-| Leading | Quadrado arredondado colorido + ícone `music_note` |
-| Title | Nome da categoria (ex: Caboclos, Iansã, Oxum) |
-| Subtitle | “{N} pontos” |
-| Trailing | `chevron_right` |
-| Ação | Navega para `CategoryScreen(category)` |
+### Seção “Categorias”
 
-**Categorias visíveis no screenshot:** Caboclos (213), Egunitá _ Oroiná (1), Iansã (55), Iemanjá (74), Logun Edé (1), Nanã Buruquê (50), Obaluaiê (34), Obá (5).
+| Elemento | Descrição |
+|----------|-----------|
+| Cabeçalho | “Categorias” + ícone chevron direita |
+| Ação chevron | `Navigator` → `AllCategoriesScreen` |
+| Grid | 2×2, `CategoryCard` com arte WebP |
+| Cards visíveis | Caboclos · Pretos Velhos · Ogum · Iemanjá |
+| Tap card | `CategoryScreen(category)` |
+
+🟢 Destaques vêm de `PlayStatsService.rankCategoriesByAccess` (limite 4).
+
+### Seção “Mais Tocados”
+
+| Elemento | Descrição |
+|----------|-----------|
+| Cabeçalho | “Mais Tocados” + chevron |
+| Ação chevron | `TopPlayedScreen` |
+| Empty (capture) | “Nenhum ponto tocado ainda” — cinza |
+| Preenchido (código) | Até 8 itens `LyricWithStats` em lista horizontal/vertical |
 
 ## Bottom navigation
 
-| Tab | Label | Ícone | Comportamento |
-|-----|-------|-------|---------------|
-| 0 | Home | `home` | Permanece (ativo, verde `primary`) |
-| 1 | Buscar | `search` | Push `SearchScreen` |
-| 2 | Top | `trending_up` | Push `TopPlayedScreen` |
-| 3 | Gostei | `favorite` | Push `FavoritesScreen` |
-| 4 | Categoria | `add_circle` | Dialog nova categoria (moderador+) |
+| Índice | Label | Ícone | Estado no screenshot |
+|--------|-------|-------|----------------------|
+| 0 | Início | `home_rounded` | **Ativo** (verde) |
+| 1 | Buscar | `search_rounded` | Inativo |
+| 2 | Top | `trending_up_rounded` | Inativo |
+| 3 | Gostei | `favorite_outline_rounded` | Inativo |
+| 4 | Admin | `admin_panel_settings_rounded` | Inativo (visível só para admin) |
 
-## Interações adicionais (código)
+🟡 Usuário não-admin: slot 4 = **Categoria** (`add_circle_outline`) → dialog nova categoria.
 
-- **Pull-to-refresh:** re-sync + refresh role
-- **Back duplo:** snackbar “Pressione novamente para sair” → fecha app
-- **Avatar/info:** bottom sheet com login, versão, admin link
+## Interações (código, não no print)
+
+- Pull-to-refresh implícito via sync no `initState`
+- Back duplo na root → “Pressione novamente para sair”
+- Avatar → `showAppInfoBottomSheet` (login, tema, versão)
+- `UpdateService` checa release GitHub
 
 ## Estados
 
 | Estado | Visual |
 |--------|--------|
-| Loading | `CircularProgressIndicator` central |
-| Vazio | “Nenhuma categoria encontrada. Adicione uma nova!” |
-| Offline | Ícone `wifi_off` vermelho na app bar |
-| Preenchido | Lista scrollável (screenshot) |
+| Loading categorias | `CircularProgressIndicator` |
+| Sem categorias | “Nenhuma categoria encontrada…” |
+| Sem plays | “Nenhum ponto tocado ainda” (capture) |
+| Offline | Ícone `wifi_off` na app bar (código) |
 
 ## Navegação
 
-- **Entrada:** Splash / Onboarding concluído
-- **Saída:** CategoryScreen, SearchScreen, TopPlayed, Favorites, dialogs
+```mermaid
+flowchart LR
+  HOME[Home] --> CAT[CategoryScreen]
+  HOME --> ALL[AllCategoriesScreen]
+  HOME --> SRCH[SearchScreen]
+  HOME --> TOP[TopPlayedScreen]
+  HOME --> FAV[FavoritesScreen]
+  HOME --> ADM[AdminScreen]
+```

@@ -1,6 +1,6 @@
 # Tokens — FMA_Pontos
 
-> Tabela consolidada. Re-extração visual 2026-05-31. Cores M3 explícitas em `app_theme.dart` (não `fromSeed`).
+> Tabela consolidada. Re-extração visual 2026-05-31; layout/toasts 2026-05-31 (rodada 2). Cores M3 explícitas em `app_theme.dart` (não `fromSeed`). Espaçamentos de tela também em `lib/theme/streaming_tokens.dart`.
 
 ## Cores
 
@@ -11,7 +11,9 @@
 | `color.scaffold.light` | `#F5F5F5` | Surface | 🟢 |
 | `color.scaffold.dark` | `#131313` | Surface | 🟢 |
 | `color.error` | `colorScheme.error` | Feedback | 🟡 |
-| `color.success-snackbar` | `colorScheme.primaryContainer` | Feedback | 🟢 |
+| `color.success-snackbar` | `AppColors.primaryContainer` | Feedback | 🟢 |
+| `color.error-toast` | `#E07A6B` | Feedback | 🟢 |
+| `toast.margin.bottom` | 110dp (acima mini-player) | Layout | 🟢 |
 | `color.destructive-text` | `#F44336` (`Colors.red`) | Feedback | 🟢 |
 | `color.rank.gold` | `Colors.amber` | Decorative | 🟢 |
 | `color.rank.silver` | `grey.shade400` | Decorative | 🟢 |
@@ -72,7 +74,11 @@
 | `color.role.user` | `#9E9E9E` | 🟢 |
 | `theme.default.mode` | `dark` (sem prefs) | 🟢 |
 | `elevation.card` | 2 | 🟢 |
-| `elevation.snackbar` | 6 | 🟢 |
+| `elevation.snackbar` | N/A (overlay toastification) | 🟢 |
+| `layout.mini-player-height` | 56 (`StreamingTokens`) | 🟢 |
+| `layout.bottom-nav-height` | 72 | 🟢 |
+| `layout.category-card-height` | 96 | 🟢 |
+| `layout.track-art-size` | 56 | 🟢 |
 
 ## Motion
 
