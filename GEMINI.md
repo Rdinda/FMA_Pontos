@@ -17,3 +17,36 @@ Quando o usuário digitar `/reversa` ou a palavra `reversa` sozinha em uma mensa
 
 Nunca apague, modifique ou sobrescreva arquivos pré-existentes do projeto legado.
 O Reversa escreve **apenas** em `.reversa/` e `_reversa_sdd/`.
+
+---
+
+## Desenvolvimento Flutter & Android no Windows
+
+Você está trabalhando em um projeto Flutter com alvo Android no Windows.
+
+### Ferramentas Principais (Flutter):
+- `flutter doctor`
+- `flutter pub get`
+- `flutter run`
+- `flutter build apk`
+- `flutter test`
+- `flutter analyze`
+
+### Ferramentas de Suporte (Android CLI):
+- `android info`
+- `android init`
+- `android describe`
+- `android screen`
+- `android layout`
+- `android sdk`
+
+### Regras de Execução:
+1. Antes de alterar o projeto, rode `flutter doctor` e `android info`.
+2. Use `flutter pub get` após alterar `pubspec.yaml`.
+3. Use `flutter analyze` para validar código.
+4. Use `flutter test` quando houver testes.
+5. Para rodar o app, prefira `flutter run`.
+6. Para emulador no Windows, use `emulator -avd Pixel_6_Pro`.
+7. Use `android screen` / `android layout` somente para inspecionar o app aberto no emulador.
+8. Não substitua comandos Flutter por comandos Android CLI quando o projeto for Flutter.
+
