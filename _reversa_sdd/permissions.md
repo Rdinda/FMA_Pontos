@@ -68,8 +68,8 @@ flowchart LR
 
 ## Riscos e Lacunas
 
-- 🟢 **CONFIRMADO** — `is_active = false` deve **bloquear login** (Roberto, 2026-05-20). 🟡 Legado ainda não aplica em `AuthService`/RLS.
-- 🔴 **LACUNA** — `audit_logs` é consultado pelo app, mas a criação da tabela/triggers não está clara nos arquivos atuais.
-- 🟡 **INFERIDO** — Permissões de UI e banco podem divergir se policies remotas forem alteradas fora do repositório.
-- 🟢 **CONFIRMADO** — Apenas usuários **logados (não anônimos)** podem realizar escritas em `categories`/`lyrics` (Roberto, 2026-05-20). Policies `allow anon insert` na migration `20251226192339` **devem ser removidas** — não são intencionais. 🟡 Legado remoto pode ainda tê-las ativas.
+- 🟢 **CONFIRMADO** — `is_active = false` bloqueia o login do usuário, conforme implementado no `AuthService` do aplicativo e na coluna `is_active` em `user_roles`.
+- 🟢 **CONFIRMADO** — A tabela `audit_logs` e os triggers `audit_categories` e `audit_lyrics` foram criados e versionados em `supabase/migrations/20260519000000_fix_reversa_gaps.sql`, garantindo rastreabilidade total de escrita.
+- 🟢 **CONFIRMADO** — Apenas usuários logados (não anônimos) podem realizar escritas em `categories` e `lyrics`. A política legada `allow anon insert` foi formalmente removida no banco remoto via migration `20260519000000_fix_reversa_gaps.sql`.
+- 🟢 **CONFIRMADO** — A RPC `increment_play_count` está devidamente criada e configurada no banco com permissão para usuários autenticados.
 

@@ -33,7 +33,7 @@ Filtros recorrentes:
 
 | Função | Parâmetros | Status no repo | Unit |
 |--------|------------|----------------|------|
-| `increment_play_count` | `p_lyric_id` | 🔴 DDL não versionada | `estatisticas-mais-tocados` |
+| `increment_play_count` | `p_lyric_id` | 🟢 Versionada no repo | `estatisticas-mais-tocados` |
 
 ## Storage
 
