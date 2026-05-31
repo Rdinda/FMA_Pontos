@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel Administrativo - FMA Pontos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "surface-container": "#201f1f",
+                        "secondary-container": "#1c5329",
+                        "on-secondary-fixed-variant": "#195127",
+                        "on-primary": "#003914",
+                        "secondary": "#99d59d",
+                        "on-surface": "#e5e2e1",
+                        "primary-fixed": "#72fe8f",
+                        "primary-container": "#1db954",
+                        "tertiary-fixed-dim": "#ffb3b3",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary-container": "#8cc690",
+                        "on-primary-fixed-variant": "#005320",
+                        "on-primary-fixed": "#002108",
+                        "on-error": "#690005",
+                        "primary-fixed-dim": "#53e076",
+                        "background": "#131313",
+                        "surface-variant": "#353534",
+                        "on-tertiary-fixed": "#400009",
+                        "on-tertiary-container": "#730a1b",
+                        "secondary-fixed-dim": "#99d59d",
+                        "surface-tint": "#53e076",
+                        "surface": "#131313",
+                        "on-tertiary-fixed-variant": "#881d28",
+                        "on-surface-variant": "#bccbb9",
+                        "on-secondary-fixed": "#002108",
+                        "inverse-surface": "#e5e2e1",
+                        "tertiary": "#ffb3b3",
+                        "surface-bright": "#393939",
+                        "tertiary-fixed": "#ffdad9",
+                        "outline-variant": "#3d4a3d",
+                        "outline": "#869585",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "surface-container-high": "#2a2a2a",
+                        "on-secondary": "#003914",
+                        "surface-dim": "#131313",
+                        "surface-container-low": "#1c1b1b",
+                        "on-tertiary": "#680114",
+                        "inverse-primary": "#006e2d",
+                        "secondary-fixed": "#b5f1b8",
+                        "primary": "#53e076",
+                        "on-background": "#e5e2e1",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-container": "#ff767b",
+                        "surface-container-highest": "#353534",
+                        "on-primary-container": "#004118"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Public Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab-indicator {
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #53e076;
+            border-radius: 99px;
+            box-shadow: 0 0 10px rgba(83, 224, 118, 0.6);
+        }
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-card {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="dark overflow-x-hidden pb-40">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md docked full-width top-0 z-50 flex justify-between items-center px-4 h-16 w-full sticky">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a mature male administrator with a friendly expression, set against a dark, minimalist studio background. The lighting is dramatic and moody, utilizing soft rim light to highlight his silhouette, perfectly matching a high-end Spotify-inspired dark interface. The color palette is composed of deep blacks, charcoal grays, and subtle green ambient glows reflecting from a nearby screen." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfJj9FjAPdW6MfxtyjjxmdqbfhslhzFht_mnC9ErgYIsBkQzN2nlR9mL36UmeT7SaIT-Ek2f0gXPvm3jZAZ-G_ARI6NwOAsmCqJbDzF42UBm7rFWV8bKM6QqHyktn5xhHIYTBKFwdrCC144KfKRM0C52r1O2FesQb8aqx-v2I9bgdPm8HiArgVRzbLv6TwqDR6gpZLor-wEVlkN0PtUSI3FnUoDhUTgnEqKc4eoNLf_rgHQLoPiiCeGdpid_WxwQ5vmI0XBJu5CRI"/>
+</div>
+<h1 class="font-headline font-bold text-lg text-primary">Painel Administrativo</h1>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<main class="px-4 mt-4 max-w-2xl mx-auto">
+<!-- Tabs -->
+<nav class="flex border-b border-outline-variant mb-6 relative">
+<button class="flex-1 py-3 text-center relative text-primary font-bold">
+                Usuários
+                <div class="active-tab-indicator"></div>
+</button>
+<button class="flex-1 py-3 text-center text-on-surface-variant opacity-70 font-medium">
+                Logs de Auditoria
+            </button>
+</nav>
+<!-- Tab Content: Users -->
+<section class="space-y-6" id="users-tab">
+<!-- Search -->
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/50 transition-all" placeholder="Buscar por email..." type="text"/>
+</div>
+<!-- User List -->
+<div class="space-y-3">
+<!-- Card 1: Admin -->
+<div class="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-surface-variant/20 transition-all duration-300">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Roberto" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional Brazilian man with glasses, smiling confidently. The image is styled for a premium dark-mode application with deep shadows and vibrant emerald green highlights. The aesthetic is clean, modern, and tech-focused, fitting seamlessly into a music streaming dashboard design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB84IB40liPJwXNZuTpi8KthtMi0f6XfI13wS7qW_SBn7S6w7jBf2Qk76NpR2Gf-V8SQhGy2Lmi95PF4KYZbHwhmiSG7EV90CMqQN5ZeXVCmTbAXsmwhxvc4RX7aA70-DjzKBAGWJJwtIiWV6x9q4sUqn_zzF1BMgLHCLUJhrAvOGQiKRAgelEzkyCIRpIN02pF9NxzvmNmsVOm7xtkfxc_FvEzRz1ZXNF7tUTgkHFsbnkFyINAs24p7M4gDA3YrPVFBY3Cl-pXHgU"/>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">roberto@fmapontos.com.br</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 bg-tertiary-container/20 text-tertiary text-[10px] font-bold uppercase rounded">Admin</span>
+<span class="flex items-center gap-1 text-[10px] text-primary/80 font-medium">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    Ativo
+                                </span>
+</div>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Card 2: Moderator -->
+<div class="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-surface-variant/20 transition-all duration-300">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">moderadora.ana@gmail.com</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 bg-yellow-500/20 text-yellow-500 text-[10px] font-bold uppercase rounded">Moderador</span>
+<span class="flex items-center gap-1 text-[10px] text-primary/80 font-medium">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Ativo
+                                </span>
+</div>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Card 3: Inactive User -->
+<div class="glass-card p-4 rounded-xl flex items-center justify-between group opacity-60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center grayscale">
+<span class="material-symbols-outlined text-on-surface-variant/40">person_off</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface-variant line-through">usuario.inativo@gmail.com</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold uppercase rounded">Usuário</span>
+<span class="flex items-center gap-1 text-[10px] text-on-surface-variant/60 font-medium">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                                    Inativo
+                                </span>
+</div>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Mini Player -->
+<div class="fixed bottom-20 left-0 w-full px-2 z-40">
+<div class="bg-surface-container-high rounded-xl p-3 shadow-2xl flex flex-col gap-2 border border-white/5 mx-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container overflow-hidden">
+<img alt="Album Art" class="w-full h-full object-cover" data-alt="Abstract musical background with silhouettes of traditional Afro-Brazilian drumming circles. The scene is bathed in a vibrant neon green and deep black atmosphere, with glowing particles floating in the air. The lighting is cinematic, reflecting a modern, high-energy streaming service aesthetic. The focus is on the movement and rhythm captured in a stylish, digital art format." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDd9iSAOuEZ43NYckUh-JV6JPcaba2vSCj91XmbHEFth4Orebu1FRkQ4YYZ9dU0EJeHOeN_o45wVFxf3oMnPKrPgO-AMnR4F1L3aQh56j85Iev6mwHC2MyhhWGkO4YujlhfthF3byGAnXDPEuW6gvnM8LsQyPI3Myq7uS2iRIiNA06ueJ8MiDD89K8aUkajDR8GrqSOcNjzQA5mTsbWdOjUv7RyOz97_3NohI8XfuosuKQ_J3qpclbu8itctbS242VNPi6ItaykAP8"/>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface leading-tight">Rompe Mato - Ogum</span>
+<span class="text-xs text-on-surface-variant">Pontos de Umbanda</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant"><span class="material-symbols-outlined">favorite</span></button>
+<button class="p-2 text-on-surface"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pause</span></button>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="w-[45%] h-full bg-primary shadow-[0_0_8px_#53e076]"></div>
+</div>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 pb-safe px-6 bg-surface-container/95 backdrop-blur-lg border-t border-outline-variant z-50 rounded-t-xl shadow-[0_-4px_10px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-primary font-bold bg-secondary-container/20 rounded-xl px-4 py-1 Active: scale-110 transition-transform duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-1">Início</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-1">Busca</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined">queue_music</span>
+<span class="font-label text-[10px] uppercase tracking-wider mt-1">Letra</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions and Tab Switching Logic
+        const tabs = document.querySelectorAll('nav button');
+        const activeIndicator = document.querySelector('.active-tab-indicator');
+
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => {
+                    t.classList.remove('text-primary', 'font-bold');
+                    t.classList.add('text-on-surface-variant', 'opacity-70');
+                    t.classList.remove('font-bold');
+                });
+                
+                tab.classList.add('text-primary', 'font-bold');
+                tab.classList.remove('text-on-surface-variant', 'opacity-70');
+
+                // Move indicator
+                activeIndicator.style.transform = `translateX(${index * 100}%)`;
+                
+                // Content display logic (mock)
+                const usersTab = document.getElementById('users-tab');
+                if (index === 1) {
+                    usersTab.classList.add('opacity-30', 'pointer-events-none');
+                } else {
+                    usersTab.classList.remove('opacity-30', 'pointer-events-none');
+                }
+            });
+        });
+
+        // Search highlight interaction
+        const searchInput = document.querySelector('input');
+        const searchIcon = searchInput.previousElementSibling;
+
+        searchInput.addEventListener('focus', () => {
+            searchIcon.style.color = '#53e076';
+        });
+        searchInput.addEventListener('blur', () => {
+            searchIcon.style.color = '';
+        });
+    </script>
+</body></html>

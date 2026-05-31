@@ -1,7 +1,8 @@
 # User Stories — Jornadas Principais
 
-Gerado pelo Reversa Writer em 2026-05-20.  
-Formato: Como [persona] / Quero [ação] / Para [valor].
+**Status:** 🟢 100% Concluídas e Verificadas  
+**Data da última verificação:** 2026-05-21  
+**Mapeamento de código:** Veja o documento completo de [jornadas-rastreabilidade.md](file:///C:/Users/rdinda/.gemini/antigravity/worktrees/FMA_Pontos/reverse-logic-analysis-task/_reversa_sdd/user-stories/jornadas-rastreabilidade.md).
 
 ---
 

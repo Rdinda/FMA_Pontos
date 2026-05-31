@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FMA Pontos - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "on-primary-container": "#004118",
+                        "tertiary-container": "#ff767b",
+                        "surface-tint": "#53e076",
+                        "on-primary-fixed-variant": "#005320",
+                        "surface-container": "#201f1f",
+                        "on-secondary-fixed-variant": "#195127",
+                        "surface-container-high": "#2a2a2a",
+                        "primary-container": "#1db954",
+                        "on-background": "#e5e2e1",
+                        "primary": "#53e076",
+                        "surface-dim": "#131313",
+                        "secondary-fixed": "#b5f1b8",
+                        "secondary-fixed-dim": "#99d59d",
+                        "secondary-container": "#1c5329",
+                        "surface-variant": "#353534",
+                        "surface-container-highest": "#353534",
+                        "surface": "#131313",
+                        "on-tertiary-fixed-variant": "#881d28",
+                        "on-secondary-container": "#8cc690",
+                        "on-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "on-secondary-fixed": "#002108",
+                        "primary-fixed-dim": "#53e076",
+                        "secondary": "#99d59d",
+                        "on-tertiary-container": "#730a1b",
+                        "surface-bright": "#393939",
+                        "background": "#131313",
+                        "on-tertiary-fixed": "#400009",
+                        "outline-variant": "#3d4a3d",
+                        "on-surface-variant": "#bccbb9",
+                        "tertiary": "#ffb3b3",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline": "#869585",
+                        "tertiary-fixed": "#ffdad9",
+                        "on-secondary": "#003914",
+                        "primary-fixed": "#72fe8f",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-fixed-dim": "#ffb3b3",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#680114",
+                        "on-primary": "#003914",
+                        "inverse-primary": "#006e2d",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002108"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Public Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-button {
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+        }
+        .custom-checkbox:checked {
+            background-color: #1DB954;
+            border-color: #1DB954;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen flex flex-col items-center justify-center overflow-hidden">
+<!-- Ambient Background Blur -->
+<div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+<main class="relative z-10 w-full max-w-md px-8 py-12 flex flex-col items-center min-h-screen">
+<!-- Upper Part: Logo & Branding -->
+<header class="flex flex-col items-center text-center mt-8 mb-12">
+<div class="w-24 h-24 bg-primary-container rounded-full flex items-center justify-center mb-6 shadow-2xl ring-4 ring-primary/20">
+<div class="relative flex items-end gap-1 h-10">
+<!-- Stylized Equalizer/Shield Hybrid -->
+<span class="w-1.5 h-6 bg-white rounded-full animate-pulse"></span>
+<span class="w-1.5 h-10 bg-white rounded-full"></span>
+<span class="w-1.5 h-8 bg-white rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+<span class="w-1.5 h-5 bg-white rounded-full"></span>
+<!-- Abstract Leaf/Shield Overlay -->
+<div class="absolute -top-4 -left-2 -right-2 -bottom-2 border-2 border-white/20 rounded-full"></div>
+</div>
+</div>
+<h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-background">
+                Bem-vindo ao <span class="text-primary">FMA Pontos</span>
+</h1>
+</header>
+<!-- Middle Part: Slide Content Card -->
+<section class="w-full bg-surface-container-high rounded-xl p-6 shadow-xl border border-outline-variant/30 mb-auto">
+<h2 class="text-xl font-bold mb-6 text-on-surface">Seus pontos sempre com você</h2>
+<div class="space-y-6">
+<!-- Feature 1 -->
+<div class="flex items-start gap-4 group">
+<div class="bg-secondary-container p-2.5 rounded-lg text-on-secondary-container transition-transform group-hover:scale-110">
+<span class="material-symbols-outlined" data-icon="cloud_off">cloud_off</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface-variant text-sm">Acesso Offline</h3>
+<p class="text-sm text-on-surface-variant/70 leading-relaxed">Ouça e leia os pontos em locais sem sinal de internet.</p>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="flex items-start gap-4 group">
+<div class="bg-secondary-container p-2.5 rounded-lg text-on-secondary-container transition-transform group-hover:scale-110">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface-variant text-sm">Orixás &amp; Falanges</h3>
+<p class="text-sm text-on-surface-variant/70 leading-relaxed">Telas limpas para cada linha de trabalho.</p>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="flex items-start gap-4 group">
+<div class="bg-secondary-container p-2.5 rounded-lg text-on-secondary-container transition-transform group-hover:scale-110">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface-variant text-sm">Busca Rápida</h3>
+<p class="text-sm text-on-surface-variant/70 leading-relaxed">Ache letras instantaneamente durante a gira.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Lower Part: Privacy & CTA -->
+<footer class="w-full mt-12 space-y-8">
+<!-- Indicators -->
+<div class="flex justify-center items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-8 h-2 rounded-full bg-primary shadow-sm shadow-primary/50"></div>
+</div>
+<!-- Privacy Row -->
+<div class="space-y-4">
+<label class="flex items-start gap-3 cursor-pointer select-none">
+<div class="relative flex items-center mt-1">
+<input class="custom-checkbox h-5 w-5 rounded border-outline-variant bg-surface-container-highest text-primary focus:ring-primary focus:ring-offset-background transition-all" id="privacy-check" type="checkbox"/>
+</div>
+<div class="flex flex-col">
+<span class="text-sm text-on-surface-variant leading-snug">Li e aceito a Política de Privacidade e Termos de Uso.</span>
+<a class="text-primary text-sm font-semibold underline underline-offset-4 hover:text-primary-fixed-dim transition-colors mt-1" href="#">
+                            Ler termos na íntegra
+                        </a>
+</div>
+</label>
+</div>
+<!-- Primary CTA -->
+<button class="w-full bg-primary text-on-primary font-bold py-4 px-6 rounded-xl text-lg glow-button transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed" disabled="" id="start-button">
+                Começar a usar
+            </button>
+</footer>
+</main>
+<script>
+        // Simple logic for the onboarding checkbox
+        const checkbox = document.getElementById('privacy-check');
+        const startBtn = document.getElementById('start-button');
+
+        checkbox.addEventListener('change', (e) => {
+            startBtn.disabled = !e.target.checked;
+            if (e.target.checked) {
+                startBtn.classList.remove('opacity-50', 'grayscale');
+            } else {
+                startBtn.classList.add('opacity-50', 'grayscale');
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!startBtn.disabled) {
+                // Micro-interaction: button click effect
+                startBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="w-5 h-5 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span> Carregando...</span>';
+                setTimeout(() => {
+                    alert('Bem-vindo à experiência FMA Pontos!');
+                    location.reload();
+                }, 1500);
+            }
+        });
+    </script>
+</body></html>

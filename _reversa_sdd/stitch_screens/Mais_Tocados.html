@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FMA Pontos - Mais Tocados</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb3b3",
+                        "on-secondary-fixed": "#002108",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-error": "#690005",
+                        "error-container": "#93000a",
+                        "on-primary-fixed-variant": "#005320",
+                        "on-tertiary": "#680114",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "on-primary": "#003914",
+                        "secondary-fixed-dim": "#99d59d",
+                        "tertiary": "#ffb3b3",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#e5e2e1",
+                        "inverse-primary": "#006e2d",
+                        "on-tertiary-fixed-variant": "#881d28",
+                        "on-primary-container": "#004118",
+                        "background": "#131313",
+                        "surface-container-low": "#1c1b1b",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-fixed": "#ffdad9",
+                        "surface-container-highest": "#353534",
+                        "surface-dim": "#131313",
+                        "secondary-container": "#1c5329",
+                        "primary": "#53e076",
+                        "surface-tint": "#53e076",
+                        "primary-fixed": "#72fe8f",
+                        "outline-variant": "#3d4a3d",
+                        "on-tertiary-container": "#730a1b",
+                        "surface": "#131313",
+                        "primary-fixed-dim": "#53e076",
+                        "on-surface-variant": "#bccbb9",
+                        "on-surface": "#e5e2e1",
+                        "tertiary-container": "#ff767b",
+                        "primary-container": "#1db954",
+                        "on-secondary-fixed-variant": "#195127",
+                        "on-secondary": "#003914",
+                        "surface-container": "#201f1f",
+                        "secondary": "#99d59d",
+                        "on-tertiary-fixed": "#400009",
+                        "on-primary-fixed": "#002108",
+                        "surface-bright": "#393939",
+                        "secondary-fixed": "#b5f1b8",
+                        "error": "#ffb4ab",
+                        "on-secondary-container": "#8cc690",
+                        "outline": "#869585"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Public Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #131313;
+            color: #e5e2e1;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-player {
+            backdrop-filter: blur(20px);
+            background: rgba(32, 31, 31, 0.85);
+        }
+        .glow-green {
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.4);
+        }
+        .rank-card:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+    </style>
+</head>
+<body class="pb-40 bg-background overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="docked full-width top-0 bg-background/80 backdrop-blur-md flex justify-between items-center w-full px-6 py-4 fixed z-40">
+<div class="text-xl font-headline font-black tracking-tight text-primary">FMA Pontos</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvh2qJACD2bV5wNVlaLDGIH1xrn8Khc3K7eJpJ_ZjUcNWkMw6vAn83YauwsCeX_u1edunc9-9SrXFVNhQpL5EGLdOeU8NAmEqL6_Q2RT9n2Cz_JKw0LL6UZGPJ0cZRj-k1XyOvaSk0NArNEhOdX-F8eMl752QN89NONQQ7J-lmAxQyxPk8OnEhlIsoJNj-val-K8jlgpmnyCv_3ZsmAMQNFIYg4_3Me4uDQ56OCkbh9wQVlvSRhfZgWCZklzM7k24ODqDQqUB01xk"/>
+</div>
+</div>
+</header>
+<main class="mt-20 px-6 max-w-2xl mx-auto">
+<!-- Header Section -->
+<section class="mb-8">
+<h1 class="text-4xl font-headline font-extrabold text-on-surface tracking-tight mb-1">Mais Tocados</h1>
+<p class="text-on-surface-variant font-medium">Sua sintonia mais ouvida</p>
+</section>
+<!-- Banner Hero Section -->
+<section class="relative mb-10 group cursor-pointer overflow-hidden rounded-xl shadow-2xl">
+<div class="aspect-[16/9] w-full relative">
+<img alt="Banner dos Mais Tocados" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2PdO6RbdI7zxlx7Y56fPDS17wnGJDBCrnfcmaFjNMUMvBO3DH06P3qelXCRk4SNNetZD3M88Bkx1Pt07HUoWu2bu7341YPO-9yC4EXN5nr1TwvWU8MQM1WYa6oFV6L6IQUaacEQaymZgwWyXrVL0eGf4n8bxmiQWz0DA-2vqtb9RM5vH7O60FtstjjpTH0vbvbEXc8Pp49ux_y1q110xFrRafMR0GZwSXjsaD2KSc_D5jQUP7kw4TQULXcBmcCD5xUNuYKVlPl5I"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+<!-- Floating Action Button -->
+<button class="absolute bottom-4 right-4 w-16 h-16 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container shadow-lg glow-green hover:scale-110 active:scale-95 transition-all z-10">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<div class="absolute bottom-6 left-6">
+<span class="bg-primary/20 text-primary text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md mb-2 inline-block">Playlist em Destaque</span>
+<h2 class="text-2xl font-bold text-white drop-shadow-md">Mix de Axé</h2>
+</div>
+</div>
+</section>
+<!-- Ranked List -->
+<section class="space-y-3">
+<!-- Rank 1 -->
+<div class="rank-card flex items-center p-4 bg-surface-container border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex-shrink-0 w-10 flex justify-center">
+<span class="material-symbols-outlined text-[#FFD700] text-2xl" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<div class="flex-grow ml-4">
+<h3 class="font-bold text-on-surface text-lg">Rompe Mato</h3>
+<p class="text-sm text-on-surface-variant">
+<span class="text-primary font-bold">182 reproduções</span> • OGUM03
+                    </p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">play_circle</span>
+</button>
+</div>
+<!-- Rank 2 -->
+<div class="rank-card flex items-center p-4 bg-surface-container border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex-shrink-0 w-10 flex justify-center">
+<span class="material-symbols-outlined text-[#C0C0C0] text-2xl" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<div class="flex-grow ml-4">
+<h3 class="font-bold text-on-surface text-lg">Vovó Cambinda</h3>
+<p class="text-sm text-on-surface-variant">145 reproduções • PV01</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">play_circle</span>
+</button>
+</div>
+<!-- Rank 3 -->
+<div class="rank-card flex items-center p-4 bg-surface-container border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex-shrink-0 w-10 flex justify-center">
+<span class="material-symbols-outlined text-[#CD7F32] text-2xl" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<div class="flex-grow ml-4">
+<h3 class="font-bold text-on-surface text-lg">Caboclo Pena Branca</h3>
+<p class="text-sm text-on-surface-variant">112 reproduções • CAB02</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">play_circle</span>
+</button>
+</div>
+<!-- Rank 4 -->
+<div class="rank-card flex items-center p-4 bg-surface-container border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex-shrink-0 w-10 flex justify-center text-xl font-black text-on-surface-variant">
+                    4
+                </div>
+<div class="flex-grow ml-4">
+<h3 class="font-bold text-on-surface text-lg">Ponto de Iemanjá</h3>
+<p class="text-sm text-on-surface-variant">90 reproduções • IEM04</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">play_circle</span>
+</button>
+</div>
+<!-- Rank 5 -->
+<div class="rank-card flex items-center p-4 bg-surface-container border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex-shrink-0 w-10 flex justify-center text-xl font-black text-on-surface-variant">
+                    5
+                </div>
+<div class="flex-grow ml-4">
+<h3 class="font-bold text-on-surface text-lg">Exu Caveira</h3>
+<p class="text-sm text-on-surface-variant">85 reproduções • EXU01</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">play_circle</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Mini-player Section -->
+<div class="fixed bottom-[88px] left-0 w-full px-4 z-40">
+<div class="glass-player max-w-2xl mx-auto rounded-xl p-3 shadow-xl border border-white/5 overflow-hidden">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A stylized digital illustration of a ceremonial drum in a mystical forest, glowing with vibrant green spiritual energy, captured in a dramatic dark cinematic style with ethereal lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN6U_gJQ2ZrG4AVwn7lf2H0rXP7C2jrl6a6iUTcTakcrN8cr2cVXYJhSZYvI3to7LZuXNLu36Zhu6MRNONfUZqCAtL1yXPl9h2vFEO7F-vG2BCNfsLgHOEAXdAn-ebQ50HIad-lJIAuz_PpfBAUpsKsY9hSdVW9pNdvcrzH2IMU6mie2tyCeFEDSTt_xgzkAxv0heczKDrKqkVA6JoiPZwL02IB3Z835nh6ThM3nUK0BQdbH5PFJhQzXKhaZYGKMace-Hdnlro7pw"/>
+</div>
+<div class="flex-grow min-w-0">
+<h4 class="text-on-surface font-bold text-sm truncate">Rompe Mato</h4>
+<p class="text-on-surface-variant text-xs truncate">Ogum</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface cursor-pointer">favorite</span>
+<span class="material-symbols-outlined text-primary text-3xl cursor-pointer" style="font-variation-settings: 'FILL' 1;">pause_circle</span>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="mt-2 h-[3px] w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 45%;"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-2 pb-safe bg-surface-container/95 backdrop-blur-lg border-t border-outline-variant shadow-2xl rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-primary font-bold px-4 py-2 hover:bg-surface-variant/50 rounded-xl transition-all scale-100 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label text-xs font-medium">Início</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface px-4 py-2 hover:bg-surface-variant/50 rounded-xl transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label text-xs font-medium">Busca</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface px-4 py-2 hover:bg-surface-variant/50 rounded-xl transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label text-xs font-medium">Letra</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface px-4 py-2 hover:bg-surface-variant/50 rounded-xl transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label text-xs font-medium">Admin</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for play buttons
+        document.querySelectorAll('.rank-card button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const icon = button.querySelector('.material-symbols-outlined');
+                if (icon.innerText === 'play_circle') {
+                    icon.innerText = 'pause_circle';
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                } else {
+                    icon.innerText = 'play_circle';
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                }
+            });
+        });
+
+        // Add visual feedback to list items
+        document.querySelectorAll('.rank-card').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

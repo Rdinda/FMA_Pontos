@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>FMA Pontos - Novo Ponto</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#393939",
+                        "primary-fixed-dim": "#53e076",
+                        "secondary-fixed": "#b5f1b8",
+                        "surface-container-highest": "#353534",
+                        "surface": "#131313",
+                        "on-tertiary-fixed-variant": "#881d28",
+                        "outline-variant": "#3d4a3d",
+                        "on-primary-fixed-variant": "#005320",
+                        "on-tertiary": "#680114",
+                        "on-surface": "#e5e2e1",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary-fixed-dim": "#99d59d",
+                        "outline": "#869585",
+                        "error-container": "#93000a",
+                        "on-primary": "#003914",
+                        "surface-tint": "#53e076",
+                        "on-error": "#690005",
+                        "secondary-container": "#1c5329",
+                        "tertiary-fixed-dim": "#ffb3b3",
+                        "on-tertiary-container": "#730a1b",
+                        "on-secondary-container": "#8cc690",
+                        "on-primary-fixed": "#002108",
+                        "inverse-primary": "#006e2d",
+                        "surface-variant": "#353534",
+                        "surface-container": "#201f1f",
+                        "on-secondary": "#003914",
+                        "tertiary": "#ffb3b3",
+                        "on-primary-container": "#004118",
+                        "on-secondary-fixed": "#002108",
+                        "surface-dim": "#131313",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#0e0e0e",
+                        "tertiary-fixed": "#ffdad9",
+                        "surface-container-high": "#2a2a2a",
+                        "on-tertiary-fixed": "#400009",
+                        "on-surface-variant": "#bccbb9",
+                        "background": "#131313",
+                        "secondary": "#99d59d",
+                        "primary": "#53e076",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-container": "#ff767b",
+                        "on-secondary-fixed-variant": "#195127",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-fixed": "#72fe8f",
+                        "primary-container": "#1db954"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Public Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #121212; /* Fallback */
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+        
+        /* Custom Scrollbar for Textarea */
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: theme('colors.surface-variant');
+            border-radius: 10px;
+        }
+        
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(32, 31, 31, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        .glass-heavy {
+            background: rgba(19, 19, 19, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        /* Form Input Focus Ring reset to brand green */
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px theme('colors.primary-container');
+            border-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased h-screen w-screen overflow-hidden flex flex-col pt-safe">
+<!-- Top App Bar (Task-Focused / Linear - Hiding global nav cluster for web but keeping structure) -->
+<header class="glass-heavy w-full z-40 px-6 py-4 flex justify-between items-center sticky top-0 flex-shrink-0 border-b border-surface-container">
+<button class="text-on-surface hover:text-primary transition-colors flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-variant/30 active:scale-95">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+<h1 class="font-headline font-bold text-on-surface text-lg tracking-tight">Novo Ponto</h1>
+<button class="text-primary-container font-headline font-bold text-sm tracking-wide uppercase hover:opacity-80 active:scale-95 transition-all">
+            Salvar
+        </button>
+</header>
+<!-- Main Scrollable Canvas -->
+<main class="flex-grow overflow-y-auto px-4 py-6 pb-[160px]">
+<div class="max-w-3xl mx-auto space-y-8">
+<!-- Hero Title Area (Optional visual anchor) -->
+<div class="mb-8">
+<h2 class="text-3xl font-headline font-extrabold tracking-tight text-white mb-2">Adicionar Ponto</h2>
+<p class="text-on-surface-variant text-sm font-body">Insira os detalhes do novo ponto para adicionar ao catálogo.</p>
+</div>
+<form class="space-y-6">
+<!-- Título Input -->
+<div class="space-y-2">
+<label class="block font-label text-sm font-semibold text-on-surface ml-1" for="titulo">Título do Ponto</label>
+<div class="relative group">
+<input class="w-full bg-surface-container text-white rounded-xl px-4 py-4 border-0 focus:ring-0 transition-shadow placeholder:text-surface-variant text-base font-body" id="titulo" placeholder="Ex: Ogum de Lei" type="text"/>
+</div>
+</div>
+<!-- Categoria/Orixá Select -->
+<div class="space-y-2">
+<label class="block font-label text-sm font-semibold text-on-surface ml-1" for="categoria">Categoria/Orixá</label>
+<div class="relative">
+<select class="w-full bg-surface-container text-white rounded-xl px-4 py-4 border-0 appearance-none focus:ring-0 transition-shadow text-base font-body" id="categoria">
+<option selected="" value="ogum">Ogum</option>
+<option value="oxossi">Oxóssi</option>
+<option value="xango">Xangô</option>
+<option value="iemanja">Iemanjá</option>
+<option value="oxum">Oxum</option>
+<option value="iansa">Iansã</option>
+<option value="nana">Nanã</option>
+<option value="obaluae">Obaluaê</option>
+<option value="exu">Exu</option>
+<option value="pomba_gira">Pomba Gira</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- YouTube Link Input -->
+<div class="space-y-2">
+<label class="block font-label text-sm font-semibold text-on-surface ml-1" for="youtube_link">Link do YouTube (Vídeo/Áudio)</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_display</span>
+</div>
+<input class="w-full bg-surface-container text-white rounded-xl pl-12 pr-4 py-4 border-0 focus:ring-0 transition-shadow placeholder:text-surface-variant text-base font-body" id="youtube_link" placeholder="https://youtube.com/watch?v=..." type="url" value="https://youtube.com/watch?v=a1b2c3d4e5f"/>
+</div>
+<!-- Validation State -->
+<div class="flex items-center space-x-1.5 mt-2 ml-1 text-primary-container">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label text-xs font-medium">Vídeo validado</span>
+</div>
+</div>
+<!-- Letra Textarea -->
+<div class="space-y-2 flex flex-col h-full">
+<label class="block font-label text-sm font-semibold text-on-surface ml-1" for="letra">Letra do Ponto</label>
+<textarea class="w-full bg-surface-container text-white rounded-xl px-4 py-4 border-0 focus:ring-0 transition-shadow placeholder:text-surface-variant text-base font-body resize-none leading-relaxed" id="letra" placeholder="Escreva a letra aqui..." rows="10"></textarea>
+</div>
+</form>
+</div>
+</main>
+<!-- Mini-player & Bottom Nav Wrapper -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex flex-col">
+<!-- Persistent Mini-player (Floating style above nav) -->
+<div class="px-2 pb-2">
+<div class="glass max-w-3xl mx-auto rounded-xl flex items-center p-2 shadow-2xl border border-white/5 relative overflow-hidden group cursor-pointer hover:bg-surface-container-high/80 transition-colors">
+<!-- Tiny Progress Bar indicator -->
+<div class="absolute bottom-0 left-0 h-[2px] bg-primary-container w-1/3"></div>
+<!-- Thumbnail -->
+<div class="h-12 w-12 rounded-lg bg-surface-bright flex-shrink-0 overflow-hidden relative shadow-md">
+<img alt="Thumbnail" class="w-full h-full object-cover" data-alt="A macro, abstract photograph of glowing red and orange embers against deep dark metallic textures, representing the fiery energy of Ogum. High-end lighting, dark mode aesthetic, vibrant neon accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbmlR_xglM29KjTD24tCyNeuHkm5k4N6RHL9Ap3M_bYpaeW19cKbxaKW81oYOC-NpQ9mC5vjxpCQaBu_U1Q8XzQOfWWL6opgsMEPRY7I0z02rI7IJBv2ZrKEiKqA2gDPq5w6Bmues6U5O1yU0mpnEhx0enbNLYD-Oy81pIglMEf9Km7oGEIfGrSdFFA-B6GeTVH_PWw4t-kiAlUHoxUrUIpygmBWB6V-b5f1wl-kPCzvdbEUFuEjh_FcAf2W-iOvns6UAdR8Z6RdI"/>
+</div>
+<!-- Info -->
+<div class="ml-3 flex-grow overflow-hidden flex flex-col justify-center">
+<p class="text-white font-headline font-bold text-sm truncate">Ponto de Ogum</p>
+<p class="text-on-surface-variant font-body text-xs truncate">Ogum</p>
+</div>
+<!-- Controls -->
+<div class="flex items-center space-x-3 pr-2 pl-4 text-white">
+<button class="hover:text-primary-container transition-colors active:scale-90 p-1">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="hover:text-primary-container transition-colors active:scale-90 p-1">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">skip_next</span>
+</button>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Shared Component JSON definition) -->
+<nav class="bg-surface-container/95 backdrop-blur-lg shadow-2xl flex justify-around items-center px-4 pt-2 pb-safe md:hidden border-t border-white/5">
+<!-- Início -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface transition-all rounded-xl hover:bg-surface-variant/50 w-16 py-1" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="font-label text-[10px] font-medium tracking-wide">Início</span>
+</a>
+<!-- Busca -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface transition-all rounded-xl hover:bg-surface-variant/50 w-16 py-1" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">search</span>
+<span class="font-label text-[10px] font-medium tracking-wide">Busca</span>
+</a>
+<!-- Favoritos -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface transition-all rounded-xl hover:bg-surface-variant/50 w-16 py-1" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">favorite</span>
+<span class="font-label text-[10px] font-medium tracking-wide">Favoritos</span>
+</a>
+<!-- Admin (Active State) -->
+<a class="flex flex-col items-center justify-center text-primary font-bold scale-95 transition-all duration-150 ease-in-out w-16 py-1" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<span class="font-label text-[10px] tracking-wide">Admin</span>
+</a>
+</nav>
+</div>
+</body></html>

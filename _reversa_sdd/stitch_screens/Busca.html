@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Buscar - FMA Pontos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#ff767b",
+                        "primary-fixed-dim": "#53e076",
+                        "on-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "primary-container": "#1db954",
+                        "primary": "#53e076",
+                        "surface-container-highest": "#353534",
+                        "primary-fixed": "#72fe8f",
+                        "surface-container-low": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#195127",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#313030",
+                        "surface-bright": "#393939",
+                        "surface-dim": "#131313",
+                        "secondary": "#99d59d",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary-fixed-dim": "#99d59d",
+                        "on-secondary-container": "#8cc690",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#005320",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary-fixed": "#400009",
+                        "surface-variant": "#353534",
+                        "on-secondary-fixed": "#002108",
+                        "surface-container": "#201f1f",
+                        "on-secondary": "#003914",
+                        "background": "#131313",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#680114",
+                        "on-primary": "#003914",
+                        "secondary-container": "#1c5329",
+                        "on-tertiary-fixed-variant": "#881d28",
+                        "tertiary-fixed-dim": "#ffb3b3",
+                        "surface-tint": "#53e076",
+                        "outline-variant": "#3d4a3d",
+                        "on-tertiary-container": "#730a1b",
+                        "tertiary": "#ffb3b3",
+                        "on-primary-fixed": "#002108",
+                        "on-surface-variant": "#bccbb9",
+                        "secondary-fixed": "#b5f1b8",
+                        "on-background": "#e5e2e1",
+                        "surface-container-high": "#2a2a2a",
+                        "on-primary-container": "#004118",
+                        "outline": "#869585",
+                        "surface": "#131313",
+                        "inverse-primary": "#006e2d",
+                        "tertiary-fixed": "#ffdad9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Public Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-label { font-family: 'Public Sans', sans-serif; }
+        
+        /* Ambient Glow Effect for Cards */
+        .card-glow {
+            position: relative;
+            overflow: hidden;
+        }
+        .card-glow::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .bento-card {
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        .bento-card:active {
+            transform: scale(0.96);
+            filter: brightness(0.8);
+        }
+        
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- TopAppBar JSON Anchor -->
+<header class="bg-background/80 backdrop-blur-md flex justify-between items-center w-full px-6 py-4 docked full-width top-0 z-40 sticky top-0">
+<div class="flex items-center gap-3 hover:opacity-80 transition-opacity active:scale-95 transition-transform cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden" data-alt="A small circular avatar placeholder image for a user profile in a dark-themed music streaming interface. The image features a subtle, abstract deep-grey gradient to match the immersive, premium Spotify-like aesthetic. Minimalist and clean.">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA663kwYIk0QgsJKiEK6MEW7O06Ik_xBVDv76qvvMlPT_jjrzM4BhLwvHLD6BptDUCswAAjA34CX7iaXkIReepCWJ5KUzH43v7gjLZNsyuTyW_poIA6qe9pVe2lGA_sKPbC6wv5ygL3vjXgIWXBiwZKAfJCH5Z0Gmg_qFRAcXFIoYj49HYulsMWORirVtRUXo1Dslri65MYjqc3sUHfbnems-I8jnm5xO_H0h19Hl0uDgluV2uZPjeO5YHUQPNpU8J5vMXSaRkUB6Q"/>
+</div>
+<span class="text-primary dark:text-primary font-display font-black text-2xl tracking-tighter">FMA Pontos</span>
+</div>
+<button class="text-primary dark:text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="px-4 pt-4 pb-24 max-w-md mx-auto">
+<!-- Title -->
+<h1 class="font-headline font-bold text-[30px] leading-tight mb-6 tracking-tight">Buscar</h1>
+<!-- Search Input -->
+<div class="relative mb-8 group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-surface-variant">
+<span class="material-symbols-outlined text-[24px] font-bold group-focus-within:text-on-surface transition-colors">search</span>
+</div>
+<input class="w-full bg-surface-container-highest text-on-surface placeholder-on-surface-variant rounded-[12px] py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-bright transition-all font-body text-[15px] font-medium border-none" placeholder="O que você quer ouvir?" type="text"/>
+</div>
+<!-- Categories Header -->
+<h2 class="font-headline text-lg font-bold mb-4 tracking-tight">Navegar por todas as categorias</h2>
+<!-- Bento Grid Categories -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Card: Pretos Velhos -->
+<div class="bento-card card-glow rounded-[12px] aspect-square p-4 flex flex-col justify-end bg-gradient-to-br from-[#8d6e63] to-[#4e342e] shadow-lg relative overflow-hidden cursor-pointer" data-alt="A dark-mode music streaming category card for 'Pretos Velhos'. The background features a warm brown gradient with subtle organic, fibrous textures evocative of old wood or earth. The lighting is deep and immersive, blending into a premium, ambient aesthetic.">
+<span class="font-headline font-bold text-white text-lg leading-tight z-10 relative shadow-sm">Pretos Velhos</span>
+</div>
+<!-- Card: Caboclos -->
+<div class="bento-card card-glow rounded-[12px] aspect-square p-4 flex flex-col justify-end bg-gradient-to-br from-[#2e7d32] to-[#1b5e20] shadow-lg relative overflow-hidden cursor-pointer" data-alt="A dark-mode music streaming category card for 'Caboclos'. The background is a deep, immersive forest green gradient with subtle leafy, natural textures. The lighting is moody and dark, reflecting a premium spiritual music app aesthetic.">
+<span class="font-headline font-bold text-white text-lg leading-tight z-10 relative shadow-sm">Caboclos</span>
+</div>
+<!-- Card: Crianças -->
+<div class="bento-card card-glow rounded-[12px] aspect-square p-4 flex flex-col justify-end bg-gradient-to-br from-[#f48fb1] to-[#4dd0e1] shadow-lg relative overflow-hidden cursor-pointer" data-alt="A dark-mode music streaming category card for 'Crianças'. The background is a soft, dreamy gradient blending vibrant pink and deep cyan. The texture is smooth and ambient, designed to fit seamlessly into a dark, premium music application interface.">
+<span class="font-headline font-bold text-white text-lg leading-tight z-10 relative shadow-sm">Crianças</span>
+</div>
+<!-- Card: Exu e Pombagira -->
+<div class="bento-card card-glow rounded-[12px] aspect-square p-4 flex flex-col justify-end bg-gradient-to-br from-[#424242] to-[#b71c1c] shadow-lg relative overflow-hidden cursor-pointer" data-alt="A dark-mode music streaming category card for 'Exu e Pombagira'. The visual features a striking dark charcoal to intense deep red gradient. The texture suggests smoke or shadow, creating a powerful, moody, and premium aesthetic typical of high-end dark mode apps.">
+<span class="font-headline font-bold text-white text-lg leading-tight z-10 relative shadow-sm">Exu e Pombagira</span>
+</div>
+<!-- Card: Marinheiros -->
+<div class="bento-card card-glow rounded-[12px] aspect-square p-4 flex flex-col justify-end bg-gradient-to-br from-[#0277bd] to-[#004d40] shadow-lg relative overflow-hidden cursor-pointer" data-alt="A dark-mode music streaming category card for 'Marinheiros'. The background is a deep blue to teal gradient, reminiscent of dark ocean waters at night. Subtle wave-like abstract textures enhance the premium, immersive feel of this spiritual music interface.">
+<span class="font-headline font-bold text-white text-lg leading-tight z-10 relative shadow-sm">Marinheiros</span>
+</div>
+<!-- Card: Baianos -->
+<div class="bento-card card-glow rounded-[12px] aspect-square p-4 flex flex-col justify-end bg-gradient-to-br from-[#fbc02d] to-[#e65100] shadow-lg relative overflow-hidden cursor-pointer" data-alt="A dark-mode music streaming category card for 'Baianos'. The background features a sunny, vibrant amber to deep orange gradient. The texture is warm and energetic, yet deeply saturated to maintain cohesion with a sleek, immersive dark mode application environment.">
+<span class="font-headline font-bold text-white text-lg leading-tight z-10 relative shadow-sm">Baianos</span>
+</div>
+</div>
+</main>
+<!-- Persistent Now Playing Mini-Player -->
+<div class="fixed bottom-[88px] left-2 right-2 z-40 bg-surface-container-high rounded-[12px] shadow-lg overflow-hidden flex items-center px-3 py-2 cursor-pointer hover:bg-surface-bright transition-colors">
+<!-- Progress Bar (Top edge) -->
+<div class="absolute top-0 left-0 h-[2px] bg-primary-container w-[45%] rounded-r-full"></div>
+<div class="flex-shrink-0 w-10 h-10 rounded-[6px] overflow-hidden bg-surface-variant">
+<img alt="Ponto de Ogum Album Art" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uiZt96pppxioOHplcvC0V9dfCPv8nuiVOEYUrVaoaNz76zY1xuyWHXfIBkluzogWst8XmUWo9dHzTxK-xYXP2Ub3qGtPY1S9HrdpCkwYNAGPxCph9AErJboHYbkdmmkLLzLXBxUWn26Mw-D8ggL0E0QhFo7KuoPvOA6nGtg4KyDse_nwtnXlf_d-mGbldD8bRrNzNRWWC_o061nX-bNQaJiUBcxuvYVj2NDib0Q8x2lrYThlMmz5UE6JfQ"/>
+</div>
+<div class="flex-1 min-w-0 mx-3 flex flex-col justify-center">
+<p class="text-on-surface font-headline font-bold text-sm truncate leading-tight">Ponto de Ogum</p>
+<p class="text-on-surface-variant font-body text-xs truncate">Ogum</p>
+</div>
+<div class="flex items-center gap-3 text-on-surface pr-1">
+<button class="active:scale-90 transition-transform p-1">
+<span class="material-symbols-outlined font-light text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="active:scale-90 transition-transform p-1">
+<span class="material-symbols-outlined font-light text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">skip_next</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar JSON Anchor (Active: Busca) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center pt-2 pb-safe px-4 bg-surface-dim/95 dark:bg-surface-dim/95 backdrop-blur-lg border-none shadow-lg h-[72px]">
+<!-- Item 1: Início (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="font-label text-[10px] font-medium tracking-wide">Início</span>
+</a>
+<!-- Item 2: Busca (Active) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1 drop-shadow-[0_0_8px_rgba(29,185,84,0.4)]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label text-[10px] font-bold tracking-wide">Busca</span>
+</a>
+<!-- Item 3: Favoritos (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">favorite</span>
+<span class="font-label text-[10px] font-medium tracking-wide">Favoritos</span>
+</a>
+<!-- Item 4: Admin (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">admin_panel_settings</span>
+<span class="font-label text-[10px] font-medium tracking-wide">Admin</span>
+</a>
+</nav>
+<!-- Support for safe area inset on modern mobile devices -->
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+    </style>
+</body></html>
