@@ -216,6 +216,85 @@
           "edicao-letra"
         ]
       }
+    },
+    "re_extraction_2026_05_21": {
+      "completed_at": "2026-05-21T22:45:00Z",
+      "trigger": "user_option_6_partial_re_extraction",
+      "files": [
+        "_reversa_sdd/re-extraction-2026-05-21.md",
+        "_reversa_sdd/dependencies.md",
+        "_reversa_sdd/autenticacao/requirements.md",
+        "_reversa_sdd/autenticacao/design.md",
+        "_reversa_sdd/edicao-letra/requirements.md",
+        "_reversa_sdd/edicao-letra/tasks.md",
+        "_reversa_sdd/acervo-categorias/requirements.md",
+        "_reversa_sdd/data-dictionary.md",
+        "_reversa_sdd/flowcharts/app-bootstrap.md"
+      ],
+      "summary": {
+        "modules_updated": [
+          "app-bootstrap",
+          "services",
+          "supabase-data",
+          "autenticacao",
+          "edicao-letra",
+          "acervo-categorias"
+        ],
+        "key_deltas": [
+          "google_sign_in v7",
+          "file_picker v12",
+          "seed.sql categories.code",
+          "initial_schema.sql consolidated",
+          "run-dev dart_defines workflow",
+          "is_active enforcement confirmed"
+        ],
+        "estimated_confidence_delta": "+2pp on touched units"
+      }
+    },
+    "re_extraction_2026_05_31_visual": {
+      "completed_at": "2026-05-31T12:00:00Z",
+      "trigger": "partial_re_extraction_after_001_novo_visual_streaming",
+      "feature_forward": "001-novo-visual-streaming",
+      "files": [
+        "_reversa_sdd/re-extraction-2026-05-31-visual.md",
+        "_reversa_sdd/design-system/design-system.md",
+        "_reversa_sdd/design-system/color-palette.md",
+        "_reversa_sdd/design-system/typography.md",
+        "_reversa_sdd/design-system/tokens.md",
+        "_reversa_sdd/ui/inventory.md",
+        "_reversa_sdd/ui/screens/home.md",
+        "_reversa_sdd/ui/screens/categoria.md",
+        "_reversa_sdd/ui/screens/visualizacao-letra.md",
+        "_reversa_sdd/code-analysis.md",
+        "_reversa_sdd/architecture.md",
+        "_reversa_sdd/flowcharts/app-bootstrap.md",
+        "_reversa_sdd/administracao/design.md",
+        "_reversa_forward/001-novo-visual-streaming/regression-watch.md"
+      ],
+      "summary": {
+        "modules_updated": [
+          "app-bootstrap",
+          "widgets",
+          "design-system",
+          "ui",
+          "administracao"
+        ],
+        "key_deltas": [
+          "brand green 1DB954",
+          "plus jakarta sans unified",
+          "AppTheme AppColors modules",
+          "ThemeProvider default dark",
+          "streaming widgets",
+          "regression-watch W001-W007 all green"
+        ],
+        "regression_watch": {
+          "verified": 7,
+          "green": 7,
+          "yellow": 0,
+          "red": 0
+        },
+        "estimated_confidence_delta": "+1pp on presentation units"
+      }
     }
   },
   "redator_progress": {

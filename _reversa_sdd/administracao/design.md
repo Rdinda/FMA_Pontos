@@ -111,7 +111,7 @@ sequenceDiagram
 | Inativo | Avatar cinza, email `lineThrough`, chip "Inativo" |
 | Role user | Chip azul "Usuário" |
 | Role moderator | Chip tertiary "Moderador" |
-| Role admin | Chip error "Admin" |
+| Role admin | `RoleBadge` verde (`AppColors.roleAdmin` / `#1DB954`) |
 
 ## Aba Logs — Filtros e Query
 

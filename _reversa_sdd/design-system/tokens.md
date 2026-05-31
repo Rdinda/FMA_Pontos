@@ -1,17 +1,17 @@
 # Tokens — FMA_Pontos
 
-> Tabela consolidada. Valores 🟡 em papéis M3 dependem de `ColorScheme.fromSeed` em runtime.
+> Tabela consolidada. Re-extração visual 2026-05-31. Cores M3 explícitas em `app_theme.dart` (não `fromSeed`).
 
 ## Cores
 
 | Token | Valor | Categoria | Confiança |
 |-------|-------|-----------|-----------|
-| `color.primary` | `#6200EE` | Brand | 🟢 |
-| `color.on-primary` | `#FFFFFF` | Brand | 🟢 |
-| `color.scaffold.light` | `#FAFAFA` (`grey[50]`) | Surface | 🟢 |
-| `color.scaffold.dark` | `colorScheme.surface` | Surface | 🟢 |
+| `color.primary` | `#1DB954` (CTA) / `#53E076` (highlight) | Brand | 🟢 |
+| `color.on-primary` | `#003914` (dark) / `#FFFFFF` (light CTA) | Brand | 🟢 |
+| `color.scaffold.light` | `#F5F5F5` | Surface | 🟢 |
+| `color.scaffold.dark` | `#131313` | Surface | 🟢 |
 | `color.error` | `colorScheme.error` | Feedback | 🟡 |
-| `color.success-snackbar` | `colorScheme.primary` | Feedback | 🟢 |
+| `color.success-snackbar` | `colorScheme.primaryContainer` | Feedback | 🟢 |
 | `color.destructive-text` | `#F44336` (`Colors.red`) | Feedback | 🟢 |
 | `color.rank.gold` | `Colors.amber` | Decorative | 🟢 |
 | `color.rank.silver` | `grey.shade400` | Decorative | 🟢 |
@@ -23,9 +23,9 @@
 
 | Token | Valor | Confiança |
 |-------|-------|-----------|
-| `font.family.primary` | Outfit | 🟢 |
-| `font.family.lyric-title` | Montserrat | 🟢 |
-| `font.family.lyric-body` | Open Sans | 🟢 |
+| `font.family.primary` | Plus Jakarta Sans | 🟢 |
+| `font.family.lyric-title` | Plus Jakarta Sans (unificado) | 🟢 |
+| `font.family.lyric-body` | Plus Jakarta Sans (unificado) | 🟢 |
 | `font.size.appbar` | 20px | 🟢 |
 | `font.size.lyric-body` | 18px | 🟢 |
 | `font.size.list-title` | 16px | 🟢 |
@@ -65,8 +65,12 @@
 
 | Token | Valor | Confiança |
 |-------|-------|-----------|
-| `elevation.appbar.light` | 2 | 🟢 |
-| `elevation.appbar.dark` | 0 | 🟢 |
+| `elevation.appbar.light` | 0 (transparente) | 🟢 |
+| `elevation.appbar.dark` | 0 (transparente) | 🟢 |
+| `color.role.admin` | `#1DB954` | 🟢 |
+| `color.role.moderator` | `#BB86FC` | 🟢 |
+| `color.role.user` | `#9E9E9E` | 🟢 |
+| `theme.default.mode` | `dark` (sem prefs) | 🟢 |
 | `elevation.card` | 2 | 🟢 |
 | `elevation.snackbar` | 6 | 🟢 |
 
@@ -86,7 +90,7 @@
 | Token | Valor | Confiança |
 |-------|-------|-----------|
 | `theme.material` | M3 (`useMaterial3: true`) | 🟢 |
-| `theme.seed` | `#6200EE` | 🟢 |
+| `theme.seed` | `#1DB954` | 🟢 |
 | `theme.modes` | system, light, dark | 🟢 |
 | `theme.persistence.key` | `theme_mode` (int index) | 🟢 |
 | `locale` | `pt_BR` | 🟢 |

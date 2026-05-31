@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../models/lyric.dart';
@@ -9,7 +8,11 @@ import '../services/favorites_service.dart';
 import '../services/sync_repository.dart';
 import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
-import '../widgets/category_player_widget.dart';
+import '../widgets/streaming/streaming_scaffold.dart';
+import '../widgets/streaming/streaming_navigation.dart';
+import '../widgets/streaming/track_list_tile.dart';
+import '../theme/app_colors.dart';
+import '../theme/streaming_tokens.dart';
 import 'lyric_view_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -43,9 +46,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       }
     }
 
-    // Ordenar por título (case-insensitive)
-    results.sort((a, b) =>
-        a.key.title.toLowerCase().compareTo(b.key.title.toLowerCase()));
+    results.sort(
+      (a, b) => a.key.title.toLowerCase().compareTo(b.key.title.toLowerCase()),
+    );
     return results;
   }
 
@@ -68,42 +71,89 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         final data = snapshot.data ?? [];
         final playableLyrics = data
             .map((e) => e.key)
-            .where((l) =>
-                (l.audioUrl?.isNotEmpty ?? false) ||
-                (l.localAudioPath?.isNotEmpty ?? false))
+            .where(
+              (l) =>
+                  (l.audioUrl?.isNotEmpty ?? false) ||
+                  (l.localAudioPath?.isNotEmpty ?? false),
+            )
             .toList();
 
-        return Scaffold(
+        return StreamingScaffold(
+          navContext: StreamingNavContext.standard,
+          currentNavIndex: StreamingNavIndex.favorites,
           appBar: AppBar(
-            centerTitle: true,
+            backgroundColor: Colors.transparent,
             title: Text(
-              "Gostei",
-              style: GoogleFonts.montserrat(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: colorScheme.onSurface,
+              'FMA Pontos',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: colorScheme.primary,
               ),
             ),
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            iconTheme: IconThemeData(color: colorScheme.onSurface),
-            actions: [
-              if (!isLoading && playableLyrics.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.play_circle_outline),
-                  tooltip: 'Tocar Todas',
-                  onPressed: () async {
-                    final audioService = Provider.of<AudioPlayerService>(
-                      context,
-                      listen: false,
-                    );
-                    await audioService.playAll(playableLyrics);
-                  },
+            centerTitle: true,
+          ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Seus Pontos Salvos',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${favService.favorites.length} ${favService.favorites.length == 1 ? 'ponto marcado' : 'pontos marcados'} como favoritos',
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!isLoading && playableLyrics.isNotEmpty)
+                      Material(
+                        color: AppColors.primaryContainer,
+                        shape: const CircleBorder(),
+                        elevation: 8,
+                        shadowColor:
+                            AppColors.primaryContainer.withValues(alpha: 0.4),
+                        child: InkWell(
+                          onTap: () async {
+                            await Provider.of<AudioPlayerService>(
+                              context,
+                              listen: false,
+                            ).playAll(playableLyrics);
+                          },
+                          customBorder: const CircleBorder(),
+                          child: const SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: Icon(
+                              Icons.play_arrow_rounded,
+                              color: AppColors.onPrimaryContainer,
+                              size: 32,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
+              ),
+              const SizedBox(height: StreamingTokens.spacingMd),
+              Expanded(child: _buildBody(context, isLoading, data, favService)),
             ],
           ),
-          body: _buildBody(context, isLoading, data, favService),
-          bottomSheet: const CategoryPlayerWidget(),
         );
       },
     );
@@ -119,35 +169,25 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     if (favService.favorites.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.favorite_border,
-                size: 64,
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Nenhum favorito ainda",
-                style: GoogleFonts.montserrat(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Suas músicas favoritas aparecerão aqui.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              size: 64,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Nenhum favorito ainda',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Suas músicas favoritas aparecerão aqui.',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
         ),
       );
     }
@@ -157,213 +197,97 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
 
     if (data.isEmpty) {
-      // Significa que existem IDs salvos no FavoritesService, mas nenhum foi encontrado no SQLite.
-      // Ou seja, todos os favoritos são órfãos (letras que foram deletadas do banco local).
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.search_off,
-                size: 64,
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Nenhuma letra encontrada",
-                style: GoogleFonts.montserrat(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Suas letras favoritas podem ter sido removidas do banco de dados.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                icon: const Icon(Icons.clear_all),
-                label: const Text("Limpar lista de favoritos"),
-                onPressed: () async {
-                  await favService.clearAll();
-                  if (context.mounted) {
-                    SnackbarUtils.show(
-                      context,
-                      message: 'Lista de favoritos limpa com sucesso.',
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Consumer<AudioPlayerService>(
-      builder: (context, audioService, child) {
-        return ListView.builder(
-          padding: const EdgeInsets.only(top: 8, bottom: 80),
-          itemCount: data.length,
-          itemBuilder: (ctx, i) {
-            final entry = data[i];
-            final lyric = entry.key;
-            final category = entry.value;
-
-            return _buildMusicalLyricTile(
-              context,
-              lyric,
-              category,
-              audioService,
-              favService,
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildMusicalLyricTile(
-    BuildContext context,
-    Lyric lyric,
-    Category category,
-    AudioPlayerService audioService,
-    FavoritesService favService,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isPlaying =
-        audioService.currentLyric?.id == lyric.id && audioService.isPlaying;
-    final isCurrent = audioService.currentLyric?.id == lyric.id;
-    final hasAudio =
-        (lyric.audioUrl?.isNotEmpty ?? false) ||
-        (lyric.localAudioPath?.isNotEmpty ?? false);
-    final hasVideo = lyric.youtubeLink?.isNotEmpty ?? false;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: isCurrent
-            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isCurrent
-              ? colorScheme.primary.withValues(alpha: 0.5)
-              : colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: isCurrent
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              if (isCurrent)
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-            ],
-          ),
-          child: Center(
-            child: isPlaying
-                ? Icon(Icons.graphic_eq, color: colorScheme.onPrimary)
-                : Text(
-                    lyric.sequenceNumber.toString(),
-                    style: TextStyle(
-                      color: isCurrent
-                          ? colorScheme.onPrimary
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-          ),
-        ),
-        title: Text(
-          lyric.title.capitalize(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
-            color: isCurrent ? colorScheme.primary : colorScheme.onSurface,
-          ),
-        ),
-        subtitle: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (hasAudio) ...[
-              Icon(Icons.music_note, size: 14, color: colorScheme.secondary),
-              const SizedBox(width: 4),
-            ],
-            if (hasVideo) ...[
-              Icon(Icons.videocam, size: 14, color: colorScheme.tertiary),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              "${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}",
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-                fontFamily: 'monospace',
-              ),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (hasAudio)
-              IconButton(
-                icon: Icon(
-                  isCurrent && isPlaying
-                      ? Icons.pause_circle_filled
-                      : Icons.play_circle_filled,
-                  color: colorScheme.primary,
-                ),
-                onPressed: () {
-                  if (isCurrent && isPlaying) {
-                    audioService.pause();
-                  } else {
-                    audioService.play(lyric);
-                  }
-                },
-              ),
-            IconButton(
-              icon: const Icon(Icons.favorite),
-              color: colorScheme.error,
-              tooltip: 'Remover dos favoritos',
+            TextButton.icon(
+              icon: const Icon(Icons.clear_all),
+              label: const Text('Limpar lista de favoritos'),
               onPressed: () async {
-                await favService.removeFavorite(lyric.id);
+                await favService.clearAll();
                 if (context.mounted) {
                   SnackbarUtils.show(
                     context,
-                    message: 'Removido dos favoritos',
+                    message: 'Lista de favoritos limpa com sucesso.',
                   );
                 }
               },
             ),
           ],
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => LyricViewScreen(lyric: lyric)),
-          );
-        },
-      ),
+      );
+    }
+
+    return Consumer<AudioPlayerService>(
+      builder: (context, audioService, _) {
+        return ListView.builder(
+          padding: const EdgeInsets.only(bottom: 16),
+          itemCount: data.length,
+          itemBuilder: (ctx, i) {
+            final entry = data[i];
+            final lyric = entry.key;
+            final category = entry.value;
+            final isCurrent = audioService.currentLyric?.id == lyric.id;
+            final isPlaying = isCurrent && audioService.isPlaying;
+            final hasAudio =
+                (lyric.audioUrl?.isNotEmpty ?? false) ||
+                (lyric.localAudioPath?.isNotEmpty ?? false);
+
+            return GlassTrackTile(
+              title: lyric.title.capitalize(),
+              subtitle:
+                  '${category.name.capitalize()} • ${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}',
+              isCurrent: isCurrent,
+              isPlaying: isPlaying,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LyricViewScreen(lyric: lyric),
+                  ),
+                );
+              },
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (hasAudio)
+                    IconButton(
+                      icon: Icon(
+                        isPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
+                        color: AppColors.primaryContainer,
+                      ),
+                      onPressed: () {
+                        if (isPlaying) {
+                          audioService.pause();
+                        } else {
+                          audioService.play(lyric);
+                        }
+                      },
+                    ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.favorite_rounded,
+                      color: AppColors.primaryHighlight,
+                    ),
+                    onPressed: () async {
+                      await favService.removeFavorite(lyric.id);
+                      if (context.mounted) {
+                        SnackbarUtils.show(
+                          context,
+                          message: 'Removido dos favoritos',
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

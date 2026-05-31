@@ -2,49 +2,53 @@
 
 > Documento consolidado gerado pelo agente **Design System** (Reversa).  
 > Stack UI: **Flutter Material 3** + **google_fonts**.  
-> Data: 2026-05-20
+> Data: 2026-05-20 · **Re-extração visual:** 2026-05-31 (feature `001-novo-visual-streaming`)
 
 ## Visão geral
 
-🟢 **CONFIRMADO** — O app não possui biblioteca de componentes isolada nem arquivo de design tokens. O design system é **implícito**, concentrado em:
+🟢 **CONFIRMADO** — O design system passou a ser **explícito** em módulos de tema e widgets streaming (re-extração 2026-05-31):
 
-- `lib/main.dart` — `ThemeData` light/dark
-- `lib/providers/theme_provider.dart` — modo claro/escuro/sistema
-- Padrões repetidos em telas (`ListTile` customizados, bottom nav, player compacto)
-- Utilitário `lib/utils/snackbar_utils.dart`
+- `lib/theme/app_colors.dart` — tokens de cor (brand, surfaces, badges de role)
+- `lib/theme/app_theme.dart` — `ThemeData` light/dark Material 3
+- `lib/providers/theme_provider.dart` — modo claro/escuro/sistema + persistência
+- `lib/widgets/streaming/*` — componentes visuais reutilizáveis (card, bottom nav, search, role badge)
+- Padrões de tela em `lib/screens/*.dart` e utilitário `lib/utils/snackbar_utils.dart`
 
-Identidade visual: **roxo primário** (`#6200EE`, Material Purple 700), tipografia **Outfit** no shell e **Montserrat + Open Sans** no conteúdo de letras.
+Identidade visual: **verde streaming** (`#1DB954` / `#53E076`), fundo escuro `#131313`, tipografia **Plus Jakarta Sans** unificada (shell, letras, admin).
 
 ## Arquitetura do tema
 
 ```mermaid
 flowchart TD
   A[ThemeProvider] --> B[MaterialApp themeMode]
-  B --> C[ThemeData light]
-  B --> D[ThemeData dark]
-  C --> E[ColorScheme.fromSeed + primary override]
+  B --> C[AppTheme.buildLightTheme]
+  B --> D[AppTheme.buildDarkTheme]
+  C --> E[ColorScheme explícito AppColors]
   D --> E
-  C --> F[GoogleFonts.outfitTextTheme]
+  C --> F[GoogleFonts.plusJakartaSansTextTheme]
   D --> F
   G[Telas / Widgets] --> H[Theme.of context.colorScheme]
-  G --> I[GoogleFonts locais Montserrat/OpenSans]
+  G --> I[StreamingCard / StreamingBottomNav / RoleBadge]
 ```
 
 | Aspecto | Decisão | Confiança |
 |---------|---------|-----------|
-| Design system base | Material 3 | 🟢 |
-| Cor brand | `#6200EE` fixa | 🟢 |
-| Paleta estendida | `fromSeed` (gerada) | 🟢 |
-| Dark mode | Sim, + system | 🟢 |
+| Design system base | Material 3 (`useMaterial3: true`) | 🟢 |
+| Cor brand | `#1DB954` (primaryContainer) / `#53E076` (highlight) | 🟢 |
+| Paleta estendida | `ColorScheme` explícito em `app_theme.dart` (não `fromSeed`) | 🟢 |
+| Default tema (sem prefs) | `ThemeMode.dark` | 🟢 |
+| AppBar | Transparente, título `onSurface` 20px bold | 🟢 |
+| Dark mode | Sim + system + light | 🟢 |
 | Locale | pt-BR | 🟢 |
 
 ## Paleta (resumo)
 
 Ver detalhes em [`color-palette.md`](color-palette.md).
 
-- **Primária:** `#6200EE`
-- **Fundos:** cinza claro (light) / `surface` M3 (dark)
-- **Feedback:** `error` para snackbars de erro; `primary` para sucesso
+- **Primária:** `#1DB954` / `#53E076`
+- **Fundos dark:** `#131313` (scaffold) e containers `#201F1F`–`#353534`
+- **Feedback:** `error` para snackbars de erro; `primaryContainer` para sucesso
+- **Badges de role:** admin verde, moderador `#BB86FC`, user cinza
 - **Decorativo:** amber / grey / brown para ranking Top 3
 
 ## Tipografia (resumo)
@@ -53,17 +57,16 @@ Ver [`typography.md`](typography.md).
 
 | Camada | Fonte |
 |--------|-------|
-| App shell | Outfit (textTheme global) |
-| Títulos de letra | Montserrat |
-| Corpo de letra | Open Sans 18px / lh 1.75 |
+| App shell, letras, admin | Plus Jakarta Sans (`GoogleFonts.plusJakartaSansTextTheme`) |
+| Corpo de letra | 18px, line-height 1.75 (tema) |
 
 ## Espaçamento e forma (resumo)
 
 Ver [`spacing.md`](spacing.md).
 
-- **Raio dominante:** 12dp (cards, inputs, listas)
+- **Raio dominante:** 12dp (inputs, botões); cards 16dp
 - **Padding de tela:** 24dp
-- **Elevação:** cards 2; snackbar 6
+- **AppBar:** elevation 0 (transparente)
 
 ## Tokens
 
@@ -71,52 +74,55 @@ Tabela completa em [`tokens.md`](tokens.md).
 
 ## Componentes identificados
 
-Não há package `components/` — padrões reutilizáveis:
-
 | Componente | Arquivo principal | Variantes / notas | Confiança |
 |------------|-------------------|-------------------|-----------|
-| App shell | `main.dart` | Light/dark M3 | 🟢 |
-| Theme switcher | `theme_provider.dart`, `app_info_bottom_sheet.dart` | cycle system→light→dark | 🟢 |
-| Bottom navigation | `home_screen.dart` | 5 destinos | 🟢 |
-| Lista de categoria/letra | `category_screen.dart`, `favorites_screen.dart`, `search_screen.dart`, `top_played_screen.dart` | Tile com play, borda ativa quando tocando | 🟢 |
+| App shell | `lib/main.dart`, `app_theme.dart` | Light/dark M3 | 🟢 |
+| Theme switcher | `theme_provider.dart`, `app_info_bottom_sheet.dart` | cycle system→light→ dark | 🟢 |
+| Bottom navigation | `streaming_bottom_nav.dart`, telas | 5 destinos Home; 3 em Category | 🟢 |
+| Card streaming | `streaming_card.dart` | Lista categorias/letras | 🟢 |
+| Campo busca | `streaming_search_field.dart` | Busca pill escuro | 🟢 |
+| Badge de role | `role_badge.dart` | admin/moderator/user | 🟢 |
+| Lista de categoria/letra | `category_screen.dart`, `favorites_screen.dart`, etc. | Tile com play, borda ativa quando tocando | 🟢 |
 | Player compacto | `category_player_widget.dart` | Playlist ativa; letra expansível; favorito | 🟢 |
-| Snackbar | `snackbar_utils.dart` | Sucesso (primary) / erro | 🟢 |
+| Snackbar | `snackbar_utils.dart` | Sucesso (`primaryContainer`) / erro | 🟢 |
 | Bottom sheet info | `app_info_bottom_sheet.dart` | Login, tema, versão | 🟢 |
 | Onboarding | `onboarding_screen.dart`, `onboarding_widgets.dart` | Slides animados, checkbox privacidade | 🟢 |
-| Input padrão | `main.dart` `inputDecorationTheme` | Filled, radius 12 | 🟢 |
-| Splash | `splash_screen.dart` | Logo 300px, loader primary | 🟢 |
+| Splash | `splash_screen.dart` | Fundo escuro, loader verde | 🟢 |
 
 ### Props / comportamento comum de lista
 
-🟢 **CONFIRMADO** — Tiles usam `Card` ou container com `borderRadius: 12`, `margin` horizontal 16, destaque com `BorderSide(color: primary, width: 2)` quando faixa atual.
+🟢 **CONFIRMADO** — Tiles usam `StreamingCard` ou container com `borderRadius: 12`, `margin` horizontal 16, destaque com `BorderSide(color: primary, width: 2)` quando faixa atual.
 
 ## Assets visuais
 
 | Asset | Caminho | Uso | Confiança |
-|-------|---------|-----|-----------|
+|-------|---------|-----|------------|
 | Splash | `assets/images/splash.png` | Tela inicial | 🟢 |
 | Maria (onboarding) | `assets/images/maria.png` | Logo animado | 🟢 |
 | Launcher | `mipmap/ic_launcher` | Notificação áudio | 🟢 |
+| Splash nativa Android | `android/.../launch_background.xml` | Fundo `#131313` | 🟢 |
 
 ## Rastreabilidade de código
 
 | Área | Arquivos |
 |------|----------|
-| Tema global | `lib/main.dart` |
-| Modo escuro | `lib/providers/theme_provider.dart` |
+| Tokens de cor | `lib/theme/app_colors.dart` |
+| Tema global | `lib/theme/app_theme.dart` |
+| Modo escuro/claro | `lib/providers/theme_provider.dart` |
 | Feedback | `lib/utils/snackbar_utils.dart` |
 | Player UI | `lib/widgets/category_player_widget.dart` |
 | Info / tema | `lib/widgets/app_info_bottom_sheet.dart` |
 | Onboarding | `lib/screens/onboarding_widgets.dart` |
+| Widgets streaming | `lib/widgets/streaming/*.dart` |
 
 ## Recomendações para migração / redesign
 
-🟡 **INFERIDO** — Para sistema novo ou refactor:
+🟡 **INFERIDO** — Pós feature 001:
 
-1. Centralizar tokens em um único módulo (`theme/tokens.dart` ou Style Dictionary).
-2. Unificar tipografia (Outfit vs Montserrat/Open Sans) ou documentar hierarquia oficial.
-3. Versionar valores M3 `fromSeed` exportados (script de build) para paridade visual.
-4. Extrair `LyricListTile`, `CategoryPlayer`, `AppSnackbar` como widgets nomeados.
+1. ~~Centralizar tokens~~ — feito em `app_colors.dart` / `app_theme.dart`.
+2. ~~Unificar tipografia~~ — Plus Jakarta Sans única.
+3. Versionar `ColorScheme` exportado (script de build) para paridade visual em CI.
+4. Extrair `LyricListTile` como alias de `StreamingCard` se a lista crescer.
 
 ## Documentos relacionados
 
@@ -124,13 +130,14 @@ Não há package `components/` — padrões reutilizáveis:
 - [`typography.md`](typography.md)
 - [`spacing.md`](spacing.md)
 - [`tokens.md`](tokens.md)
+- [`../_reversa_forward/001-novo-visual-streaming/legacy-impact.md`](../_reversa_forward/001-novo-visual-streaming/legacy-impact.md)
 
 ## Estatísticas
 
 | Categoria | Tokens documentados | 🟢 | 🟡 | 🔴 |
 |-----------|---------------------|----|----|-----|
-| Cores | 12+ explícitos + M3 gerado | 9 | 3 | 1 |
-| Tipografia | 10+ | 10 | 1 | 1 |
-| Espaçamento / radius | 15+ | 14 | 2 | 1 |
+| Cores | 20+ explícitos em `AppColors` | 18 | 2 | 0 |
+| Tipografia | 10+ | 10 | 0 | 0 |
+| Espaçamento / radius | 15+ | 14 | 1 | 0 |
 | Motion | 6 | 6 | 0 | 0 |
-| Componentes | 10 padrões | 10 | 0 | 0 |
+| Componentes | 12 padrões | 12 | 0 | 0 |

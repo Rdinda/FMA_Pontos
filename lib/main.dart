@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:toastification/toastification.dart';
 import 'services/sync_repository.dart';
 import 'services/audio_player_service.dart';
 import 'services/auth_service.dart';
 import 'services/favorites_service.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Credenciais via --dart-define (mais seguro que .env no APK)
   const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
@@ -25,7 +25,6 @@ void main() async {
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
-  // Initialize AudioPlayerService BEFORE runApp to ensure it's ready
   debugPrint('[main] Initializing AudioPlayerService...');
   final audioService = await AudioPlayerService.create();
   debugPrint('[main] AudioPlayerService initialized successfully');
@@ -33,13 +32,17 @@ void main() async {
   runApp(MyApp(audioService: audioService));
 }
 
+EdgeInsetsGeometry _toastMarginBuilder(
+  BuildContext context,
+  AlignmentGeometry alignment,
+) {
+  return const EdgeInsets.fromLTRB(16, 0, 16, 110);
+}
+
 class MyApp extends StatelessWidget {
   final AudioPlayerService audioService;
 
   const MyApp({super.key, required this.audioService});
-
-  // Cor primária do app
-  static const Color primaryColor = Color(0xFF6200EE);
 
   @override
   Widget build(BuildContext context) {
@@ -53,141 +56,29 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
-          return MaterialApp(
-            title: 'Filhos de Maria das Almas',
-            debugShowCheckedModeBanner: false,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('pt', 'BR')],
-            locale: const Locale('pt', 'BR'),
-            themeMode: themeProvider.themeMode,
-            theme: _buildLightTheme(),
-            darkTheme: _buildDarkTheme(),
-            home: const SplashScreen(),
+          return ToastificationWrapper(
+            config: const ToastificationConfig(
+              alignment: Alignment.bottomCenter,
+              blockBackgroundInteraction: false,
+              marginBuilder: _toastMarginBuilder,
+            ),
+            child: MaterialApp(
+              title: 'Filhos de Maria das Almas',
+              debugShowCheckedModeBanner: false,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('pt', 'BR')],
+              locale: const Locale('pt', 'BR'),
+              themeMode: themeProvider.themeMode,
+              theme: AppTheme.buildLightTheme(),
+              darkTheme: AppTheme.buildDarkTheme(),
+              home: const SplashScreen(),
+            ),
           );
         },
-      ),
-    );
-  }
-
-  ThemeData _buildLightTheme() {
-    final lightColorScheme = ColorScheme.fromSeed(
-      seedColor: primaryColor,
-      brightness: Brightness.light,
-    ).copyWith(
-      primary: primaryColor,
-      onPrimary:
-          ThemeData.estimateBrightnessForColor(primaryColor) == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-    );
-
-    return ThemeData(
-      brightness: Brightness.light,
-      primaryColor: primaryColor,
-      scaffoldBackgroundColor: Colors.grey[50],
-      colorScheme: lightColorScheme,
-      textTheme: GoogleFonts.outfitTextTheme(),
-      appBarTheme: AppBarTheme(
-        backgroundColor: lightColorScheme.primary,
-        foregroundColor: lightColorScheme.onPrimary,
-        elevation: 2,
-        titleTextStyle: GoogleFonts.outfit(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: lightColorScheme.onPrimary,
-        ),
-      ),
-      tabBarTheme: TabBarThemeData(
-        labelColor: lightColorScheme.onPrimary,
-        unselectedLabelColor: lightColorScheme.onPrimary.withValues(alpha: 0.7),
-        indicatorColor: lightColorScheme.onPrimary,
-      ),
-      cardTheme: const CardThemeData(elevation: 2),
-      useMaterial3: true,
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-      ),
-    );
-  }
-
-  ThemeData _buildDarkTheme() {
-    final darkColorScheme = ColorScheme.fromSeed(
-      seedColor: primaryColor,
-      brightness: Brightness.dark,
-    ).copyWith(
-      primary: primaryColor,
-      onPrimary:
-          ThemeData.estimateBrightnessForColor(primaryColor) == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-    );
-
-    return ThemeData(
-      brightness: Brightness.dark,
-      primaryColor: primaryColor,
-      scaffoldBackgroundColor: darkColorScheme.surface,
-      colorScheme: darkColorScheme,
-      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-      appBarTheme: AppBarTheme(
-        backgroundColor: darkColorScheme.primary,
-        foregroundColor: darkColorScheme.onPrimary,
-        elevation: 0,
-        titleTextStyle: GoogleFonts.outfit(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: darkColorScheme.onPrimary,
-        ),
-      ),
-      tabBarTheme: TabBarThemeData(
-        labelColor: darkColorScheme.onPrimary,
-        unselectedLabelColor: darkColorScheme.onPrimary.withValues(alpha: 0.7),
-        indicatorColor: darkColorScheme.onPrimary,
-      ),
-      cardTheme: CardThemeData(
-        elevation: 2,
-        color: darkColorScheme.surfaceContainerHighest,
-      ),
-      useMaterial3: true,
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: darkColorScheme.surfaceContainerHighest,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: darkColorScheme.outline),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: darkColorScheme.outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: darkColorScheme.primary, width: 2),
-        ),
       ),
     );
   }

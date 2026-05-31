@@ -88,7 +88,7 @@
 
 - [ ] T-16, Implementar seleção de arquivo de áudio
   - Origem no legado: `lib/screens/lyric_form_screen.dart`
-  - Critério de pronto: `_pickAndUploadAudio` usa `FilePicker.platform.pickFiles(type: FileType.audio)` e só prossegue quando há path.
+  - Critério de pronto: `_pickAndUploadAudio` usa `FilePicker.pickFiles(type: FileType.audio)` e só prossegue quando há path.
   - Confiança: 🟢
 
 - [ ] T-17, Implementar upload de áudio

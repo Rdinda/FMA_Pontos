@@ -36,7 +36,7 @@ Cada item (`ListTile` / card):
 
 | Tab | Label | Ícone | Comportamento |
 |-----|-------|-------|---------------|
-| 0 | Home | `home` | Permanece (ativo, roxo) |
+| 0 | Home | `home` | Permanece (ativo, verde `primary`) |
 | 1 | Buscar | `search` | Push `SearchScreen` |
 | 2 | Top | `trending_up` | Push `TopPlayedScreen` |
 | 3 | Gostei | `favorite` | Push `FavoritesScreen` |

@@ -150,5 +150,5 @@ E retornar true para a tela anterior
 | `lib/services/supabase_service.dart` | `upsertLyric`, `deleteLyric`, `uploadAudio`, `deleteAudioByUrl` | 🟢 |
 | `lib/services/auth_service.dart` | `canAddLyrics`, `canEditLyrics`, `canDeleteLyrics` usados por fluxos chamadores | 🟡 |
 | `youtube_player_flutter` | `YoutubePlayer.convertUrlToId` | 🟢 |
-| `file_picker` | `FilePicker.platform.pickFiles(type: FileType.audio)` | 🟢 |
+| `file_picker` | `FilePicker.pickFiles(type: FileType.audio)` | 🟢 |
 

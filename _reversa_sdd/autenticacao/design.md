@@ -191,10 +191,11 @@ sequenceDiagram
 
 | Parâmetro | Valor / local | Confiança |
 |-----------|---------------|-----------|
+| Instância | `GoogleSignIn.instance` (singleton v7) | 🟢 |
+| Inicialização | `initialize(serverClientId: ...)` em `_init` | 🟢 |
+| Login interativo | `authenticate()` | 🟢 |
 | `serverClientId` | Web Client ID em `auth_service.dart` | 🟢 |
-| `scopes` | `['email']` | 🟢 |
-| SHA-1/SHA-256 Android | Deve coincidir com OAuth Client no Google Cloud | 🟡 (mensagem de erro no código) |
-| Package name | Deve coincidir com app Android | 🟡 |
+| Token Supabase | `idToken` via `googleUser.authentication` (getter) | 🟢 |
 
 ## RLS e Policies (`user_roles`)
 
@@ -210,7 +211,6 @@ sequenceDiagram
 
 | Item | Severidade | Notas |
 |------|------------|-------|
-| `is_active` não checado em `AuthService` | 🔴 | Admin altera flag; app não invalida sessão |
 | `upgradeToEmail` sem UI | 🟡 | API pronta, fluxo morto |
 | `serverClientId` hardcoded | 🟡 | Deveria vir de `--dart-define` em builds |
 | Divergência UI vs RLS | 🟡 | Policies remotas podem mudar fora do repo |

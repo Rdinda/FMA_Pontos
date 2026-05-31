@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -284,7 +283,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
       builder: (ctx) => AlertDialog(
         title: Text(
           "Excluir",
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
         ),
         content: const Text("Tem certeza que deseja excluir esta letra?"),
         actions: [
@@ -318,11 +317,6 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
         centerTitle: true,
         title: Text(
           widget.lyric == null ? "Nova Letra" : "Editar Letra",
-          style: GoogleFonts.montserrat(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: colorScheme.onSurface,
-          ),
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -348,10 +342,6 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 controller: _titleController,
-                style: GoogleFonts.openSans(
-                  fontSize: 16,
-                  color: colorScheme.onSurface,
-                ),
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   labelText: "Título",
@@ -404,8 +394,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
                           Expanded(
                             child: Text(
                               _audioUrl != null ? "Áudio anexado" : "Nenhum áudio selecionado",
-                              style: GoogleFonts.openSans(
-                                fontSize: 15,
+                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                                 color: _audioUrl != null ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
                                 fontWeight: _audioUrl != null ? FontWeight.w500 : FontWeight.normal,
                               ),
@@ -435,7 +424,7 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
                       icon: const Icon(Icons.upload_file_outlined),
                       label: Text(
                         "Anexar",
-                        style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colorScheme.surfaceContainerHighest,
@@ -458,10 +447,6 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 controller: _youtubeController,
-                style: GoogleFonts.openSans(
-                  fontSize: 16,
-                  color: colorScheme.onSurface,
-                ),
                 decoration: InputDecoration(
                   labelText: "Link do YouTube",
                   labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
@@ -502,11 +487,6 @@ class _LyricFormScreenState extends State<LyricFormScreen> {
                   expands: true,
                   maxLines: null,
                   textAlignVertical: TextAlignVertical.top,
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    height: 1.6,
-                    color: colorScheme.onSurface,
-                  ),
                   decoration: InputDecoration(
                     labelText: "Letra",
                     alignLabelWithHint: true,

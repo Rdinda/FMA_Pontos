@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
 
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.dark;
   bool _isInitialized = false;
 
   ThemeMode get themeMode => _themeMode;

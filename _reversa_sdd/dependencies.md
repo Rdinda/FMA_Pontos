@@ -23,20 +23,20 @@ Gerado pelo Reversa Scout em 2026-05-18T22:49:45-03:00.
 | `sqflite` | `^2.4.1` | Banco SQLite local. |
 | `path` | `^1.9.0` | Manipulação de caminhos. |
 | `provider` | `^6.1.2` | Estado/injeção de dependências. |
-| `connectivity_plus` | `^6.1.0` | Detecção de conectividade para sync. |
+| `connectivity_plus` | `^7.1.1` | Detecção de conectividade para sync. |
 | `uuid` | `^4.5.1` | Geração de identificadores. |
-| `google_fonts` | `^6.2.1` | Tipografia do app. |
+| `google_fonts` | `^8.1.0` | Tipografia do app. |
 | `audioplayers` | `^6.0.0` | Reprodução de áudio. |
-| `file_picker` | `^8.1.4` | Seleção de arquivos de áudio. |
-| `mime` | `^1.0.6` | Detecção de tipo MIME. |
-| `permission_handler` | `^11.3.0` | Permissões nativas. |
+| `file_picker` | `^12.0.0-beta.3` | Seleção de arquivos de áudio. |
+| `mime` | `^2.0.0` | Detecção de tipo MIME. |
+| `permission_handler` | `^12.0.1` | Permissões nativas. |
 | `path_provider` | `^2.1.2` | Diretórios locais do dispositivo. |
 | `http` | `^1.2.0` | Requisições HTTP. |
-| `package_info_plus` | `^9.0.0` | Metadados do app instalado. |
+| `package_info_plus` | `^10.1.0` | Metadados do app instalado. |
 | `url_launcher` | `^6.3.2` | Abertura de URLs externas. |
 | `logger` | `^2.6.2` | Logging estruturado. |
 | `audio_service` | `^0.18.18` | Serviço/background audio e notificações. |
-| `google_sign_in` | `6.2.1` | Login Google. |
+| `google_sign_in` | `^7.2.0` | Login Google (API v7 — singleton + `authenticate`). |
 | `shared_preferences` | `^2.5.4` | Preferências locais. |
 | `youtube_player_flutter` | `^9.1.3` | Player de vídeos YouTube. |
 
@@ -46,7 +46,7 @@ Gerado pelo Reversa Scout em 2026-05-18T22:49:45-03:00.
 |---|---|---|
 | `flutter_test` | SDK | Testes Flutter/Dart. |
 | `flutter_lints` | `^6.0.0` | Regras de lint. |
-| `flutter_launcher_icons` | `^0.13.1` | Geração de ícones Android/iOS. |
+| `flutter_launcher_icons` | `^0.14.4` | Geração de ícones Android/iOS. |
 
 ## Dependências Críticas por Área
 

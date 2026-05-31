@@ -51,7 +51,7 @@ Exibir todos os pontos/letras de uma categoria; permitir reprodução inline, ab
 | Loading | Indicador central |
 | Vazio | Mensagem sem letras |
 | Preenchido | Lista scrollável (screenshot) |
-| Item tocando | Leading animado + título bold roxo |
+| Item tocando | Leading animado + título bold verde (`primary`) |
 
 ## Navegação
 

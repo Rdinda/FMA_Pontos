@@ -1,0 +1,10 @@
+{
+  "schema-version": 1,
+  "feature-dir": "_reversa_forward/001-novo-visual-streaming",
+  "feature-id": "001",
+  "short-name": "novo-visual-streaming",
+  "started-at": "2026-05-21T23:00:00Z",
+  "current-stage": "coding",
+  "stages-completed": ["requirements", "clarify", "plan", "to-do", "coding"],
+  "paused-features": []
+}

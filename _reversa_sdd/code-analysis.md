@@ -39,7 +39,9 @@ Fluxo:
 3. Inicializa `Supabase`.
 4. Cria `AudioPlayerService` via `AudioService.init`.
 5. Injeta `ThemeProvider`, `AuthService`, `SyncRepository`, `FavoritesService` e `AudioPlayerService`.
-6. Renderiza `MaterialApp` em pt-BR com `SplashScreen` inicial.
+6. Renderiza `MaterialApp` em pt-BR com `theme`/`darkTheme` de `AppTheme.buildLightTheme()` / `AppTheme.buildDarkTheme()`, `themeMode` do `ThemeProvider` (default `ThemeMode.dark` sem prefs), `SplashScreen` inicial.
+
+🟢 **CONFIRMADO** — Re-extração 2026-05-31: tema global em `lib/theme/app_theme.dart` + tokens `lib/theme/app_colors.dart`; `main.dart` não define mais `ThemeData` inline nem roxo `#6200EE`.
 
 ### Splash, Autenticação e Onboarding
 

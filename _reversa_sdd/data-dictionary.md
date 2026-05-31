@@ -131,7 +131,13 @@ Migrations locais:
 
 ## Supabase Remoto
 
-Fonte: `supabase/supabase_schema.sql`, `supabase/migrations/*.sql`
+Fonte: `supabase/migrations/20251226191350_initial_schema.sql` (consolidado), `supabase/migrations/*.sql` (incrementais legados), `supabase/seed.sql`
+
+🟢 **CONFIRMADO (re-extração 2026-05-21)** — `initial_schema.sql` consolida tabelas, RLS, triggers, storage e funções; `categories.code` nasce `NOT NULL UNIQUE`.
+
+🟡 **INFERIDO** — Migrations incrementais anteriores ainda presentes na pasta; fresh install deve preferir apenas o schema consolidado ou validar ordem de execução.
+
+🟢 **CONFIRMADO** — `seed.sql` inclui coluna `code` em todos os INSERT de categorias.
 
 ### Tabelas detectadas
 
@@ -141,7 +147,7 @@ Fonte: `supabase/supabase_schema.sql`, `supabase/migrations/*.sql`
 | `public.lyrics` | Letras/pontos | 🟢 CONFIRMADO |
 | `public.user_roles` | Roles e status de usuários | 🟢 CONFIRMADO |
 | `public.lyric_play_stats` | Contadores de reprodução | 🟢 CONFIRMADO |
-| `public.audit_logs` | Logs administrativos lidos pelo app | 🔴 LACUNA |
+| `public.audit_logs` | Logs administrativos lidos pelo app | 🟢 CONFIRMADO |
 
 ### Storage
 

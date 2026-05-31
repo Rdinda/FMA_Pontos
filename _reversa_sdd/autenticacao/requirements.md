@@ -8,7 +8,7 @@
 🟢 **CONFIRMADO** — Login Google é opcional, acionado pelo bottom sheet de informações (`showAppInfoBottomSheet`).  
 🟡 **INFERIDO** — `upgradeToEmail` existe no serviço mas não é referenciado por nenhuma tela (funcionalidade latente).  
 🟢 **CONFIRMADO** — Usuário com `is_active = false` **deve ter login bloqueado** (decisão stakeholder, Roberto 2026-05-20).  
-🟡 **INFERIDO** — No legado, `AuthService` ainda não verifica `is_active` após fetch de role — gap de implementação.
+🟢 **CONFIRMADO** — `AuthService._ensureUserIsActive()` e fetch de role verificam `is_active`; sessão inválida dispara `signOut` com mensagem.
 
 Referência: ADR 002 — `_reversa_sdd/adrs/002-rbac-google-admin.md`.
 
@@ -16,7 +16,8 @@ Referência: ADR 002 — `_reversa_sdd/adrs/002-rbac-google-admin.md`.
 
 - 🟢 **CONFIRMADO** — Inicializar listener `onAuthStateChange` do Supabase e restaurar sessão existente.
 - 🟢 **CONFIRMADO** — Criar sessão anônima via `signInAnonymously` quando não há usuário nem sessão persistida.
-- 🟢 **CONFIRMADO** — Autenticar com Google (`google_sign_in` v6) e trocar por sessão Supabase via `signInWithIdToken`.
+- 🟢 **CONFIRMADO** — Autenticar com Google (`google_sign_in` **v7**) via `GoogleSignIn.instance.authenticate()` e trocar por sessão Supabase via `signInWithIdToken` (somente `idToken`).
+- 🟢 **CONFIRMADO** — Inicializar Google Sign-In com `GoogleSignIn.instance.initialize(serverClientId: ...)` no `_init` do `AuthService`.
 - 🟢 **CONFIRMADO** — Buscar role do usuário em `user_roles` após login não anônimo.
 - 🟢 **CONFIRMADO** — Criar registro `user_roles` com role `user` quando ausente (fallback app-side).
 - 🟢 **CONFIRMADO** — Assinar mudanças de role via Supabase Realtime (`postgres_changes` em `user_roles`).
@@ -35,7 +36,7 @@ Referência: ADR 002 — `_reversa_sdd/adrs/002-rbac-google-admin.md`.
 - 🟢 **CONFIRMADO** — `canDeleteLyrics` e `canDeleteCategories` requerem `admin`.
 - 🟢 **CONFIRMADO** — Após `signedOut`, `_userRole` volta para `'user'` e subscription Realtime é removida.
 - 🟢 **CONFIRMADO** — Usuário anônimo mantém `_userRole = 'user'` sem consulta a `user_roles`.
-- 🟢 **CONFIRMADO** — Cancelamento do fluxo Google (`googleUser == null`) define `_error = 'Login cancelado'` e retorna `false`.
+- 🟢 **CONFIRMADO** — Cancelamento do fluxo Google (`GoogleSignInExceptionCode.canceled`) define `_error = 'Login cancelado'` e retorna `false`.
 - 🟢 **CONFIRMADO** — Ausência de `idToken` do Google bloqueia login com mensagem explícita.
 - 🟢 **CONFIRMADO** — `ApiException: 10` no Google Sign-In gera mensagem orientando configuração OAuth (package/SHA/serverClientId).
 - 🟢 **CONFIRMADO** — `ensureAuthenticated` é idempotente: retorna `true` se já há `_currentUser` ou sessão recuperável.

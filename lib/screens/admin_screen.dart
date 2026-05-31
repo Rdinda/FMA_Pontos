@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/audit_log.dart';
@@ -8,6 +7,8 @@ import '../models/user_info.dart';
 import '../services/admin_service.dart';
 import '../services/auth_service.dart';
 import '../utils/snackbar_utils.dart';
+import '../widgets/streaming/role_badge.dart';
+import '../widgets/streaming/streaming_search_field.dart';
 
 /// Tela administrativa para gerenciamento de papéis, ativação de usuários e visualização de logs de auditoria.
 class AdminScreen extends StatefulWidget {
@@ -146,11 +147,11 @@ class _AdminScreenState extends State<AdminScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Confirmar Ação',
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Tem certeza que deseja $actionText o usuário com o e-mail ${user.email}?',
-          style: GoogleFonts.openSans(),
+          style: Theme.of(context).textTheme.bodyMedium!,
         ),
         actions: [
           TextButton(
@@ -234,7 +235,7 @@ class _AdminScreenState extends State<AdminScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Detalhes do Log',
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
         ),
         content: SizedBox(
           width: double.maxFinite,
@@ -253,7 +254,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 if (log.oldData != null && log.oldData!.isNotEmpty) ...[
                   Text(
                     'Dados Anteriores:',
-                    style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 6),
                   Container(
@@ -274,7 +275,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 if (log.newData != null && log.newData!.isNotEmpty) ...[
                   Text(
                     'Novos Dados:',
-                    style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 6),
                   Container(
@@ -313,12 +314,12 @@ class _AdminScreenState extends State<AdminScreen> {
         children: [
           Text(
             '$label ',
-            style: GoogleFonts.openSans(fontWeight: FontWeight.bold, fontSize: 13),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold, fontSize: 13),
           ),
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.openSans(fontSize: 13, color: colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, color: colorScheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -364,7 +365,7 @@ class _AdminScreenState extends State<AdminScreen> {
       appBar: AppBar(
         title: Text(
           "Acesso Negado",
-          style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -385,8 +386,7 @@ class _AdminScreenState extends State<AdminScreen> {
               const SizedBox(height: 16),
               Text(
                 "Área Restrita",
-                style: GoogleFonts.montserrat(
-                  fontSize: 24,
+                style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.error,
                 ),
@@ -395,8 +395,7 @@ class _AdminScreenState extends State<AdminScreen> {
               Text(
                 "Esta área é destinada exclusivamente a administradores do sistema.",
                 textAlign: TextAlign.center,
-                style: GoogleFonts.openSans(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -429,11 +428,11 @@ class _AdminScreenState extends State<AdminScreen> {
         appBar: AppBar(
           title: Text(
             "Painel do Administrador",
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
           ),
           bottom: TabBar(
-            labelStyle: GoogleFonts.montserrat(fontWeight: FontWeight.w600, fontSize: 13),
-            unselectedLabelStyle: GoogleFonts.montserrat(fontSize: 13),
+            labelStyle: Theme.of(context).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+            unselectedLabelStyle: Theme.of(context).textTheme.labelLarge!.copyWith(fontSize: 13),
             tabs: const [
               Tab(
                 icon: Icon(Icons.people_outline),
@@ -453,35 +452,22 @@ class _AdminScreenState extends State<AdminScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: TextField(
+                  child: StreamingSearchField(
                     controller: _searchController,
+                    hintText: 'Buscar usuário por e-mail...',
                     onChanged: (val) {
                       setState(() {
                         _userSearchQuery = val;
                         _filterUsers();
                       });
                     },
-                    decoration: InputDecoration(
-                      hintText: "Buscar usuário por e-mail...",
-                      hintStyle: GoogleFonts.openSans(),
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _userSearchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _userSearchQuery = '';
-                                  _filterUsers();
-                                });
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                    ),
+                    onClear: () {
+                      _searchController.clear();
+                      setState(() {
+                        _userSearchQuery = '';
+                        _filterUsers();
+                      });
+                    },
                   ),
                 ),
                 Expanded(
@@ -497,7 +483,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     child: Center(
                                       child: Text(
                                         "Nenhum usuário encontrado.",
-                                        style: GoogleFonts.openSans(color: colorScheme.outline),
+                                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: colorScheme.outline),
                                       ),
                                     ),
                                   )
@@ -527,7 +513,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                       ),
                                       title: Text(
                                         user.email,
-                                        style: GoogleFonts.openSans(
+                                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                                           fontWeight: FontWeight.bold,
                                           decoration: user.isActive
                                               ? TextDecoration.none
@@ -536,24 +522,12 @@ class _AdminScreenState extends State<AdminScreen> {
                                       ),
                                       subtitle: Row(
                                         children: [
-                                          Container(
-                                            margin: const EdgeInsets.only(top: 6),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: _getRoleColor(user.role, colorScheme)
-                                                  .withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Text(
-                                              user.roleLabel,
-                                              style: TextStyle(
-                                                color: _getRoleColor(user.role, colorScheme),
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 10,
-                                              ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 6),
+                                            child: RoleBadge(
+                                              role: user.role,
+                                              label: user.roleLabel,
+                                              isActive: user.isActive,
                                             ),
                                           ),
                                           if (!user.isActive) ...[
@@ -637,7 +611,7 @@ class _AdminScreenState extends State<AdminScreen> {
                               initialValue: _selectedTable,
                               decoration: InputDecoration(
                                 labelText: 'Filtrar por Tabela',
-                                labelStyle: GoogleFonts.openSans(),
+                                labelStyle: Theme.of(context).textTheme.bodyMedium!,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 8,
@@ -680,7 +654,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 _selectedDateRange != null
                                     ? 'Período: ${DateFormat('dd/MM/yyyy').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM/yyyy').format(_selectedDateRange!.end)}'
                                     : 'Todas as datas',
-                                style: GoogleFonts.openSans(
+                                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                                   fontSize: 13,
                                   color: colorScheme.outline,
                                 ),
@@ -717,7 +691,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                     child: Center(
                                       child: Text(
                                         "Nenhum log encontrado.",
-                                        style: GoogleFonts.openSans(color: colorScheme.outline),
+                                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: colorScheme.outline),
                                       ),
                                     ),
                                   )
@@ -738,11 +712,11 @@ class _AdminScreenState extends State<AdminScreen> {
                                     leading: _buildActionIcon(log.action, colorScheme),
                                     title: Text(
                                       '${log.actionLabel} de ${log.tableLabel}',
-                                      style: GoogleFonts.openSans(fontWeight: FontWeight.bold),
+                                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
                                     ),
                                     subtitle: Text(
                                       '${log.recordName} • ${log.userEmail ?? "Desconhecido"}\n$dateStr',
-                                      style: GoogleFonts.openSans(fontSize: 12),
+                                      style: Theme.of(context).textTheme.bodySmall!,
                                     ),
                                     trailing: const Icon(Icons.chevron_right),
                                     onTap: () => _showLogDetails(log),
@@ -757,16 +731,5 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
       ),
     );
-  }
-
-  Color _getRoleColor(String role, ColorScheme colorScheme) {
-    switch (role) {
-      case 'admin':
-        return colorScheme.error;
-      case 'moderator':
-        return colorScheme.tertiary;
-      default:
-        return colorScheme.primary;
-    }
   }
 }

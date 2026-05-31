@@ -1,20 +1,21 @@
 # Paleta de Cores — FMA_Pontos
 
-> Extraído de `lib/main.dart`, `ThemeProvider`, telas e utilitários.  
-> Escala: 🟢 CONFIRMADO no código | 🟡 INFERIDO (Material 3 `fromSeed`) | 🔴 LACUNA
+> Extraído de `lib/theme/app_colors.dart`, `lib/theme/app_theme.dart`, `ThemeProvider`, telas e utilitários.  
+> Escala: 🟢 CONFIRMADO no código | 🟡 INFERIDO | 🔴 LACUNA  
+> Re-extração visual: 2026-05-31
 
 ## Cor semântica principal (seed)
 
 | Token | Valor | Uso | Confiança |
 |-------|-------|-----|-----------|
-| `primary` / `primaryColor` | `#6200EE` (`Color(0xFF6200EE)`) | AppBar, botões focados, bottom nav selecionado, loader splash, snackbar sucesso | 🟢 |
-| `onPrimary` | `#FFFFFF` | Texto/ícones sobre primária (estimado via `estimateBrightnessForColor`) | 🟢 |
+| `primary` / `primaryContainer` | `#1DB954` / `#53E076` | Bottom nav ativo, CTAs, loader splash, snackbar sucesso | 🟢 |
+| `onPrimary` | `#003914` (dark) / `#FFFFFF` (light botão) | Texto sobre verde sólido | 🟢 |
 
 ## ColorScheme (Material 3)
 
-🟢 **CONFIRMADO** — Temas claro e escuro usam `ColorScheme.fromSeed(seedColor: primaryColor)` com `useMaterial3: true`, sobrescrevendo apenas `primary` e `onPrimary`.
+🟢 **CONFIRMADO** — Temas em `lib/theme/app_theme.dart`: `ColorScheme` explícito dark (Stitch) + light espelhado; `useMaterial3: true`.
 
-🟡 **INFERIDO** — Demais papéis (`secondary`, `tertiary`, `surface`, `error`, `outline`, `surfaceContainer*`, etc.) são **gerados automaticamente** pelo algoritmo M3 a partir do seed `#6200EE`. Valores exatos variam entre light/dark e versão do Flutter.
+🟢 **CONFIRMADO** — Surfaces dark: `#131313` (scaffold), `#201f1f`–`#353534` (containers).
 
 ### Papéis usados explicitamente na UI
 
@@ -44,10 +45,12 @@
 | Semântica | Implementação | Onde | Confiança |
 |-----------|---------------|------|-----------|
 | Erro / permissão | `colorScheme.error` + `onError` | `SnackbarUtils` (`isError: true`) | 🟢 |
-| Sucesso / info | `colorScheme.primary` + `onPrimary` | `SnackbarUtils` (padrão) | 🟢 |
+| Sucesso / info | `colorScheme.primaryContainer` + `onPrimaryContainer` | `SnackbarUtils` (padrão) | 🟢 |
 | Destrutivo (texto) | `Colors.red` | Diálogos "Excluir" | 🟢 |
 | Favorito ativo | `colorScheme.error` | Ícone coração preenchido no player | 🟢 |
-| Admin / alerta | `Colors.red` com `alpha: 0.1` | `admin_screen` | 🟢 |
+| Badge role admin | `#1DB954` (`AppColors.roleAdmin`) | `RoleBadge` em `admin_screen` | 🟢 |
+| Badge role moderador | `#BB86FC` | `RoleBadge` | 🟢 |
+| Badge role user | `#9E9E9E` | `RoleBadge` | 🟢 |
 
 ## Cores decorativas (fora do tema)
 
@@ -63,7 +66,8 @@
 
 | Modo | Persistência | Confiança |
 |------|--------------|-----------|
-| `ThemeMode.system` (padrão inicial) | `SharedPreferences` chave `theme_mode` (índice) | 🟢 |
+| `ThemeMode.dark` (padrão sem prefs) | `ThemeProvider` construtor | 🟢 |
+| `ThemeMode.system` | `SharedPreferences` chave `theme_mode` (índice) | 🟢 |
 | `ThemeMode.light` | idem | 🟢 |
 | `ThemeMode.dark` | idem | 🟢 |
 | Ciclo UI | system → light → dark → system (`cycleTheme`) | 🟢 |

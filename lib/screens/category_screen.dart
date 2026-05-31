@@ -5,14 +5,14 @@ import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/audio_player_service.dart';
 import '../services/auth_service.dart';
-import '../widgets/category_player_widget.dart';
-import 'lyric_form_screen.dart';
-import 'search_screen.dart';
+import '../widgets/streaming/streaming_scaffold.dart';
+import '../widgets/streaming/streaming_navigation.dart';
+import '../widgets/streaming/track_list_tile.dart';
+import '../theme/app_colors.dart';
+import '../theme/streaming_tokens.dart';
 import 'lyric_view_screen.dart';
 import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
-import '../widgets/app_info_bottom_sheet.dart';
-
 class CategoryScreen extends StatefulWidget {
   final Category category;
 
@@ -23,56 +23,12 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  final int _currentIndex = 0; // 0=Home, 1=Search, 2=Add
-
-  void _onTabTapped(int index) {
-    if (index == 0) {
-      Navigator.popUntil(context, (route) => route.isFirst);
-    } else if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SearchScreen()),
-      );
-    } else if (index == 2) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      if (!authService.canAddLyrics) {
-        _showPermissionMessage(authService.isAnonymous);
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => LyricFormScreen(categoryId: widget.category.id),
-          ),
-        );
-      }
-    }
-  }
-
-  void _showPermissionMessage(bool isAnonymous) {
-    SnackbarUtils.show(
-      context,
-      message: isAnonymous
-          ? 'Faça login com Google para adicionar letras'
-          : 'Você não tem permissão para esta ação',
-      isError: true,
-      action: isAnonymous
-          ? SnackBarAction(
-              label: 'Entrar',
-              onPressed: () => showAppInfoBottomSheet(context),
-            )
-          : null,
-    );
-  }
-
-  // Getters de permissão usando AuthService
   bool get _canEditCategory {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    return authService.canEditCategories;
+    return Provider.of<AuthService>(context, listen: false).canEditCategories;
   }
 
   bool get _canDeleteCategory {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    return authService.canDeleteCategories;
+    return Provider.of<AuthService>(context, listen: false).canDeleteCategories;
   }
 
   void _editCategory() {
@@ -82,19 +38,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Editar Categoria"),
+        title: const Text('Editar Categoria'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: "Nome"),
+              decoration: const InputDecoration(labelText: 'Nome'),
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: codeController,
-              decoration: const InputDecoration(labelText: "Código (Prefixo)"),
+              decoration: const InputDecoration(labelText: 'Código (Prefixo)'),
               textCapitalization: TextCapitalization.characters,
               maxLength: 4,
             ),
@@ -103,7 +59,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancelar"),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -118,10 +74,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 listen: false,
               ).updateCategory(updatedCat);
               Navigator.pop(ctx);
-              Navigator.pop(context); // Go back to reload? Or set state?
-              // Ideally we update local state or pop. A simple pop works.
+              Navigator.pop(context);
             },
-            child: const Text("Salvar"),
+            child: const Text('Salvar'),
           ),
         ],
       ),
@@ -132,12 +87,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Excluir Categoria?"),
-        content: const Text("Isso excluirá todas as letras desta categoria."),
+        title: const Text('Excluir Categoria?'),
+        content: const Text('Isso excluirá todas as letras desta categoria.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancelar"),
+            child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () {
@@ -148,7 +103,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -173,152 +128,45 @@ class _CategoryScreenState extends State<CategoryScreen> {
     await audioService.playAll(lyrics);
   }
 
-  Widget _buildMusicalLyricTile(
-    BuildContext context,
-    Lyric lyric,
-    Category category,
-    AudioPlayerService audioService,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isPlaying =
-        audioService.currentLyric?.id == lyric.id && audioService.isPlaying;
-    final isCurrent = audioService.currentLyric?.id == lyric.id;
-    final hasAudio =
-        (lyric.audioUrl?.isNotEmpty ?? false) ||
-        (lyric.localAudioPath?.isNotEmpty ?? false);
-    final hasVideo = lyric.youtubeLink?.isNotEmpty ?? false;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: isCurrent
-            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isCurrent
-              ? colorScheme.primary.withValues(alpha: 0.5)
-              : colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: isCurrent
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              if (isCurrent)
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-            ],
-          ),
-          child: Center(
-            child: isPlaying
-                ? Icon(Icons.graphic_eq, color: colorScheme.onPrimary)
-                : Text(
-                    lyric.sequenceNumber.toString(),
-                    style: TextStyle(
-                      color: isCurrent
-                          ? colorScheme.onPrimary
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-          ),
-        ),
-        title: Text(
-          lyric.title.capitalize(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
-            color: isCurrent ? colorScheme.primary : colorScheme.onSurface,
-          ),
-        ),
-        subtitle: Row(
-          children: [
-            if (hasAudio) ...[
-              Icon(Icons.music_note, size: 14, color: colorScheme.secondary),
-              const SizedBox(width: 4),
-            ],
-            if (hasVideo) ...[
-              Icon(Icons.videocam, size: 14, color: colorScheme.tertiary),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              "${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}",
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-                fontFamily: 'monospace',
-              ),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (hasAudio)
-              IconButton(
-                icon: Icon(
-                  isCurrent && isPlaying
-                      ? Icons.pause_circle_filled
-                      : Icons.play_circle_filled,
-                  color: colorScheme.primary,
-                ),
-                onPressed: () {
-                  if (isCurrent && isPlaying) {
-                    audioService.pause();
-                  } else {
-                    audioService.play(lyric);
-                  }
-                },
-              ),
-            Icon(
-              Icons.chevron_right,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-            ),
-          ],
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => LyricViewScreen(lyric: lyric)),
-          );
-        },
-      ),
-    );
+  String _formatTotalDuration(int count) {
+    final mins = (count * 3).clamp(1, 999);
+    return '$count pontos • $mins min';
   }
 
   @override
   Widget build(BuildContext context) {
     final repo = Provider.of<SyncRepository>(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
+    return StreamingScaffold(
+      navContext: StreamingNavContext.category,
+      currentNavIndex: StreamingNavIndex.home,
+      category: widget.category,
+      onEditCategory: _editCategory,
       appBar: AppBar(
-        title: Text(widget.category.name.capitalize()),
-        actions: [
-          IconButton(
-            onPressed: _playAllLyrics,
-            icon: const Icon(Icons.play_circle_outline),
-            tooltip: 'Tocar Todas',
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          color: colorScheme.primary,
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: Text(
+          'FMA Pontos',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: colorScheme.primary,
           ),
+        ),
+        actions: [
           if (_canEditCategory)
             IconButton(onPressed: _editCategory, icon: const Icon(Icons.edit)),
           if (_canDeleteCategory)
-            IconButton(
-              onPressed: _deleteCategory,
-              icon: const Icon(Icons.delete),
-            ),
+            IconButton(onPressed: _deleteCategory, icon: const Icon(Icons.delete)),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {},
+          ),
         ],
       ),
       body: FutureBuilder<List<Lyric>>(
@@ -328,60 +176,224 @@ class _CategoryScreenState extends State<CategoryScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           final lyrics = snapshot.data ?? [];
-          if (lyrics.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                await repo.syncData();
-              },
-              child: ListView(
-                children: const [
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Text("Nenhuma letra nesta categoria."),
+
+          return RefreshIndicator(
+            onRefresh: () async => repo.syncData(),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _CategoryHero(
+                    categoryName: widget.category.name.capitalize(),
+                    subtitle: lyrics.isEmpty
+                        ? '0 pontos'
+                        : _formatTotalDuration(lyrics.length),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: StreamingTokens.spacingMd,
+                      vertical: StreamingTokens.spacingSm,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            if (_canEditCategory)
+                              IconButton(
+                                onPressed: _editCategory,
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            if (_canDeleteCategory)
+                              IconButton(
+                                onPressed: _deleteCategory,
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (lyrics.isNotEmpty)
+                          Material(
+                            color: AppColors.primaryContainer,
+                            shape: const CircleBorder(),
+                            elevation: 8,
+                            shadowColor: AppColors.primaryContainer.withValues(
+                              alpha: 0.4,
+                            ),
+                            child: InkWell(
+                              onTap: _playAllLyrics,
+                              customBorder: const CircleBorder(),
+                              child: const SizedBox(
+                                width: 64,
+                                height: 64,
+                                child: Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: AppColors.onPrimaryContainer,
+                                  size: 36,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              await repo.syncData();
-            },
-            child: Consumer<AudioPlayerService>(
-              builder: (context, audioService, child) {
-                return ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: lyrics.length,
-                  itemBuilder: (ctx, i) {
-                    final lyric = lyrics[i];
-                    return _buildMusicalLyricTile(
-                      context,
-                      lyric,
-                      widget.category,
-                      audioService,
-                    );
-                  },
-                );
-              },
+                ),
+                if (lyrics.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Text('Nenhuma letra nesta categoria.'),
+                    ),
+                  )
+                else
+                  Consumer<AudioPlayerService>(
+                    builder: (context, audioService, _) {
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) {
+                            final lyric = lyrics[i];
+                            final isCurrent =
+                                audioService.currentLyric?.id == lyric.id;
+                            final isPlaying = isCurrent && audioService.isPlaying;
+                            final hasAudio =
+                                (lyric.audioUrl?.isNotEmpty ?? false) ||
+                                (lyric.localAudioPath?.isNotEmpty ?? false);
+                            final code =
+                                '${widget.category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}';
+
+                            return TrackListTile(
+                              title: lyric.title.capitalize(),
+                              subtitle: code,
+                              trackNumber: i + 1,
+                              isCurrent: isCurrent,
+                              isPlaying: isPlaying,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        LyricViewScreen(lyric: lyric),
+                                  ),
+                                );
+                              },
+                              onPlay: hasAudio
+                                  ? () {
+                                      if (isPlaying) {
+                                        audioService.pause();
+                                      } else {
+                                        audioService.play(lyric);
+                                      }
+                                    }
+                                  : null,
+                              trailing: IconButton(
+                                icon: Icon(
+                                  Icons.more_vert,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                onPressed: () {},
+                              ),
+                            );
+                          },
+                          childCount: lyrics.length,
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
           );
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Buscar"),
-          BottomNavigationBarItem(icon: Icon(Icons.add), label: "Letra"),
+    );
+  }
+}
+
+class _CategoryHero extends StatelessWidget {
+  final String categoryName;
+  final String subtitle;
+
+  const _CategoryHero({
+    required this.categoryName,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      height: 280,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.primaryContainer.withValues(alpha: 0.4),
+                  colorScheme.surfaceContainerHighest,
+                ],
+              ),
+            ),
+            child: Image.asset(
+              'assets/images/main.png',
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.5),
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  colorScheme.surface,
+                  colorScheme.surface.withValues(alpha: 0.6),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 24,
+            bottom: 24,
+            right: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  categoryName,
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -1,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 12)],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
-      bottomSheet: const CategoryPlayerWidget(),
     );
   }
 }

@@ -30,7 +30,7 @@ Gerado pelo Reversa Architect em 2026-05-19T02:08:00Z.
 
 | Componente | Arquivos | Responsabilidade |
 |---|---|---|
-| Bootstrap/App Shell | `lib/main.dart`, `SplashScreen` | Inicialização de Supabase, áudio, providers, tema e roteamento inicial |
+| Bootstrap/App Shell | `lib/main.dart`, `lib/theme/app_theme.dart`, `ThemeProvider`, `SplashScreen` | Inicialização de Supabase, áudio, providers, tema streaming (M3 dark default) e roteamento inicial |
 | Screens | `lib/screens/*.dart` | Fluxos de usuário e navegação |
 | Sync | `SyncRepository`, `DatabaseHelper`, `SupabaseService` | Persistência local/remota, push/pull, download de áudio |
 | Auth/RBAC | `AuthService`, `AdminService`, `UserInfo` | Sessão, roles, admin, logs |

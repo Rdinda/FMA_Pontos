@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
+
+import '../theme/app_colors.dart';
+
+/// Salmon/red background for permission and validation errors.
+const Color _errorToastBackground = Color(0xFFE07A6B);
+const Color _errorToastForeground = Colors.white;
 
 class SnackbarUtils {
   static void show(
@@ -8,50 +15,62 @@ class SnackbarUtils {
     SnackBarAction? action,
   }) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
-    // Use primary color for success/info to match app theme as requested
-    // Use error color for errors
-    final backgroundColor = isError ? colorScheme.error : colorScheme.primary;
-    final foregroundColor = isError
-        ? colorScheme.onError
-        : colorScheme.onPrimary;
+    final backgroundColor =
+        isError ? _errorToastBackground : AppColors.primaryContainer;
+    final foregroundColor =
+        isError ? _errorToastForeground : Colors.white;
 
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    toastification.dismissAll();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isError ? Icons.error_outline : Icons.check_circle_outline,
-              color: foregroundColor,
+    late final ToastificationItem item;
+    item = toastification.show(
+      context: context,
+      type: isError ? ToastificationType.error : ToastificationType.success,
+      style: ToastificationStyle.flatColored,
+      autoCloseDuration: const Duration(seconds: 4),
+      dragToClose: true,
+      closeOnClick: false,
+      showIcon: true,
+      applyBlurEffect: false,
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      primaryColor: backgroundColor,
+      closeButton: const ToastCloseButton(
+        showType: CloseButtonShowType.none,
+      ),
+      title: Row(
+        children: [
+          Icon(
+            isError ? Icons.error_outline : Icons.check_circle_outline,
+            color: foregroundColor,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: foregroundColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
+          ),
+          if (action != null)
+            TextButton(
+              onPressed: () {
+                toastification.dismiss(item);
+                action.onPressed();
+              },
               child: Text(
-                message,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                action.label,
+                style: theme.textTheme.labelLarge?.copyWith(
                   color: foregroundColor,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-          ],
-        ),
-        backgroundColor: backgroundColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        elevation: 6,
-        duration: const Duration(seconds: 3),
-        action: action != null
-            ? SnackBarAction(
-                label: action.label,
-                textColor: foregroundColor,
-                onPressed: action.onPressed,
-              )
-            : null,
+        ],
       ),
     );
   }

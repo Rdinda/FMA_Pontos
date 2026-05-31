@@ -35,8 +35,8 @@ Ler letra completa; reproduzir áudio MP3 ou embed YouTube; favoritar; editar (m
 
 | Elemento | Tipo | Detalhe |
 |----------|------|---------|
-| Banner info | Container roxo claro | Ícone `info`, texto fixo sobre ausência de mídia |
-| Letra | Card scrollável | Texto plain, fonte Outfit, padding generoso |
+| Banner info | Container `surfaceContainerHighest` | Ícone `info`, texto fixo sobre ausência de mídia |
+| Letra | Card scrollável | Texto plain, Plus Jakarta Sans 18px, padding generoso |
 
 ## Corpo — estados alternativos (código, não capturados)
 

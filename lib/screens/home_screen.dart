@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
+import '../models/lyric.dart';
 import '../services/sync_repository.dart';
 import '../services/auth_service.dart';
+import '../services/play_stats_service.dart';
 import 'category_screen.dart';
-import 'search_screen.dart';
-import 'favorites_screen.dart';
 import 'top_played_screen.dart';
+import 'lyric_view_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
 import '../utils/snackbar_utils.dart';
@@ -15,6 +16,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/update_service.dart';
 import '../widgets/app_info_bottom_sheet.dart';
+import '../widgets/streaming/streaming_scaffold.dart';
+import '../widgets/streaming/streaming_navigation.dart';
+import '../widgets/streaming/category_card.dart';
+import '../theme/app_colors.dart';
+import '../theme/streaming_tokens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,98 +30,67 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
   DateTime? _lastPressedAt;
   String _version = '';
+  List<LyricWithStats> _topPlayed = [];
+  Map<String, Category> _categoryMap = {};
 
   @override
   void initState() {
     super.initState();
-    // Initial data load
     _loadVersion();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SyncRepository>(context, listen: false).syncData();
       _checkForUpdates();
+      _loadTopPlayed();
     });
+  }
+
+  Future<void> _loadTopPlayed() async {
+    try {
+      final repo = Provider.of<SyncRepository>(context, listen: false);
+      final stats = await PlayStatsService().getTopPlayed(limit: 10);
+      final categories = await repo.getCategories();
+      if (mounted) {
+        setState(() {
+          _topPlayed = stats;
+          _categoryMap = {for (var c in categories) c.id: c};
+        });
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Error loading top played: $e');
+    }
   }
 
   Future<void> _loadVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     if (mounted) {
-      setState(() {
-        _version = packageInfo.version;
-      });
+      setState(() => _version = packageInfo.version);
     }
   }
 
-  void _onTabTapped(int index) {
-    if (index == 1) {
-      // Buscar
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SearchScreen()),
-      );
-    } else if (index == 2) {
-      // Mais Tocados
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const TopPlayedScreen()),
-      );
-    } else if (index == 3) {
-      // Gostei (Favoritos)
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const FavoritesScreen()),
-      );
-    } else if (index == 4) {
-      // Adicionar Categoria
-      final authService = Provider.of<AuthService>(context, listen: false);
-      if (!authService.canAddCategories) {
-        _showPermissionDeniedMessage('moderador', 'adicionar categorias');
-      } else {
-        _showAddCategoryDialog();
-      }
-    } else {
-      setState(() {
-        _currentIndex = index;
-      });
-    }
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
   }
 
-  void _showPermissionDeniedMessage(String requiredRole, String action) {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    String message;
-
-    if (authService.isAnonymous) {
-      message = 'Faça login com Google para $action';
-    } else {
-      message = 'Você precisa ser $requiredRole para $action';
+  String _userName(AuthService auth) {
+    if (!auth.isAnonymous && auth.displayName != null) {
+      return auth.displayName!.split(' ').first;
     }
-
-    SnackbarUtils.show(
-      context,
-      message: message,
-      isError: true, // Permission denied effectively an error/warning
-      action: authService.isAnonymous
-          ? SnackBarAction(
-              label: 'Entrar',
-              onPressed: () =>
-                  showAppInfoBottomSheet(context, version: _version),
-            )
-          : null,
-    );
+    return 'Usuário';
   }
 
   void _showAddCategoryDialog() {
     final nameController = TextEditingController();
     final codeController = TextEditingController();
 
-    // Auto-generate code when name changes, if code is empty
     nameController.addListener(() {
       if (codeController.text.isEmpty) {
         final text = nameController.text.trim();
         if (text.isNotEmpty) {
-          // Take up to 2 characters
           final len = text.length >= 2 ? 2 : text.length;
           codeController.text = text.substring(0, len).toUpperCase();
         }
@@ -125,25 +100,22 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Nova Categoria"),
+        title: const Text('Nova Categoria'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Nome",
-                filled: true,
-              ),
+              decoration: const InputDecoration(labelText: 'Nome', filled: true),
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: codeController,
               decoration: const InputDecoration(
-                labelText: "Código (Prefixo)",
+                labelText: 'Código (Prefixo)',
                 filled: true,
-                helperText: "Ex: OX para Oxum (Único)",
+                helperText: 'Ex: OX para Oxum (Único)',
               ),
               textCapitalization: TextCapitalization.characters,
               maxLength: 4,
@@ -153,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancelar"),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -178,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
             },
-            child: const Text("Salvar"),
+            child: const Text('Salvar'),
           ),
         ],
       ),
@@ -192,12 +164,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final syncRepo = Provider.of<SyncRepository>(context);
+    final authService = Provider.of<AuthService>(context);
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-
         final now = DateTime.now();
         const maxDuration = Duration(seconds: 3);
         final isWarning =
@@ -211,48 +183,48 @@ class _HomeScreenState extends State<HomeScreen> {
           SystemNavigator.pop();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Filhos de Maria das Almas"),
+      child: StreamingScaffold(
+        navContext: StreamingNavContext.home,
+        currentNavIndex: StreamingNavIndex.home,
+        onAddCategory: _showAddCategoryDialog,
+        appVersion: _version.isEmpty ? null : _version,
+        appBar: StreamingAppBar(
+          leading: Consumer<AuthService>(
+            builder: (context, auth, _) {
+              if (!auth.isAnonymous && auth.photoUrl != null) {
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: GestureDetector(
+                    onTap: _showAppInfoDialog,
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundImage: NetworkImage(auth.photoUrl!),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox(width: 8);
+            },
+          ),
           actions: [
             if (syncRepo.isOffline)
               const Padding(
-                padding: EdgeInsets.only(right: 16.0),
-                child: Icon(Icons.wifi_off, color: Colors.red),
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(Icons.wifi_off, color: Colors.red, size: 20),
               ),
-            Consumer<AuthService>(
-              builder: (context, authService, child) {
-                if (!authService.isAnonymous && authService.photoUrl != null) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: GestureDetector(
-                      onTap: _showAppInfoDialog,
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundImage: NetworkImage(authService.photoUrl!),
-                      ),
-                    ),
-                  );
-                }
-                return IconButton(
-                  onPressed: _showAppInfoDialog,
-                  icon: const Icon(Icons.info_outline),
-                  tooltip: "Informações",
-                );
-              },
+            IconButton(
+              onPressed: _showAppInfoDialog,
+              icon: const Icon(Icons.notifications_outlined),
+              tooltip: 'Informações',
             ),
-            const SizedBox(width: 8),
           ],
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            final authService = Provider.of<AuthService>(
-              context,
-              listen: false,
-            );
             await Future.wait([
               syncRepo.syncData(),
               authService.refreshUserRole(),
+              _loadTopPlayed(),
             ]);
           },
           child: FutureBuilder<List<Category>>(
@@ -263,44 +235,56 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   children: const [
                     Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20.0),
+                        padding: EdgeInsets.all(20),
                         child: Text(
-                          "Nenhuma categoria encontrada.\nAdicione uma nova!",
+                          'Nenhuma categoria encontrada.\nAdicione uma nova!',
                         ),
                       ),
                     ),
                   ],
                 );
               }
+
               final categories = snapshot.data!;
 
-              return ListView.builder(
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: StreamingTokens.spacingMd,
+                  vertical: StreamingTokens.spacingSm,
                 ),
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final colorScheme = Theme.of(context).colorScheme;
-
-                  // Cores variadas baseadas no índice
-                  final hue = (index * 37) % 360;
-                  final accentColor = HSLColor.fromAHSL(
-                    1,
-                    hue.toDouble(),
-                    0.6,
-                    0.5,
-                  ).toColor();
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
+                children: [
+                  _GreetingBanner(
+                    greeting: _greeting(),
+                    userName: _userName(authService),
+                  ),
+                  const SizedBox(height: StreamingTokens.spacingLg),
+                  Text(
+                    'Categorias',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: StreamingTokens.spacingMd),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.6,
+                    ),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return CategoryCard(
+                        name: category.name.capitalize(),
+                        index: index,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -310,115 +294,66 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: colorScheme.surfaceContainerHighest,
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.shadow.withValues(
-                                  alpha: 0.08,
-                                ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                // Ícone
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: accentColor.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    Icons.music_note_rounded,
-                                    color: accentColor,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                // Texto
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        category.name.capitalize(),
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: colorScheme.onSurface,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      FutureBuilder<int>(
-                                        future: syncRepo.getLyricsCount(
-                                          category.id,
-                                        ),
-                                        builder: (context, countSnapshot) {
-                                          final count = countSnapshot.data ?? 0;
-                                          return Text(
-                                            '$count ${count == 1 ? 'ponto' : 'pontos'}',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: colorScheme.outline,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Seta
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 18,
-                                  color: colorScheme.outline,
-                                ),
-                              ],
-                            ),
-                          ),
+                      );
+                    },
+                  ),
+                  if (_topPlayed.isNotEmpty) ...[
+                    const SizedBox(height: StreamingTokens.spacingLg),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Mais Tocados',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const TopPlayedScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text('Ver todos'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: StreamingTokens.spacingSm),
+                    SizedBox(
+                      height: 180,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _topPlayed.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (context, i) {
+                          final item = _topPlayed[i];
+                          final lyric = item.lyric;
+                          final cat = _categoryMap[lyric.categoryId];
+
+                          return _TopPlayedCarouselItem(
+                            lyric: lyric,
+                            categoryName: cat?.name.capitalize() ?? '',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      LyricViewScreen(lyric: lyric),
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
-                  );
-                },
+                  ],
+                  const SizedBox(height: StreamingTokens.spacingMd),
+                ],
               );
             },
           ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onTabTapped,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Theme.of(context).colorScheme.primary,
-          unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: "Buscar"),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.trending_up_rounded),
-              label: "Top",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_outline),
-              label: "Gostei",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              label: "Categoria",
-            ),
-          ],
         ),
       ),
     );
@@ -438,7 +373,9 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Uma nova versão (${updateInfo.version}) está disponível.'),
+                Text(
+                  'Uma nova versão (${updateInfo.version}) está disponível.',
+                ),
                 if (updateInfo.changelog.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   const Text(
@@ -463,9 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: colorScheme.outlineVariant,
-                      ),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context); // Close dialog first
+                  Navigator.pop(context);
                   _launchUpdateUrl(updateInfo.url);
                 },
                 child: const Text('Baixar'),
@@ -554,13 +489,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _launchUpdateUrl(String url) async {
     try {
       final uri = Uri.parse(url);
-      debugPrint('[Update] Attempting to launch URL: $url');
-
       final launched = await launchUrl(
         uri,
         mode: LaunchMode.externalApplication,
       );
-
       if (!launched && mounted) {
         SnackbarUtils.show(
           context,
@@ -569,7 +501,6 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     } catch (e) {
-      debugPrint('[Update] Error launching URL: $e');
       if (mounted) {
         SnackbarUtils.show(
           context,
@@ -578,5 +509,135 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+  }
+}
+
+class _GreetingBanner extends StatelessWidget {
+  final String greeting;
+  final String userName;
+
+  const _GreetingBanner({required this.greeting, required this.userName});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ClipRRect(
+      borderRadius: StreamingTokens.cardRadius,
+      child: SizedBox(
+        height: 160,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/main.png',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: colorScheme.surfaceContainerHigh,
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    colorScheme.surface,
+                    colorScheme.surface.withValues(alpha: 0.2),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 16,
+              bottom: 16,
+              child: Text(
+                '$greeting,\n$userName',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                  shadows: [Shadow(color: Colors.black45, blurRadius: 8)],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TopPlayedCarouselItem extends StatelessWidget {
+  final Lyric lyric;
+  final String categoryName;
+  final VoidCallback onTap;
+
+  const _TopPlayedCarouselItem({
+    required this.lyric,
+    required this.categoryName,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: StreamingTokens.horizontalCarouselItemWidth,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: StreamingTokens.cardRadius,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primaryContainer.withValues(alpha: 0.6),
+                      colorScheme.surfaceContainerHighest,
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.music_note_rounded,
+                    size: 40,
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              lyric.title.capitalize(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            Text(
+              categoryName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -58,8 +58,8 @@
 - **Estado:** Preenchido sem mídia — alerta informativo + texto da letra.
 - **Contexto:** Tap em item da lista de categoria ou resultado de busca.
 - **App bar:** Voltar, título “CA01 - CABOCLO 7 FLECHAS …” (código + título).
-- **Alerta:** Banner roxo claro — “Sem mídia para tocar. Adicione um arquivo de áudio MP3 ou um link do YouTube.”
-- **Conteúdo:** Card com letra em texto corrido (fonte Outfit).
+- **Alerta:** Banner informativo em `surfaceContainerHighest` — “Sem mídia para tocar. Adicione um arquivo de áudio MP3 ou um link do YouTube.”
+- **Conteúdo:** Card com letra em texto corrido (Plus Jakarta Sans, 18px).
 
 ---
 
@@ -87,10 +87,11 @@
 
 | Token | Valor observado |
 |-------|-----------------|
-| Cor primária | Roxo (`#6200EE` no código) |
-| App bar | Roxo sólido, texto branco, título bold |
-| Cards | Fundo branco/superfície clara, cantos arredondados (~12px) |
-| Tipografia | Outfit (Google Fonts) |
+| Cor primária | Verde streaming (`#1DB954` / `#53E076`) |
+| App bar | Transparente, título `onSurface` bold 20px |
+| Cards | `surfaceContainerHighest`, cantos 16px (streaming) |
+| Tipografia | Plus Jakarta Sans (Google Fonts) |
+| Tema default | Escuro (`ThemeMode.dark` sem prefs) |
 | Ícones nav | Material — casa, lupa, trending, coração, plus |
 | Feedback | Snackbars (código); banners informativos na visualização |
 

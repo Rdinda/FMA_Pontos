@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/sync_repository.dart';
 import '../services/auth_service.dart';
+import '../theme/app_colors.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -71,6 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
+      backgroundColor: AppColors.surfaceDark,
       body: Stack(
         children: [
           Center(
@@ -89,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     // Loader
                     CupertinoActivityIndicator(
                       radius: 15.0,
-                      color: colorScheme.primary,
+                      color: AppColors.primaryContainer,
                     ),
                     const SizedBox(height: 16),
                     if (syncRepo.isDownloading) ...[

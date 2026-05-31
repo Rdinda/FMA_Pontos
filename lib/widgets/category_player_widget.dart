@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/audio_player_service.dart';
 import '../services/favorites_service.dart';
 import '../utils/string_extensions.dart';
@@ -113,9 +112,8 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                         children: [
                                           Text(
                                             currentLyric.title.capitalize(),
-                                            style: GoogleFonts.montserrat(
+                                            style: theme.textTheme.titleSmall?.copyWith(
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 14,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -157,8 +155,7 @@ class _CategoryPlayerWidgetState extends State<CategoryPlayerWidget> {
                                   ),
                                   child: Text(
                                     currentLyric.content,
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 16,
+                                    style: theme.textTheme.bodyLarge?.copyWith(
                                       height: 1.75,
                                       color: colorScheme.onSurface,
                                     ),

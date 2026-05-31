@@ -27,7 +27,8 @@
 - 🟢 **CONFIRMADO** — `moderator` e `admin` podem adicionar e editar categorias.
 - 🟢 **CONFIRMADO** — Apenas `admin` pode excluir categorias.
 - 🟢 **CONFIRMADO** — Excluir categoria também marca todas as letras da categoria como `is_deleted = 1` e `is_synced = 0`.
-- 🟢 **CONFIRMADO** — No Supabase, `categories.code` é único conforme migration `20260114120000_add_prefix_and_sequence.sql`.
+- 🟢 **CONFIRMADO** — No Supabase, `categories.code` é `NOT NULL UNIQUE` — definido em `supabase/migrations/20251226191350_initial_schema.sql` (schema consolidado).
+- 🟢 **CONFIRMADO** — `supabase/seed.sql` popula `code` explicitamente por categoria (ex.: Caboclos → `CA`, Obá → `OB1`).
 - 🟡 **INFERIDO** — Colisão de código deve ser tratada pelo backend remoto via constraint, mas a UI atual não valida unicidade antes do save.
 
 ## Requisitos Funcionais
@@ -54,7 +55,7 @@
 | Segurança | Mutação de categorias deve respeitar RBAC no app e Supabase RLS. | `lib/services/auth_service.dart`, `supabase/supabase_schema.sql` | 🟢 |
 | Consistência | Exclusão de categoria deve também excluir logicamente as letras associadas. | `lib/services/db_helper.dart` | 🟢 |
 | Operação offline | Criação/edição/exclusão local deve funcionar antes da sincronização remota. | `lib/services/sync_repository.dart`, `lib/services/db_helper.dart` | 🟢 |
-| Integridade | Código de categoria deve ser único no banco remoto. | `supabase/migrations/20260114120000_add_prefix_and_sequence.sql` | 🟢 |
+| Integridade | Código de categoria deve ser único e não nulo no banco remoto. | `supabase/migrations/20251226191350_initial_schema.sql` | 🟢 |
 | Usabilidade | Categorias devem exibir contagem de pontos e feedback visual de lista. | `lib/screens/home_screen.dart` | 🟢 |
 
 ## Critérios de Aceitação
@@ -110,5 +111,7 @@ Então a categoria e suas letras associadas devem ser removidas fisicamente do S
 | `lib/screens/category_screen.dart` | `_editCategory`, `_deleteCategory`, permissões de edição/exclusão | 🟢 |
 | `lib/services/auth_service.dart` | `canAddCategories`, `canEditCategories`, `canDeleteCategories` | 🟢 |
 | `supabase/supabase_schema.sql` | policies de `categories`, função `has_role` | 🟢 |
-| `supabase/migrations/20260114120000_add_prefix_and_sequence.sql` | `categories.code`, unicidade e backfill | 🟢 |
+| `supabase/migrations/20251226191350_initial_schema.sql` | Schema consolidado: `categories.code` NOT NULL UNIQUE, `lyrics.sequence_number`, RLS, audit | 🟢 |
+| `supabase/seed.sql` | Seed com `code` por categoria (obrigatório pós-NOT NULL) | 🟢 |
+| `supabase/migrations/20260114120000_add_prefix_and_sequence.sql` | Migration incremental legada (coexiste; ver re-extração 2026-05-21) | 🟡 |
 
