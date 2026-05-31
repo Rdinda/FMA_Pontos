@@ -196,6 +196,26 @@
           "low automated test coverage"
         ]
       }
+    },
+    "visor": {
+      "completed_at": "2026-05-21T17:32:00Z",
+      "files": [
+        "_reversa_sdd/acervo-categorias/screens.md",
+        "_reversa_sdd/busca/screens.md",
+        "_reversa_sdd/visualizacao-letra/screens.md",
+        "_reversa_sdd/edicao-letra/screens.md",
+        "_reversa_sdd/ui/inventory.md",
+        "_reversa_sdd/ui/flow.md"
+      ],
+      "summary": {
+        "screens_documented": 5,
+        "features_mapped": [
+          "acervo-categorias",
+          "busca",
+          "visualizacao-letra",
+          "edicao-letra"
+        ]
+      }
     }
   },
   "redator_progress": {
