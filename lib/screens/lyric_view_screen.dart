@@ -13,6 +13,7 @@ import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
 import '../theme/app_colors.dart';
 import '../theme/streaming_tokens.dart';
+import '../widgets/app_info_bottom_sheet.dart';
 import '../widgets/streaming/streaming_scaffold.dart';
 import '../widgets/streaming/streaming_navigation.dart';
 
@@ -162,37 +163,6 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
             child: const Text('Excluir', style: TextStyle(color: Colors.red)),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showOptionsMenu(AuthService auth) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (auth.canEditLyrics)
-              ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text('Editar'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _edit(context);
-                },
-              ),
-            if (auth.canDeleteLyrics)
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('Excluir'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _confirmDelete();
-                },
-              ),
-          ],
-        ),
       ),
     );
   }
@@ -552,41 +522,101 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.expand_more_rounded, size: 28),
           ),
-          Column(
-            children: [
-              Text(
-                'PLAYLIST',
-                style: TextStyle(
-                  fontSize: 10,
-                  letterSpacing: 2,
-                  color: colorScheme.onSurfaceVariant,
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  'PLAYLIST',
+                  style: TextStyle(
+                    fontSize: 10,
+                    letterSpacing: 2,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const Text(
-                'Reproduzindo',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ],
+                const Text(
+                  'Reproduzindo',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
           ),
-          Consumer<AuthService>(
-            builder: (context, auth, _) {
-              if (!auth.canEditLyrics && !auth.canDeleteLyrics) {
-                return const SizedBox(width: 48);
-              }
-              return IconButton(
-                onPressed: () => _showOptionsMenu(auth),
-                icon: const Icon(Icons.more_vert),
-              );
-            },
-          ),
+          _buildLyricOptionsMenu(context),
         ],
       ),
+    );
+  }
+
+  void _showLoginRequired(BuildContext context, String action) {
+    SnackbarUtils.show(
+      context,
+      message: 'Faça login com Google para $action',
+      isError: true,
+      action: SnackBarAction(
+        label: 'Entrar',
+        onPressed: () => showAppInfoBottomSheet(context),
+      ),
+    );
+  }
+
+  Widget _buildLyricOptionsMenu(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Consumer<AuthService>(
+      builder: (context, auth, _) {
+        final showEdit = auth.canEditLyrics || auth.isAnonymous;
+        final showDelete = auth.canDeleteLyrics;
+
+        if (!showEdit && !showDelete) {
+          return const SizedBox(width: 48);
+        }
+
+        return PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          onSelected: (value) {
+            switch (value) {
+              case 'edit':
+                if (auth.isAnonymous) {
+                  _showLoginRequired(context, 'editar letras');
+                } else {
+                  _edit(context);
+                }
+              case 'delete':
+                _confirmDelete();
+            }
+          },
+          itemBuilder: (context) => [
+            if (showEdit)
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 20),
+                    SizedBox(width: 12),
+                    Text('Editar'),
+                  ],
+                ),
+              ),
+            if (showDelete)
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                    SizedBox(width: 12),
+                    Text('Excluir', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -669,16 +699,30 @@ class _LyricsPanel extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 48,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  const SizedBox(width: 48),
+                  Expanded(
+                    child: Center(
+                      child: Container(
+                        width: 48,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48, height: 48),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Expanded(
               child: ListView.builder(
                 controller: scrollController,

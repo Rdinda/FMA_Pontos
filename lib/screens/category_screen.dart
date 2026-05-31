@@ -11,8 +11,12 @@ import '../widgets/streaming/track_list_tile.dart';
 import '../theme/app_colors.dart';
 import '../theme/streaming_tokens.dart';
 import 'lyric_view_screen.dart';
+import 'lyric_form_screen.dart';
+import '../services/favorites_service.dart';
+import '../widgets/app_info_bottom_sheet.dart';
 import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
+import '../utils/category_artwork.dart';
 class CategoryScreen extends StatefulWidget {
   final Category category;
 
@@ -133,6 +137,171 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return '$count pontos • $mins min';
   }
 
+  void _openLyric(BuildContext context, Lyric lyric) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => LyricViewScreen(lyric: lyric)),
+    );
+  }
+
+  void _showLoginRequired(BuildContext context, String action) {
+    SnackbarUtils.show(
+      context,
+      message: 'Faça login com Google para $action',
+      isError: true,
+      action: SnackBarAction(
+        label: 'Entrar',
+        onPressed: () => showAppInfoBottomSheet(context),
+      ),
+    );
+  }
+
+  Future<void> _editLyric(BuildContext context, Lyric lyric) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            LyricFormScreen(categoryId: lyric.categoryId, lyric: lyric),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
+  void _confirmDeleteLyric(BuildContext context, Lyric lyric) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir Letra?'),
+        content: const Text('Esta ação não pode ser desfeita.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await Provider.of<SyncRepository>(
+                context,
+                listen: false,
+              ).deleteLyric(lyric.id);
+              if (!context.mounted) return;
+              setState(() {});
+              SnackbarUtils.show(
+                context,
+                message: 'Letra excluída com sucesso.',
+              );
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _toggleFavorite(BuildContext context, Lyric lyric) async {
+    final favService = Provider.of<FavoritesService>(context, listen: false);
+    final wasFav = favService.isFavorite(lyric.id);
+    await favService.toggleFavorite(lyric.id);
+    if (!context.mounted) return;
+    SnackbarUtils.show(
+      context,
+      message: wasFav
+          ? 'Removido dos favoritos'
+          : 'Adicionado aos favoritos',
+    );
+  }
+
+  void _onLyricMenuSelected(
+    BuildContext context,
+    Lyric lyric,
+    String value,
+    AuthService auth,
+  ) {
+    switch (value) {
+      case 'open':
+        _openLyric(context, lyric);
+      case 'edit':
+        if (auth.isAnonymous) {
+          _showLoginRequired(context, 'editar letras');
+        } else {
+          _editLyric(context, lyric);
+        }
+      case 'favorite':
+        _toggleFavorite(context, lyric);
+      case 'delete':
+        _confirmDeleteLyric(context, lyric);
+    }
+  }
+
+  Widget _buildLyricOptionsMenu(BuildContext context, Lyric lyric) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Consumer2<AuthService, FavoritesService>(
+      builder: (context, auth, favService, _) {
+        final isFav = favService.isFavorite(lyric.id);
+        final showEdit = auth.canEditLyrics || auth.isAnonymous;
+        final showDelete = auth.canDeleteLyrics;
+
+        return PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          onSelected: (value) =>
+              _onLyricMenuSelected(context, lyric, value, auth),
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'open',
+              child: Row(
+                children: [
+                  Icon(Icons.open_in_new_rounded, size: 20),
+                  SizedBox(width: 12),
+                  Text('Abrir'),
+                ],
+              ),
+            ),
+            if (showEdit)
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, size: 20),
+                    SizedBox(width: 12),
+                    Text('Editar'),
+                  ],
+                ),
+              ),
+            PopupMenuItem(
+              value: 'favorite',
+              child: Row(
+                children: [
+                  Icon(
+                    isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(isFav ? 'Remover dos favoritos' : 'Favoritar'),
+                ],
+              ),
+            ),
+            if (showDelete)
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                    SizedBox(width: 12),
+                    Text('Excluir', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = Provider.of<SyncRepository>(context);
@@ -163,10 +332,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
             IconButton(onPressed: _editCategory, icon: const Icon(Icons.edit)),
           if (_canDeleteCategory)
             IconButton(onPressed: _deleteCategory, icon: const Icon(Icons.delete)),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
         ],
       ),
       body: FutureBuilder<List<Lyric>>(
@@ -184,6 +349,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: _CategoryHero(
+                    category: widget.category,
                     categoryName: widget.category.name.capitalize(),
                     subtitle: lyrics.isEmpty
                         ? '0 pontos'
@@ -292,13 +458,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                       }
                                     }
                                   : null,
-                              trailing: IconButton(
-                                icon: Icon(
-                                  Icons.more_vert,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                onPressed: () {},
-                              ),
+                              trailing: _buildLyricOptionsMenu(context, lyric),
                             );
                           },
                           childCount: lyrics.length,
@@ -316,10 +476,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
 }
 
 class _CategoryHero extends StatelessWidget {
+  final Category category;
   final String categoryName;
   final String subtitle;
 
   const _CategoryHero({
+    required this.category,
     required this.categoryName,
     required this.subtitle,
   });
@@ -327,30 +489,21 @@ class _CategoryHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final imageAsset = categoryImageAsset(category);
 
     return SizedBox(
       height: 280,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.primaryContainer.withValues(alpha: 0.4),
-                  colorScheme.surfaceContainerHighest,
-                ],
-              ),
-            ),
-            child: Image.asset(
-              'assets/images/main.png',
+          if (imageAsset != null)
+            Image.asset(
+              imageAsset,
               fit: BoxFit.cover,
-              opacity: const AlwaysStoppedAnimation(0.5),
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
-          ),
+              errorBuilder: (_, _, _) => _gradientFallback(colorScheme),
+            )
+          else
+            _gradientFallback(colorScheme),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -393,6 +546,27 @@ class _CategoryHero extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _gradientFallback(ColorScheme colorScheme) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.primaryContainer.withValues(alpha: 0.4),
+            colorScheme.surfaceContainerHighest,
+          ],
+        ),
+      ),
+      child: Image.asset(
+        'assets/images/main.webp',
+        fit: BoxFit.cover,
+        opacity: const AlwaysStoppedAnimation(0.5),
+        errorBuilder: (_, _, _) => const SizedBox.shrink(),
       ),
     );
   }

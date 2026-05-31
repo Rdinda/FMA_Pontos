@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../models/category.dart';
-import '../../theme/streaming_tokens.dart';
 import 'streaming_bottom_nav.dart';
 import 'streaming_mini_player.dart';
 import 'streaming_navigation.dart';
@@ -38,15 +37,6 @@ class StreamingScaffold extends StatelessWidget {
     this.floatingActionButtonLocation,
   });
 
-  double _bottomInset(BuildContext context, int itemCount) {
-    var inset = MediaQuery.of(context).padding.bottom;
-    if (showBottomNav && itemCount > 0) {
-      inset += StreamingTokens.bottomNavHeight;
-    }
-    if (showMiniPlayer) inset += StreamingTokens.miniPlayerHeight + 8;
-    return inset;
-  }
-
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthService>(context);
@@ -64,10 +54,10 @@ class StreamingScaffold extends StatelessWidget {
       extendBody: false,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
-      body: Padding(
-        padding: EdgeInsets.only(bottom: _bottomInset(context, items.length)),
-        child: body,
-      ),
+      // Body already lays out above [bottomNavigationBar]; extra bottom padding
+      // duplicated nav + mini-player height and caused a dead zone when the
+      // mini player was hidden (SizedBox.shrink).
+      body: body,
       bottomNavigationBar: canShowNav
           ? Column(
               mainAxisSize: MainAxisSize.min,

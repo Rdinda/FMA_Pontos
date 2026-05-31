@@ -171,7 +171,7 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
                     fit: StackFit.expand,
                     children: [
                       Image.asset(
-                        'assets/images/main.png',
+                        'assets/images/main.webp',
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) =>
                             ColoredBox(color: colorScheme.surfaceContainerHigh),

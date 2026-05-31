@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/category.dart';
 import '../models/lyric.dart';
 import '../database/db_helper.dart';
 
@@ -139,6 +140,69 @@ class PlayStatsService {
       debugPrint('[PlayStatsService] Error fetching top played: $e');
       return [];
     }
+  }
+
+  /// Agrega reproduções por categoria (via lyric_play_stats + lyrics locais).
+  Future<Map<String, int>> getPlayCountByCategory() async {
+    try {
+      final statsResponse = await _client
+          .from('lyric_play_stats')
+          .select('lyric_id, play_count');
+
+      final statsList = statsResponse as List;
+      if (statsList.isEmpty) return {};
+
+      final byCategory = <String, int>{};
+      for (final row in statsList) {
+        final lyricId = row['lyric_id']?.toString() ?? '';
+        final count = (row['play_count'] as num?)?.toInt() ?? 0;
+        if (lyricId.isEmpty || count <= 0) continue;
+
+        final lyric = await _dbHelper.getLyricById(lyricId);
+        if (lyric != null) {
+          byCategory[lyric.categoryId] =
+              (byCategory[lyric.categoryId] ?? 0) + count;
+        }
+      }
+      return byCategory;
+    } catch (e) {
+      debugPrint('[PlayStatsService] Error aggregating category plays: $e');
+      return {};
+    }
+  }
+
+  /// Categorias mais acessadas para a Home.
+  ///
+  /// Primário: soma de [lyric_play_stats.play_count] por category_id.
+  /// Fallback: total de pontos por categoria quando não há reproduções.
+  Future<List<Category>> rankCategoriesByAccess(
+    List<Category> categories, {
+    required Future<int> Function(String categoryId) lyricsCountFor,
+    int limit = 4,
+  }) async {
+    if (categories.isEmpty) return [];
+
+    final playByCategory = await getPlayCountByCategory();
+    final hasPlayData = playByCategory.values.any((v) => v > 0);
+
+    final sorted = List<Category>.from(categories);
+    if (hasPlayData) {
+      sorted.sort(
+        (a, b) => (playByCategory[b.id] ?? 0).compareTo(
+          playByCategory[a.id] ?? 0,
+        ),
+      );
+    } else {
+      final counts = <String, int>{};
+      for (final cat in categories) {
+        counts[cat.id] = await lyricsCountFor(cat.id);
+      }
+      sorted.sort(
+        (a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0),
+      );
+    }
+
+    return sorted.take(limit).toList();
   }
 
   /// Retorna as estatísticas de um ponto específico

@@ -3,9 +3,10 @@ import 'package:toastification/toastification.dart';
 
 import '../theme/app_colors.dart';
 
-/// Salmon/red background for permission and validation errors.
+/// Salmon/coral for permission and validation errors (Stitch).
 const Color _errorToastBackground = Color(0xFFE07A6B);
-const Color _errorToastForeground = Colors.white;
+const Color _successToastBackground = AppColors.primaryContainer;
+const Color _toastOnBackground = Colors.white;
 
 class SnackbarUtils {
   static void show(
@@ -14,12 +15,8 @@ class SnackbarUtils {
     bool isError = false,
     SnackBarAction? action,
   }) {
-    final theme = Theme.of(context);
-
-    final backgroundColor =
-        isError ? _errorToastBackground : AppColors.primaryContainer;
-    final foregroundColor =
-        isError ? _errorToastForeground : Colors.white;
+    final toastBackground =
+        isError ? _errorToastBackground : _successToastBackground;
 
     toastification.dismissAll();
 
@@ -27,32 +24,29 @@ class SnackbarUtils {
     item = toastification.show(
       context: context,
       type: isError ? ToastificationType.error : ToastificationType.success,
-      style: ToastificationStyle.flatColored,
+      style: ToastificationStyle.fillColored,
       autoCloseDuration: const Duration(seconds: 4),
       dragToClose: true,
       closeOnClick: false,
       showIcon: true,
       applyBlurEffect: false,
-      backgroundColor: backgroundColor,
-      foregroundColor: foregroundColor,
-      primaryColor: backgroundColor,
+      // fillColored: primaryColor = fill; backgroundColor param = text/icon (surfaceLight).
+      primaryColor: toastBackground,
+      backgroundColor: _toastOnBackground,
+      foregroundColor: _toastOnBackground,
       closeButton: const ToastCloseButton(
         showType: CloseButtonShowType.none,
       ),
       title: Row(
         children: [
-          Icon(
-            isError ? Icons.error_outline : Icons.check_circle_outline,
-            color: foregroundColor,
-            size: 22,
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: foregroundColor,
+              style: const TextStyle(
+                color: _toastOnBackground,
                 fontWeight: FontWeight.w600,
+                fontSize: 14,
+                height: 1.3,
               ),
             ),
           ),
@@ -62,11 +56,18 @@ class SnackbarUtils {
                 toastification.dismiss(item);
                 action.onPressed();
               },
+              style: TextButton.styleFrom(
+                foregroundColor: _toastOnBackground,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               child: Text(
                 action.label,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: foregroundColor,
+                style: const TextStyle(
+                  color: _toastOnBackground,
                   fontWeight: FontWeight.w700,
+                  fontSize: 14,
                 ),
               ),
             ),

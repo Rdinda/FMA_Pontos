@@ -229,7 +229,7 @@ class BreathingLogo extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(26),
       child: Image.asset(
-        'assets/images/maria.png',
+        'assets/images/maria.webp',
         width: 220,
         height: 220,
         fit: BoxFit.cover,

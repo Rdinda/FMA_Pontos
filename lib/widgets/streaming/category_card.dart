@@ -1,11 +1,74 @@
 import 'package:flutter/material.dart';
+import '../../models/category.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/streaming_tokens.dart';
+import '../../utils/category_artwork.dart';
+
+const _kCategoryFooterHeight = 36.0;
+
+/// Faixa inferior escura para legibilidade do nome da categoria.
+class _CategoryNameFooter extends StatelessWidget {
+  final String name;
+
+  const _CategoryNameFooter({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomRadius = StreamingTokens.cardRadius.bottomLeft;
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: ClipRRect(
+        borderRadius: BorderRadius.only(
+          bottomLeft: bottomRadius,
+          bottomRight: bottomRadius,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 8,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.65),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              height: _kCategoryFooterHeight - 8,
+              color: Colors.black.withValues(alpha: 0.65),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// Card de categoria estilo playlist (Stitch Home_Acervo).
 class CategoryCard extends StatelessWidget {
   final String name;
   final int index;
+  final Category? category;
   final VoidCallback? onTap;
   final VoidCallback? onPlay;
 
@@ -13,6 +76,7 @@ class CategoryCard extends StatelessWidget {
     super.key,
     required this.name,
     required this.index,
+    this.category,
     this.onTap,
     this.onPlay,
   });
@@ -30,9 +94,15 @@ class CategoryCard extends StatelessWidget {
 
   List<Color> _gradientForIndex(int i) => gradients[i % gradients.length];
 
+  String? _imageAsset() {
+    if (category != null) return categoryImageAsset(category!);
+    return categoryImageAssetFor(name: name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = _gradientForIndex(index);
+    final imageAsset = _imageAsset();
 
     return Material(
       color: Colors.transparent,
@@ -43,14 +113,23 @@ class CategoryCard extends StatelessWidget {
           height: StreamingTokens.categoryCardHeight,
           decoration: BoxDecoration(
             borderRadius: StreamingTokens.cardRadius,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: colors,
-            ),
+            gradient: imageAsset == null
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: colors,
+                  )
+                : null,
+            image: imageAsset != null
+                ? DecorationImage(
+                    image: AssetImage(imageAsset),
+                    fit: BoxFit.cover,
+                  )
+                : null,
             boxShadow: [
               BoxShadow(
-                color: colors.first.withValues(alpha: 0.35),
+                color: (imageAsset != null ? Colors.black : colors.first)
+                    .withValues(alpha: 0.35),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -58,38 +137,24 @@ class CategoryCard extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              Positioned(
-                right: -16,
-                bottom: -16,
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(StreamingTokens.spacingMd),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+              if (imageAsset == null)
+                Positioned(
+                  right: -16,
+                  bottom: -16,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
+              _CategoryNameFooter(name: name),
               if (onPlay != null)
                 Positioned(
                   right: 8,
-                  bottom: 8,
+                  bottom: _kCategoryFooterHeight + 4,
                   child: Material(
                     color: AppColors.primaryContainer,
                     shape: const CircleBorder(),
@@ -119,18 +184,26 @@ class CategoryCard extends StatelessWidget {
 class BentoCategoryCard extends StatelessWidget {
   final String name;
   final int index;
+  final Category? category;
   final VoidCallback? onTap;
 
   const BentoCategoryCard({
     super.key,
     required this.name,
     required this.index,
+    this.category,
     this.onTap,
   });
+
+  String? _imageAsset() {
+    if (category != null) return categoryImageAsset(category!);
+    return categoryImageAssetFor(name: name);
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = CategoryCard.gradients[index % CategoryCard.gradients.length];
+    final imageAsset = _imageAsset();
 
     return Material(
       color: Colors.transparent,
@@ -140,14 +213,23 @@ class BentoCategoryCard extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: StreamingTokens.cardRadius,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: colors,
-            ),
+            gradient: imageAsset == null
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: colors,
+                  )
+                : null,
+            image: imageAsset != null
+                ? DecorationImage(
+                    image: AssetImage(imageAsset),
+                    fit: BoxFit.cover,
+                  )
+                : null,
             boxShadow: [
               BoxShadow(
-                color: colors.first.withValues(alpha: 0.3),
+                color: (imageAsset != null ? Colors.black : colors.first)
+                    .withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -156,41 +238,21 @@ class BentoCategoryCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: StreamingTokens.cardRadius,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.1),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(StreamingTokens.spacingMd),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                        ),
+              if (imageAsset == null)
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: StreamingTokens.cardRadius,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.1),
+                        Colors.transparent,
                       ],
                     ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
+              _CategoryNameFooter(name: name),
             ],
           ),
         ),

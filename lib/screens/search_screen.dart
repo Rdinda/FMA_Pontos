@@ -202,6 +202,7 @@ class _SearchScreenState extends State<SearchScreen> {
               return BentoCategoryCard(
                 name: cat.name.capitalize(),
                 index: index,
+                category: cat,
                 onTap: () {
                   Navigator.push(
                     context,

@@ -8,6 +8,7 @@ import '../services/auth_service.dart';
 import '../services/play_stats_service.dart';
 import 'category_screen.dart';
 import 'top_played_screen.dart';
+import 'all_categories_screen.dart';
 import 'lyric_view_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
@@ -33,7 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime? _lastPressedAt;
   String _version = '';
   List<LyricWithStats> _topPlayed = [];
+  List<Category> _featuredCategories = [];
   Map<String, Category> _categoryMap = {};
+  static const int _homeCategoryLimit = 4;
+  static const int _topPlayedPreviewLimit = 8;
 
   @override
   void initState() {
@@ -42,23 +46,30 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<SyncRepository>(context, listen: false).syncData();
       _checkForUpdates();
-      _loadTopPlayed();
+      _loadHomeData();
     });
   }
 
-  Future<void> _loadTopPlayed() async {
+  Future<void> _loadHomeData() async {
     try {
       final repo = Provider.of<SyncRepository>(context, listen: false);
-      final stats = await PlayStatsService().getTopPlayed(limit: 10);
+      final playStats = PlayStatsService();
       final categories = await repo.getCategories();
+      final stats = await playStats.getTopPlayed(limit: _topPlayedPreviewLimit);
+      final featured = await playStats.rankCategoriesByAccess(
+        categories,
+        lyricsCountFor: repo.getLyricsCount,
+        limit: _homeCategoryLimit,
+      );
       if (mounted) {
         setState(() {
           _topPlayed = stats;
+          _featuredCategories = featured;
           _categoryMap = {for (var c in categories) c.id: c};
         });
       }
     } catch (e) {
-      debugPrint('[HomeScreen] Error loading top played: $e');
+      debugPrint('[HomeScreen] Error loading home data: $e');
     }
   }
 
@@ -191,19 +202,27 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: StreamingAppBar(
           leading: Consumer<AuthService>(
             builder: (context, auth, _) {
-              if (!auth.isAnonymous && auth.photoUrl != null) {
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: GestureDetector(
-                    onTap: _showAppInfoDialog,
-                    child: CircleAvatar(
-                      radius: 16,
-                      backgroundImage: NetworkImage(auth.photoUrl!),
-                    ),
+              final colorScheme = Theme.of(context).colorScheme;
+              return Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: GestureDetector(
+                  onTap: _showAppInfoDialog,
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: colorScheme.surfaceContainerHigh,
+                    backgroundImage: !auth.isAnonymous && auth.photoUrl != null
+                        ? NetworkImage(auth.photoUrl!)
+                        : null,
+                    child: auth.isAnonymous || auth.photoUrl == null
+                        ? Icon(
+                            Icons.person_outline,
+                            size: 18,
+                            color: colorScheme.onSurfaceVariant,
+                          )
+                        : null,
                   ),
-                );
-              }
-              return const SizedBox(width: 8);
+                ),
+              );
             },
           ),
           actions: [
@@ -224,13 +243,14 @@ class _HomeScreenState extends State<HomeScreen> {
             await Future.wait([
               syncRepo.syncData(),
               authService.refreshUserRole(),
-              _loadTopPlayed(),
+              _loadHomeData(),
             ]);
           },
           child: FutureBuilder<List<Category>>(
             future: syncRepo.getCategories(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  _featuredCategories.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -249,7 +269,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
 
-              final categories = snapshot.data!;
+              final displayCategories = _featuredCategories.isNotEmpty
+                  ? _featuredCategories
+                  : snapshot.data!.take(_homeCategoryLimit).toList();
 
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -263,28 +285,37 @@ class _HomeScreenState extends State<HomeScreen> {
                     userName: _userName(authService),
                   ),
                   const SizedBox(height: StreamingTokens.spacingLg),
-                  Text(
-                    'Categorias',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  _SectionHeader(
+                    title: 'Categorias',
+                    onArrowTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AllCategoriesScreen(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: StreamingTokens.spacingMd),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       childAspectRatio: 1.6,
                     ),
-                    itemCount: categories.length,
+                    itemCount: displayCategories.length,
                     itemBuilder: (context, index) {
-                      final category = categories[index];
+                      final category = displayCategories[index];
+                      final originalIndex =
+                          snapshot.data!.indexWhere((c) => c.id == category.id);
                       return CategoryCard(
                         name: category.name.capitalize(),
-                        index: index,
+                        index: originalIndex >= 0 ? originalIndex : index,
+                        category: category,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -297,29 +328,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  if (_topPlayed.isNotEmpty) ...[
-                    const SizedBox(height: StreamingTokens.spacingLg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Mais Tocados',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                  const SizedBox(height: StreamingTokens.spacingLg),
+                  _SectionHeader(
+                    title: 'Mais Tocados',
+                    onArrowTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TopPlayedScreen(),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const TopPlayedScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text('Ver todos'),
-                        ),
-                      ],
+                      );
+                    },
+                  ),
+                  if (_topPlayed.isEmpty) ...[
+                    const SizedBox(height: StreamingTokens.spacingMd),
+                    Text(
+                      'Nenhum ponto tocado ainda',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
+                  ] else ...[
                     const SizedBox(height: StreamingTokens.spacingSm),
                     SizedBox(
                       height: 180,
@@ -512,6 +541,41 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final VoidCallback? onArrowTap;
+
+  const _SectionHeader({required this.title, this.onArrowTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        if (onArrowTap != null)
+          IconButton(
+            onPressed: onArrowTap,
+            icon: Icon(
+              Icons.chevron_right_rounded,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            tooltip: 'Ver todos',
+            visualDensity: VisualDensity.compact,
+          ),
+      ],
+    );
+  }
+}
+
 class _GreetingBanner extends StatelessWidget {
   final String greeting;
   final String userName;
@@ -525,12 +589,12 @@ class _GreetingBanner extends StatelessWidget {
     return ClipRRect(
       borderRadius: StreamingTokens.cardRadius,
       child: SizedBox(
-        height: 160,
+        height: 192,
         child: Stack(
           fit: StackFit.expand,
           children: [
             Image.asset(
-              'assets/images/main.png',
+              'assets/images/main.webp',
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 color: colorScheme.surfaceContainerHigh,
