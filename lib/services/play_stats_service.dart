@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/category.dart';
@@ -41,67 +42,102 @@ class LyricWithStats {
   });
 }
 
+/// Regra RF-C02: só autenticados não anônimos enfileiram/contam acesso global.
+bool shouldEnqueueAccessForSession({bool? isAnonymous}) {
+  if (isAnonymous == null) return false;
+  return !isAnonymous;
+}
+
 /// Serviço para estatísticas de acesso a pontos (visualização da letra).
 class PlayStatsService {
+  PlayStatsService._();
+  static final PlayStatsService instance = PlayStatsService._();
+  factory PlayStatsService() => instance;
+
   final SupabaseClient _client = Supabase.instance.client;
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
+  Future<bool> _isOffline() async {
+    final results = await Connectivity().checkConnectivity();
+    return results.contains(ConnectivityResult.none);
+  }
+
+  bool _canRecordAccess() {
+    return shouldEnqueueAccessForSession(
+      isAnonymous: _client.auth.currentUser?.isAnonymous,
+    );
+  }
+
   /// Incrementa o contador de acessos quando o usuário abre a letra.
-  /// Usa `play_count` / RPC `increment_play_count` no Supabase (semântica de acesso).
   Future<void> incrementAccessCount(String lyricId) async {
+    if (!_canRecordAccess()) {
+      debugPrint(
+        '[PlayStatsService] Skip access count (anonymous or no session)',
+      );
+      return;
+    }
+
+    if (await _isOffline()) {
+      await _dbHelper.enqueuePendingAccessEvent(lyricId);
+      debugPrint('[PlayStatsService] Queued offline access for: $lyricId');
+      return;
+    }
+
+    final sent = await _rpcIncrement(lyricId);
+    if (!sent) {
+      await _dbHelper.enqueuePendingAccessEvent(lyricId);
+      debugPrint(
+        '[PlayStatsService] RPC failed; queued access for: $lyricId',
+      );
+    }
+  }
+
+  Future<bool> _rpcIncrement(String lyricId) async {
     try {
       await _client.rpc(
         'increment_play_count',
         params: {'p_lyric_id': lyricId},
       );
       debugPrint('[PlayStatsService] Access count incremented for: $lyricId');
+      return true;
     } catch (e) {
-      debugPrint('[PlayStatsService] RPC failed, using fallback: $e');
-      await _incrementAccessCountFallback(lyricId);
+      debugPrint('[PlayStatsService] RPC increment failed: $e');
+      return false;
     }
   }
 
-  /// Fallback: incrementa contador manualmente se RPC não existir.
-  Future<void> _incrementAccessCountFallback(String lyricId) async {
-    try {
-      // Primeiro, tenta buscar o registro existente
-      final existing = await _client
-          .from('lyric_play_stats')
-          .select()
-          .eq('lyric_id', lyricId)
-          .maybeSingle();
+  /// Flush da fila local: N RPCs individuais (RF-C04, RF-C05).
+  Future<int> flushPendingAccessEvents() async {
+    if (!_canRecordAccess()) return 0;
+    if (await _isOffline()) return 0;
 
-      if (existing != null) {
-        // Atualiza o contador
-        await _client
-            .from('lyric_play_stats')
-            .update({
-              'play_count': (existing['play_count'] ?? 0) + 1,
-              'last_played_at': DateTime.now().toIso8601String(),
-              'updated_at': DateTime.now().toIso8601String(),
-            })
-            .eq('lyric_id', lyricId);
+    final pending = await _dbHelper.getUnflushedAccessEvents();
+    var flushed = 0;
+
+    for (final row in pending) {
+      final id = row['id'] as int;
+      final lyricId = row['lyric_id'] as String;
+      final ok = await _rpcIncrement(lyricId);
+      if (ok) {
+        await _dbHelper.markAccessEventFlushed(id);
+        flushed++;
       } else {
-        // Insere novo registro
-        await _client.from('lyric_play_stats').insert({
-          'lyric_id': lyricId,
-          'play_count': 1,
-          'last_played_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        });
+        break;
       }
-      debugPrint(
-        '[PlayStatsService] Fallback increment successful for: $lyricId',
-      );
-    } catch (e) {
-      debugPrint('[PlayStatsService] Error incrementing access count: $e');
     }
+
+    if (flushed > 0) {
+      debugPrint('[PlayStatsService] Flushed $flushed pending access event(s)');
+    }
+    return flushed;
   }
+
+  Future<int> pendingAccessEventsCount() =>
+      _dbHelper.countPendingAccessEvents();
 
   /// Retorna os pontos mais acessados com informações completas.
   Future<List<LyricWithStats>> getTopPlayed({int limit = 20}) async {
     try {
-      // Buscar estatísticas ordenadas por play_count (contador de acessos)
       final statsResponse = await _client
           .from('lyric_play_stats')
           .select()
@@ -116,7 +152,6 @@ class PlayStatsService {
         return [];
       }
 
-      // Buscar os lyrics correspondentes do banco local
       final List<LyricWithStats> result = [];
       final categories = await _dbHelper.readAllCategories();
       final categoryMap = {for (var c in categories) c.id: c.name};
@@ -171,9 +206,6 @@ class PlayStatsService {
   }
 
   /// Categorias mais acessadas para a Home.
-  ///
-  /// Primário: soma de acessos ([lyric_play_stats.play_count]) por category_id.
-  /// Fallback: total de pontos por categoria quando não há dados de acesso.
   Future<List<Category>> rankCategoriesByAccess(
     List<Category> categories, {
     required Future<int> Function(String categoryId) lyricsCountFor,

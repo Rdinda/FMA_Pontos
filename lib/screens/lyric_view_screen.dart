@@ -570,7 +570,7 @@ class _LyricViewScreenState extends State<LyricViewScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return Consumer<AuthService>(
       builder: (context, auth, _) {
-        final showEdit = auth.canEditLyrics || auth.isAnonymous;
+        final showEdit = auth.canEditLyrics;
         final showDelete = auth.canDeleteLyrics;
 
         if (!showEdit && !showDelete) {

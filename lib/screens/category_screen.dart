@@ -240,7 +240,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Consumer2<AuthService, FavoritesService>(
       builder: (context, auth, favService, _) {
         final isFav = favService.isFavorite(lyric.id);
-        final showEdit = auth.canEditLyrics || auth.isAnonymous;
+        final showEdit = auth.canEditLyrics;
         final showDelete = auth.canDeleteLyrics;
 
         return PopupMenuButton<String>(

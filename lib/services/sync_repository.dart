@@ -7,27 +7,55 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 import '../models/lyric.dart';
 import '../database/db_helper.dart';
+import 'auth_service.dart';
+import 'play_stats_service.dart';
 import 'supabase_service.dart';
 import 'sync_merge.dart';
 
 class SyncRepository with ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
   final SupabaseService _supabaseService = SupabaseService();
+  final PlayStatsService _playStatsService = PlayStatsService.instance;
+  AuthService? _auth;
 
   bool _isSyncing = false;
   bool _isOffline = true;
   double _downloadProgress = 0.0;
   String _downloadStatus = '';
   bool _isDownloading = false;
+  String? _lastSyncError;
+  DateTime? _lastSyncAt;
+  int _pendingCategoriesCount = 0;
+  int _pendingLyricsCount = 0;
 
   bool get isSyncing => _isSyncing;
   bool get isOffline => _isOffline;
   bool get isDownloading => _isDownloading;
   double get downloadProgress => _downloadProgress;
   String get downloadStatus => _downloadStatus;
+  String? get lastSyncError => _lastSyncError;
+  DateTime? get lastSyncAt => _lastSyncAt;
+  int get pendingCategoriesCount => _pendingCategoriesCount;
+  int get pendingLyricsCount => _pendingLyricsCount;
+
+  Future<int> get pendingAccessEventsCount =>
+      _playStatsService.pendingAccessEventsCount();
 
   SyncRepository() {
     _initConnectivity();
+    _refreshPendingCounts();
+  }
+
+  void bindAuth(AuthService auth) {
+    _auth = auth;
+    auth.registerPostLoginSync(() => syncData());
+  }
+
+  Future<void> _refreshPendingCounts() async {
+    _pendingCategoriesCount =
+        (await _dbHelper.getUnsyncedCategories()).length;
+    _pendingLyricsCount = (await _dbHelper.getUnsyncedLyrics()).length;
+    notifyListeners();
   }
 
   void _initConnectivity() {
@@ -40,7 +68,6 @@ class SyncRepository with ChangeNotifier {
         syncData();
       }
     });
-    // Initial check
     Connectivity().checkConnectivity().then((results) {
       _isOffline = results.contains(ConnectivityResult.none);
       notifyListeners();
@@ -51,12 +78,13 @@ class SyncRepository with ChangeNotifier {
     if (_isSyncing || _isOffline) return;
 
     _isSyncing = true;
+    _lastSyncError = null;
     notifyListeners();
 
     try {
       await _pushPendingChanges();
+      await _playStatsService.flushPendingAccessEvents();
 
-      // 2. PULL Changes (Incremental)
       final prefs = await SharedPreferences.getInstance();
       final lastSyncStr = prefs.getString('last_sync_timestamp');
       final lastSync = lastSyncStr != null ? DateTime.parse(lastSyncStr) : null;
@@ -65,41 +93,40 @@ class SyncRepository with ChangeNotifier {
         since: lastSync,
       );
 
-      // Upsert cloud items
       for (var cat in cloudCategories) {
         if (cat.isDeleted) {
           await _dbHelper.hardDeleteCategory(cat.id);
-        } else {
-          final existing = await _dbHelper.getCategory(cat.id);
-          Category localCat;
-          if (existing != null && !existing.isSynced) {
-            localCat = SyncMerge.mergeCategory(existing, cat);
-          } else {
-            localCat = Category(
-              id: cat.id,
-              name: cat.name,
-              code: cat.code,
-              updatedAt: cat.updatedAt,
-              isSynced: existing == null || existing.isSynced,
-              isDeleted: false,
-            );
+          continue;
+        }
+
+        final existing = await _dbHelper.getCategory(cat.id);
+        if (existing != null && !existing.isSynced) {
+          if (existing.updatedAt.isAfter(cat.updatedAt)) {
+            continue;
           }
+          final merged = SyncMerge.mergeCategory(existing, cat);
+          await _dbHelper.upsertCategory(merged);
+        } else {
+          final localCat = Category(
+            id: cat.id,
+            name: cat.name,
+            code: cat.code,
+            updatedAt: cat.updatedAt,
+            isSynced: true,
+            isDeleted: false,
+          );
           await _dbHelper.upsertCategory(localCat);
         }
       }
 
       final cloudLyrics = await _supabaseService.fetchLyrics(since: lastSync);
 
-      // Upsert cloud items
       for (var lyric in cloudLyrics) {
         if (lyric.isDeleted) {
-          // Handle deletion
-          if (lyric.audioUrl != null) {
-            final local = await _dbHelper.getLyricById(lyric.id);
-            if (local != null && local.localAudioPath != null) {
-              final file = File(local.localAudioPath!);
-              if (await file.exists()) await file.delete();
-            }
+          final local = await _dbHelper.getLyricById(lyric.id);
+          if (local != null && local.localAudioPath != null) {
+            final file = File(local.localAudioPath!);
+            if (await file.exists()) await file.delete();
           }
           await _dbHelper.hardDeleteLyric(lyric.id);
           continue;
@@ -108,106 +135,149 @@ class SyncRepository with ChangeNotifier {
         final existing = await _dbHelper.getLyricById(lyric.id);
         String? preservedPath = existing?.localAudioPath;
 
-        // Check for audio changes
         if (existing != null && existing.localAudioPath != null) {
-          bool audioRemoved = lyric.audioUrl == null;
-          bool audioChanged = lyric.audioUrl != existing.audioUrl;
-
+          final audioRemoved = lyric.audioUrl == null;
+          final audioChanged =
+              lyric.audioUrl != null && lyric.audioUrl != existing.audioUrl;
           if (audioRemoved || audioChanged) {
             final file = File(existing.localAudioPath!);
             if (await file.exists()) {
               try {
                 await file.delete();
               } catch (e) {
-                debugPrint("Failed to delete stale audio: $e");
+                debugPrint('Failed to delete stale audio: $e');
               }
             }
             preservedPath = null;
+          } else if (lyric.audioUrl == existing.audioUrl) {
+            preservedPath = existing.localAudioPath;
           }
         }
 
-        Lyric localLyric;
         if (existing != null && !existing.isSynced) {
-          localLyric = SyncMerge.mergeLyric(
+          if (existing.updatedAt.isAfter(lyric.updatedAt)) {
+            continue;
+          }
+          final merged = SyncMerge.mergeLyric(
             existing,
             lyric,
             preservedLocalAudioPath: preservedPath,
           );
+          await _dbHelper.upsertLyric(merged);
         } else {
-          localLyric = Lyric(
+          final localLyric = Lyric(
             id: lyric.id,
             categoryId: lyric.categoryId,
             title: lyric.title,
             content: lyric.content,
             updatedAt: lyric.updatedAt,
-            isSynced: existing == null || existing.isSynced,
+            isSynced: true,
             isDeleted: false,
             audioUrl: lyric.audioUrl,
             localAudioPath: preservedPath,
             youtubeLink: lyric.youtubeLink,
             sequenceNumber: lyric.sequenceNumber,
           );
+          await _dbHelper.upsertLyric(localLyric);
         }
-        await _dbHelper.upsertLyric(localLyric);
       }
 
-      // Reenvia alterações produzidas por merge no PULL
       await _pushPendingChanges();
 
-      // Save new sync timestamp
       await prefs.setString(
         'last_sync_timestamp',
         DateTime.now().toIso8601String(),
       );
+      _lastSyncAt = DateTime.now();
 
-      // 3. Download Missing Audios
       await _downloadMissingAudios();
-    } catch (e) {
-      debugPrint("Sync Error: $e");
+      await _refreshPendingCounts();
+    } catch (e, st) {
+      _lastSyncError = e.toString();
+      debugPrint('Sync Error: $e\n$st');
+      await _refreshPendingCounts();
     } finally {
       _isSyncing = false;
       notifyListeners();
     }
   }
 
+  bool _mayPushCategory(Category cat, Category? remote) {
+    final auth = _auth;
+    if (auth == null || auth.isAnonymous || !auth.isActive) return false;
+    if (cat.isDeleted) return auth.canDeleteCategories;
+    if (remote == null || remote.isDeleted) return auth.canAddCategories;
+    return auth.canEditCategories;
+  }
+
+  bool _mayPushLyric(Lyric lyric, Lyric? remote) {
+    final auth = _auth;
+    if (auth == null || auth.isAnonymous || !auth.isActive) return false;
+    if (lyric.isDeleted) return auth.canDeleteLyrics;
+    if (remote == null || remote.isDeleted) return auth.canAddLyrics;
+    return auth.canEditLyrics;
+  }
+
   Future<void> _pushPendingChanges() async {
     final unsyncedCategories = await _dbHelper.getUnsyncedCategories();
     for (var cat in unsyncedCategories) {
+      final remote = await _supabaseService.fetchCategoryById(cat.id);
+      if (!_mayPushCategory(cat, remote)) continue;
+
       if (cat.isDeleted) {
         await _supabaseService.deleteCategory(cat.id);
         await _dbHelper.hardDeleteCategory(cat.id);
-      } else {
-        var toPush = cat;
-        final remote = await _supabaseService.fetchCategoryById(cat.id);
-        if (remote != null && !remote.isDeleted) {
-          toPush = SyncMerge.mergeCategory(cat, remote);
-          await _dbHelper.upsertCategory(toPush);
-        }
-        await _supabaseService.upsertCategory(toPush);
-        await _dbHelper.markCategorySynced(cat.id);
+        continue;
       }
+
+      var toPush = cat;
+      if (remote != null &&
+          !remote.isDeleted &&
+          remote.updatedAt.isAfter(cat.updatedAt)) {
+        toPush = SyncMerge.mergeCategory(cat, remote);
+        await _dbHelper.upsertCategory(toPush);
+        if (toPush.updatedAt == remote.updatedAt) {
+          await _dbHelper.markCategorySynced(cat.id);
+          continue;
+        }
+      }
+
+      await _supabaseService.upsertCategory(toPush);
+      await _dbHelper.markCategorySynced(cat.id);
     }
 
     final unsyncedLyrics = await _dbHelper.getUnsyncedLyrics();
     for (var lyric in unsyncedLyrics) {
+      final remote = await _supabaseService.fetchLyricById(lyric.id);
+      if (!_mayPushLyric(lyric, remote)) continue;
+
       if (lyric.isDeleted) {
         await _supabaseService.deleteLyric(lyric.id);
         await _dbHelper.hardDeleteLyric(lyric.id);
-      } else {
-        var toPush = lyric;
-        final remote = await _supabaseService.fetchLyricById(lyric.id);
-        if (remote != null && !remote.isDeleted) {
-          toPush = SyncMerge.mergeLyric(
-            lyric,
-            remote,
-            preservedLocalAudioPath: lyric.localAudioPath,
-          );
-          await _dbHelper.upsertLyric(toPush);
-        }
-        await _supabaseService.upsertLyric(toPush);
-        await _dbHelper.markLyricSynced(lyric.id);
+        continue;
       }
+
+      var toPush = lyric;
+      if (remote != null &&
+          !remote.isDeleted &&
+          remote.updatedAt.isAfter(lyric.updatedAt)) {
+        toPush = SyncMerge.mergeLyric(
+          lyric,
+          remote,
+          preservedLocalAudioPath: lyric.localAudioPath,
+        );
+        await _dbHelper.upsertLyric(toPush);
+        if (toPush.updatedAt == remote.updatedAt) {
+          await _dbHelper.markLyricSynced(lyric.id);
+          continue;
+        }
+      }
+
+      await _supabaseService.upsertLyric(toPush);
+      await _dbHelper.markLyricSynced(lyric.id);
     }
+
+    await _refreshPendingCounts();
   }
 
   Future<void> _downloadMissingAudios() async {
@@ -222,8 +292,8 @@ class SyncRepository with ChangeNotifier {
     _downloadStatus = 'Baixando áudios...';
     notifyListeners();
 
-    int total = lyricsToDownload.length;
-    int completed = 0;
+    final total = lyricsToDownload.length;
+    var completed = 0;
 
     final appDir = await getApplicationDocumentsDirectory();
     final audioDir = Directory('${appDir.path}/audios');
@@ -280,7 +350,7 @@ class SyncRepository with ChangeNotifier {
           await _dbHelper.upsertLyric(updatedLyric);
         }
       } catch (e) {
-        debugPrint("Error downloading audio for ${lyric.title}: $e");
+        debugPrint('Error downloading audio for ${lyric.title}: $e');
       }
 
       completed++;
@@ -294,75 +364,67 @@ class SyncRepository with ChangeNotifier {
     notifyListeners();
   }
 
-  // --- CRUD Wrappers (UI should use these) ---
-
   Future<void> addCategory(Category category) async {
-    await _dbHelper.upsertCategory(category);
-    notifyListeners();
-    if (!_isOffline) {
-      _supabaseService
-          .upsertCategory(category)
-          .then((_) {
-            _dbHelper.markCategorySynced(category.id);
-          })
-          .catchError((e) {
-            debugPrint("Failed to push category: $e");
-          });
+    if (_auth != null && !_auth!.canAddCategories) {
+      debugPrint('addCategory denied: insufficient permission');
+      return;
     }
+    await _dbHelper.upsertCategory(category);
+    await _refreshPendingCounts();
+    notifyListeners();
+    if (!_isOffline) syncData();
   }
 
   Future<void> updateCategory(Category category) async {
-    await addCategory(category);
+    if (_auth != null && !_auth!.canEditCategories) {
+      debugPrint('updateCategory denied: insufficient permission');
+      return;
+    }
+    await _dbHelper.upsertCategory(category);
+    await _refreshPendingCounts();
+    notifyListeners();
+    if (!_isOffline) syncData();
   }
 
   Future<void> deleteCategory(String id) async {
-    await _dbHelper.softDeleteCategory(id);
-    notifyListeners();
-    if (!_isOffline) {
-      _supabaseService
-          .deleteCategory(id)
-          .then((_) => _dbHelper.hardDeleteCategory(id))
-          .catchError((e) {
-            debugPrint(e.toString());
-            return 0;
-          });
+    if (_auth != null && !_auth!.canDeleteCategories) {
+      debugPrint('deleteCategory denied: insufficient permission');
+      return;
     }
+    await _dbHelper.softDeleteCategory(id);
+    await _refreshPendingCounts();
+    notifyListeners();
+    if (!_isOffline) syncData();
   }
 
   Future<void> deleteLyric(String id) async {
-    await _dbHelper.softDeleteLyric(id);
-    notifyListeners();
-    if (!_isOffline) {
-      _supabaseService
-          .deleteLyric(id)
-          .then((_) => _dbHelper.hardDeleteLyric(id))
-          .catchError((e) {
-            debugPrint("Failed to delete lyric cloud: $e");
-          });
+    if (_auth != null && !_auth!.canDeleteLyrics) {
+      debugPrint('deleteLyric denied: insufficient permission');
+      return;
     }
+    await _dbHelper.softDeleteLyric(id);
+    await _refreshPendingCounts();
+    notifyListeners();
+    if (!_isOffline) syncData();
   }
 
   Future<void> addLyric(Lyric lyric) async {
-    await _dbHelper.upsertLyric(lyric);
-    notifyListeners();
-    if (!_isOffline) {
-      _supabaseService
-          .upsertLyric(lyric)
-          .then((_) {
-            _dbHelper.markLyricSynced(lyric.id);
-          })
-          .catchError((e) {
-            debugPrint("Failed to push lyric: $e");
-          });
+    if (_auth != null && !_auth!.canAddLyrics) {
+      debugPrint('addLyric denied: insufficient permission');
+      return;
     }
+    await _dbHelper.upsertLyric(lyric);
+    await _refreshPendingCounts();
+    notifyListeners();
+    if (!_isOffline) syncData();
   }
 
   Future<List<Category>> getCategories() async {
-    return await _dbHelper.readAllCategories();
+    return _dbHelper.readAllCategories();
   }
 
   Future<Category?> getCategory(String id) async {
-    return await _dbHelper.getCategory(id);
+    return _dbHelper.getCategory(id);
   }
 
   Future<List<Lyric>> getLyrics(String categoryId) =>

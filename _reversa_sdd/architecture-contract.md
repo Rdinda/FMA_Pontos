@@ -59,14 +59,15 @@ Este contrato define **onde cada dado vive**, **quem pode ler/escrever** e **com
 | Categorias | SQLite | `categories` | Supabase `categories` | Offline-first |
 | Letras | SQLite | `lyrics` | Supabase `lyrics` | Inclui `local_audio_path` **somente local** |
 | Fila de sync (acervo) | SQLite | coluna `is_synced` | — | `0` = pendente de push |
-| Exclusões | SQLite + remoto | `is_deleted` | Soft delete remoto | Sem hard delete online em letras |
+| Fila de stats (acessos) | SQLite | `pending_access_events` | Flush → RPC `increment_play_count` | Só autenticado não anônimo |
+| Exclusões | SQLite + remoto | `is_deleted` | Soft delete remoto (`is_deleted=true`) | Tombstones no PULL via views `sync_*` |
 | Áudio (binário) | Supabase Storage | URL em `lyrics.audio_url` | Upload/delete via `SupabaseService` | Ver regra 5.3 |
 | Favoritos | SharedPreferences | `favorite_lyrics` | **Não sincroniza** | Por dispositivo |
 | Tema | SharedPreferences | theme key | **Não sincroniza** | |
 | Onboarding / LGPD | SharedPreferences | `onboarding_completed`, `privacy_policy_version` | **Não sincroniza** | Nova política → novo aceite |
 | Sessão / identidade | Supabase Auth | JWT / sessão SDK | — | Anônimo permitido para leitura |
 | Role / `is_active` | Supabase | `user_roles` | Realtime opcional | `is_active=false` → bloqueia login |
-| Estatísticas de play | Supabase | `lyric_play_stats` | RPC `increment_play_count` ou fallback client | UI cruza com SQLite para metadados da letra |
+| Estatísticas de acesso | Supabase + SQLite | `lyric_play_stats` + `pending_access_events` | RPC `increment_play_count`; fila offline com flush no sync | Sem INSERT client em `lyric_play_stats` |
 | Auditoria (admin) | Supabase | `audit_logs` | Triggers em `categories`/`lyrics` | Sem cache local obrigatório |
 | Update do app | GitHub Releases API | — | HTTPS | Fora do SQLite |
 
@@ -106,14 +107,15 @@ Este contrato define **onde cada dado vive**, **quem pode ler/escrever** e **com
 
 | ID | Regra | Detalhe |
 |----|-------|---------|
-| **S-01** | Orquestração central em **`SyncRepository.syncData()`**: PUSH → PULL → download de áudios. | |
-| **S-02** | PUSH processa registros com `is_synced = 0`; após sucesso, `mark*Synced`. | |
-| **S-03** | PULL incremental usa `last_sync_timestamp` em SharedPreferences. | |
-| **S-04** | Conflito entre edição local não sincronizada e alteração remota: **merge por campo** (valor da cópia com `updatedAt` mais recente por campo; empate favorece local no PUSH). | `SyncMerge` |
+| **S-01** | Orquestração central em **`SyncRepository.syncData()`**: PUSH acervo → **flush stats** → PULL → segundo PUSH → download de áudios. | |
+| **S-02** | PUSH processa registros com `is_synced = 0`; após sucesso, `mark*Synced`. Anônimo ou sem `can*` **não** enfileiram push. | `AuthService` + `SyncRepository` |
+| **S-03** | PULL incremental usa `last_sync_timestamp` em SharedPreferences; fetch via views **`sync_categories` / `sync_lyrics`** (inclui tombstones). | `SupabaseService` |
+| **S-04** | Conflito: **LWW record-level** — vence o snapshot com `updated_at` mais recente; dirty local com timestamp maior **não** é sobrescrito no PULL. | `SyncMerge` |
 | **S-05** | Após PULL que gera merge local, executar **segundo PUSH** no mesmo ciclo. | |
-| **S-06** | Push imediato em CRUD online (`.then`) é permitido, mas **não substitui** a fila: falha deve deixar `is_synced = 0`. | |
+| **S-06** | CRUD online dispara `syncData()`; falha deixa `is_synced = 0` e `lastSyncError` preenchido. | |
 | **S-07** | `syncData()` não roda se `isOffline` ou `isSyncing`. | |
-| **S-08** | Conectividade restaurada pode disparar sync automático. | `connectivity_plus` |
+| **S-08** | Conectividade restaurada dispara sync automático (inclui flush de acessos pendentes). | `connectivity_plus` |
+| **S-09** | Acessos offline: `pending_access_events` (SQLite v6); flush com N RPCs individuais após PUSH, só sessão autenticada não anônima. | `PlayStatsService` |
 
 ### 5.5 Segurança e permissões (cliente)
 

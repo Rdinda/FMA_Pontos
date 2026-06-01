@@ -21,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -60,6 +60,18 @@ CREATE TABLE lyrics (
   sequence_number $intType
 )
 ''');
+
+    await db.execute('''
+CREATE TABLE pending_access_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  lyric_id TEXT NOT NULL,
+  accessed_at TEXT NOT NULL,
+  is_flushed INTEGER NOT NULL DEFAULT 0
+)
+''');
+    await db.execute(
+      'CREATE INDEX idx_pending_access_flush ON pending_access_events (is_flushed, id)',
+    );
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -81,16 +93,30 @@ CREATE TABLE lyrics (
         'ALTER TABLE lyrics ADD COLUMN sequence_number INTEGER NOT NULL DEFAULT 0',
       );
     }
+    if (oldVersion < 6) {
+      await db.execute('''
+CREATE TABLE pending_access_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  lyric_id TEXT NOT NULL,
+  accessed_at TEXT NOT NULL,
+  is_flushed INTEGER NOT NULL DEFAULT 0
+)
+''');
+      await db.execute(
+        'CREATE INDEX idx_pending_access_flush ON pending_access_events (is_flushed, id)',
+      );
+    }
   }
 
   // --- Categories Operations ---
 
   Future<void> upsertCategory(Category category) async {
     final db = await instance.database;
-    await db.insert('categories', {
-      ...category.toMap(),
-      'is_deleted': 0,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'categories',
+      category.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Category>> readAllCategories() async {
@@ -162,10 +188,11 @@ CREATE TABLE lyrics (
 
   Future<void> upsertLyric(Lyric lyric) async {
     final db = await instance.database;
-    await db.insert('lyrics', {
-      ...lyric.toMap(),
-      'is_deleted': 0,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'lyrics',
+      lyric.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Lyric>> readLyricsByCategory(String categoryId) async {
@@ -254,6 +281,42 @@ CREATE TABLE lyrics (
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<int> enqueuePendingAccessEvent(String lyricId) async {
+    final db = await instance.database;
+    return db.insert('pending_access_events', {
+      'lyric_id': lyricId,
+      'accessed_at': DateTime.now().toIso8601String(),
+      'is_flushed': 0,
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getUnflushedAccessEvents() async {
+    final db = await instance.database;
+    return db.query(
+      'pending_access_events',
+      where: 'is_flushed = 0',
+      orderBy: 'id ASC',
+    );
+  }
+
+  Future<void> markAccessEventFlushed(int id) async {
+    final db = await instance.database;
+    await db.update(
+      'pending_access_events',
+      {'is_flushed': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> countPendingAccessEvents() async {
+    final db = await instance.database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM pending_access_events WHERE is_flushed = 0',
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   Future<int> getMaxSequenceNumber(String categoryId) async {

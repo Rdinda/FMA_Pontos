@@ -33,7 +33,7 @@
 
 | ID | Descrição | Dependências | Paralelismo | Arquivo alvo | Confidência | Status |
 |----|-----------|--------------|-------------|--------------|-------------|--------|
-| T009 | Criar `play_stats_sync_test.dart` com mocks de sessão/rede e casos: anônimo offline não enfileira; autenticado enfileira (esqueleto) | T004 | - | `test/unit/play_stats_sync_test.dart` | 🟡 | `[ ]` |
+| T009 | Criar `play_stats_sync_test.dart` com mocks de sessão/rede e casos: anônimo offline não enfileira; autenticado enfileira (esqueleto) | T004 | - | `test/unit/play_stats_sync_test.dart` | 🟡 | `[X]` |
 
 ## Fase 3, Núcleo
 
@@ -41,49 +41,49 @@
 
 | ID | Descrição | Dependências | Paralelismo | Arquivo alvo | Confidência | Status |
 |----|-----------|--------------|-------------|--------------|-------------|--------|
-| T010 | Substituir merge por campo por LWW record-level em `SyncMerge` (snapshot inteiro vence por `updated_at`) (RF-B01) | T008 | `[//]` | `lib/services/sync_merge.dart` | 🟢 | `[ ]` |
-| T011 | `syncData`: PUSH-first — todos `is_synced=0` antes de qualquer PULL (RF-B02) | T010 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T012 | PULL: não sobrescrever dirty local quando `local.updated_at > remote.updated_at` (RF-B03) | T011 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T013 | Validar/garantir segundo PUSH após PULL que re-marca pendentes (RF-B04) | T012 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T014 | Injetar `AuthService` em `SyncRepository` (construtor/DI) para gates `can*`/`isAnonymous` (D-10) | T008 | `[//]` | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T015 | `_pushPendingChanges`: ignorar linhas se anônimo, sem `can*` da operação ou `is_active=false` (RF-B05, RF-B08, RF-B09) | T014 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T016 | Wrappers `add*`/`update*`/`delete*`: validar permissão antes de `is_synced=0` (RF-B06) | T015 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T017 | Remover `\|\| isAnonymous` do gate de edição em `LyricViewScreen` (RF-B07) | T014 | `[//]` | `lib/screens/lyric_view_screen.dart` | 🟢 | `[ ]` |
-| T018 | Remover `\|\| isAnonymous` do gate de edição em `CategoryScreen` (RF-B07) | T014 | `[//]` | `lib/screens/category_screen.dart` | 🟢 | `[ ]` |
-| T019 | Preservar invariante `local_audio_path` no PULL quando `audio_url` inalterada; invalidar se URL mudou (RF-B10) | T012 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T020 | Cursor seguro: `last_sync_timestamp` só após PUSH+PULL completos com sucesso (RF-B12) | T013 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T021 | Getters `pendingCategoriesCount`, `pendingLyricsCount`, `lastSyncAt`, `lastSyncError` (RF-B13, RF-B14) | T020 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T022 | Substituir falhas silenciosas de sync por estado observável (`lastSyncError`, sem avanço de cursor) (RF-B14) | T020 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T023 | `DatabaseHelper.upsertCategory`/`upsertLyric`: não forçar `is_deleted=0` em tombstone (RF-B15) | - | `[//]` | `lib/database/db_helper.dart` | 🟢 | `[ ]` |
-| T024 | `AuthService`: disparar `syncData()` após login Google bem-sucedido (RF-B16) | T015 | - | `lib/services/auth_service.dart` | 🟢 | `[ ]` |
-| T025 | Garantir PULL sem gate editorial para anônimo e autenticado (RF-B17) | T015 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
+| T010 | Substituir merge por campo por LWW record-level em `SyncMerge` (snapshot inteiro vence por `updated_at`) (RF-B01) | T008 | `[//]` | `lib/services/sync_merge.dart` | 🟢 | `[X]` |
+| T011 | `syncData`: PUSH-first — todos `is_synced=0` antes de qualquer PULL (RF-B02) | T010 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T012 | PULL: não sobrescrever dirty local quando `local.updated_at > remote.updated_at` (RF-B03) | T011 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T013 | Validar/garantir segundo PUSH após PULL que re-marca pendentes (RF-B04) | T012 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T014 | Injetar `AuthService` em `SyncRepository` (construtor/DI) para gates `can*`/`isAnonymous` (D-10) | T008 | `[//]` | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T015 | `_pushPendingChanges`: ignorar linhas se anônimo, sem `can*` da operação ou `is_active=false` (RF-B05, RF-B08, RF-B09) | T014 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T016 | Wrappers `add*`/`update*`/`delete*`: validar permissão antes de `is_synced=0` (RF-B06) | T015 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T017 | Remover `\|\| isAnonymous` do gate de edição em `LyricViewScreen` (RF-B07) | T014 | `[//]` | `lib/screens/lyric_view_screen.dart` | 🟢 | `[X]` |
+| T018 | Remover `\|\| isAnonymous` do gate de edição em `CategoryScreen` (RF-B07) | T014 | `[//]` | `lib/screens/category_screen.dart` | 🟢 | `[X]` |
+| T019 | Preservar invariante `local_audio_path` no PULL quando `audio_url` inalterada; invalidar se URL mudou (RF-B10) | T012 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T020 | Cursor seguro: `last_sync_timestamp` só após PUSH+PULL completos com sucesso (RF-B12) | T013 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T021 | Getters `pendingCategoriesCount`, `pendingLyricsCount`, `lastSyncAt`, `lastSyncError` (RF-B13, RF-B14) | T020 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T022 | Substituir falhas silenciosas de sync por estado observável (`lastSyncError`, sem avanço de cursor) (RF-B14) | T020 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T023 | `DatabaseHelper.upsertCategory`/`upsertLyric`: não forçar `is_deleted=0` em tombstone (RF-B15) | - | `[//]` | `lib/database/db_helper.dart` | 🟢 | `[X]` |
+| T024 | `AuthService`: disparar `syncData()` após login Google bem-sucedido (RF-B16) | T015 | - | `lib/services/auth_service.dart` | 🟢 | `[X]` |
+| T025 | Garantir PULL sem gate editorial para anônimo e autenticado (RF-B17) | T015 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
 
 ### 3b — Milestone **M3** (fila offline stats + flush)
 
 | ID | Descrição | Dependências | Paralelismo | Arquivo alvo | Confidência | Status |
 |----|-----------|--------------|-------------|--------------|-------------|--------|
-| T026 | SQLite v6: tabela `pending_access_events` + índice `(is_flushed, id)` em `_upgradeDB` (RF-C01) | T023 | - | `lib/database/db_helper.dart` | 🟢 | `[ ]` |
-| T027 | Offline: `incrementAccessCount` enfileira só sessão autenticada não anônima (RF-C02) | T026 | - | `lib/services/play_stats_service.dart` | 🟢 | `[ ]` |
-| T028 | Online: manter RPC `increment_play_count` para autenticados não anônimos; remover/evitar fallback INSERT direto em `lyric_play_stats` (RF-C03) | T004, T027 | - | `lib/services/play_stats_service.dart` | 🟢 | `[ ]` |
-| T029 | Implementar `flushPendingAccessEvents()`: N RPCs individuais, marcar `is_flushed=1` (RF-C04, RF-C05) | T028 | - | `lib/services/play_stats_service.dart` | 🟢 | `[ ]` |
-| T030 | `SyncRepository`: chamar flush após PUSH acervo e antes do PULL (RN-09) | T029, T013 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T031 | Flush na reconexão via `syncData`/`_initConnectivity` existente (RN-09) | T030 | - | `lib/services/sync_repository.dart` | 🟢 | `[ ]` |
-| T032 | Expor `pendingAccessEventsCount` para diagnóstico (RF-C06) | T029 | - | `lib/services/play_stats_service.dart` | 🟢 | `[ ]` |
-| T033 | Completar testes: enqueue offline → flush → `play_count`; bloqueio anônimo (RF-C07) | T009, T027, T029, T031 | - | `test/unit/play_stats_sync_test.dart` | 🟡 | `[ ]` |
+| T026 | SQLite v6: tabela `pending_access_events` + índice `(is_flushed, id)` em `_upgradeDB` (RF-C01) | T023 | - | `lib/database/db_helper.dart` | 🟢 | `[X]` |
+| T027 | Offline: `incrementAccessCount` enfileira só sessão autenticada não anônima (RF-C02) | T026 | - | `lib/services/play_stats_service.dart` | 🟢 | `[X]` |
+| T028 | Online: manter RPC `increment_play_count` para autenticados não anônimos; remover/evitar fallback INSERT direto em `lyric_play_stats` (RF-C03) | T004, T027 | - | `lib/services/play_stats_service.dart` | 🟢 | `[X]` |
+| T029 | Implementar `flushPendingAccessEvents()`: N RPCs individuais, marcar `is_flushed=1` (RF-C04, RF-C05) | T028 | - | `lib/services/play_stats_service.dart` | 🟢 | `[X]` |
+| T030 | `SyncRepository`: chamar flush após PUSH acervo e antes do PULL (RN-09) | T029, T013 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T031 | Flush na reconexão via `syncData`/`_initConnectivity` existente (RN-09) | T030 | - | `lib/services/sync_repository.dart` | 🟢 | `[X]` |
+| T032 | Expor `pendingAccessEventsCount` para diagnóstico (RF-C06) | T029 | - | `lib/services/play_stats_service.dart` | 🟢 | `[X]` |
+| T033 | Completar testes: enqueue offline → flush → `play_count`; bloqueio anônimo (RF-C07) | T009, T027, T029, T031 | - | `test/unit/play_stats_sync_test.dart` | 🟡 | `[X]` |
 
 ## Fase 4, Integração
 
 | ID | Descrição | Dependências | Paralelismo | Arquivo alvo | Confidência | Status |
 |----|-----------|--------------|-------------|--------------|-------------|--------|
-| T034 | Migration corretiva RLS prod se auditoria pós-deploy divergir de RF-A07 (RF-B11) | T004 | - | `supabase/migrations/20260531120100_sync_contract_rls_prod_audit.sql` | 🟡 | `[ ]` |
-| T035 | Validar contratos PostgREST: fetch incremental `sync_*`, RPC stats, mutações RLS (smoke manual conforme `interfaces/*`) | T008, T030 | - | `_reversa_forward/002-sync-contract/interfaces/` | 🟢 | `[ ]` |
+| T034 | Migration corretiva RLS prod se auditoria pós-deploy divergir de RF-A07 (RF-B11) | T004 | - | `supabase/migrations/20260531120100_sync_contract_rls_prod_audit.sql` | 🟡 | `[X]` |
+| T035 | Validar contratos PostgREST: fetch incremental `sync_*`, RPC stats, mutações RLS (smoke manual conforme `interfaces/*`) | T008, T030 | - | `_reversa_forward/002-sync-contract/smoke-checklist.md` | 🟢 | `[X]` |
 
 ## Fase 5, Polimento
 
 | ID | Descrição | Dependências | Paralelismo | Arquivo alvo | Confidência | Status |
 |----|-----------|--------------|-------------|--------------|-------------|--------|
-| T036 | Atualizar `architecture-contract.md` seção S-04 para LWW record-level (RF-B18) | T010 | `[//]` | `_reversa_sdd/architecture-contract.md` | 🟢 | `[ ]` |
-| T037 | Atualizar `data-dictionary.md` com `is_deleted`, views `sync_*`, RPC e `pending_access_events` pós-deploy (M1.8) | T004, T026 | `[//]` | `_reversa_sdd/database/data-dictionary.md` | 🟡 | `[ ]` |
+| T036 | Atualizar `architecture-contract.md` seção S-04 para LWW record-level (RF-B18) | T010 | `[//]` | `_reversa_sdd/architecture-contract.md` | 🟢 | `[X]` |
+| T037 | Atualizar `data-dictionary.md` com `is_deleted`, views `sync_*`, RPC e `pending_access_events` pós-deploy (M1.8) | T004, T026 | `[//]` | `_reversa_sdd/database/data-dictionary.md` | 🟡 | `[X]` |
 
 ## Notas de execução
 

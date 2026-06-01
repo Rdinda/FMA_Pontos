@@ -69,18 +69,16 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      # Setup keystore for signing (if secrets are configured)
+      # Keystore obrigatório em release por tag (secrets não podem ir em `if:`)
       - name: Decode Keystore
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > android/keystore/fmapontos-release-key.jks
-          
+          mkdir -p android
+          echo "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > android/upload-keystore.jks
+
       - name: Create key.properties
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -88,7 +86,7 @@ jobs:
           echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
           echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
           echo "keyAlias=$KEY_ALIAS" >> android/key.properties
-          echo "storeFile=../keystore/fmapontos-release-key.jks" >> android/key.properties
+          echo "storeFile=../upload-keystore.jks" >> android/key.properties
 
       - name: Build APK
         env:

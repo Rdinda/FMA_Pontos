@@ -50,7 +50,13 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => SyncRepository()),
+        ChangeNotifierProxyProvider<AuthService, SyncRepository>(
+          create: (_) => SyncRepository(),
+          update: (_, auth, repo) {
+            repo!.bindAuth(auth);
+            return repo;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => FavoritesService()),
         ChangeNotifierProvider.value(value: audioService),
       ],

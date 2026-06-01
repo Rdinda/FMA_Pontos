@@ -18,8 +18,13 @@ class AuthService extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   RealtimeChannel? _roleSubscription;
+  Future<void> Function()? _postLoginSync;
 
   User? get currentUser => _currentUser;
+
+  void registerPostLoginSync(Future<void> Function() callback) {
+    _postLoginSync = callback;
+  }
   bool get isAuthenticated => _currentUser != null;
   // Retorna true se não há usuário OU se o usuário é anônimo
   bool get isAnonymous =>
@@ -331,6 +336,7 @@ class AuthService extends ChangeNotifier {
         if (!await _ensureUserIsActive()) {
           return false;
         }
+        await _postLoginSync?.call();
         return true;
       }
 

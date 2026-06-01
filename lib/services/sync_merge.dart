@@ -1,41 +1,17 @@
 import '../models/category.dart';
 import '../models/lyric.dart';
 
-/// Merge por campo entre cópia local (possivelmente não sincronizada) e remota.
+/// LWW (last-write-wins) no registro inteiro via [updatedAt].
 class SyncMerge {
-  static T _pickField<T>(
-    T localValue,
-    T remoteValue,
-    DateTime localUpdatedAt,
-    DateTime remoteUpdatedAt,
-  ) {
-    if (localValue == remoteValue) return localValue;
-    if (remoteUpdatedAt.isAfter(localUpdatedAt)) return remoteValue;
-    return localValue;
-  }
-
-  static DateTime _maxDateTime(DateTime a, DateTime b) =>
-      a.isAfter(b) ? a : b;
-
   static Category mergeCategory(Category local, Category remote) {
-    final mergedAt = _maxDateTime(local.updatedAt, remote.updatedAt);
+    final winner = remote.updatedAt.isAfter(local.updatedAt) ? remote : local;
     return Category(
       id: local.id,
-      name: _pickField(
-        local.name,
-        remote.name,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
-      code: _pickField(
-        local.code,
-        remote.code,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
-      updatedAt: mergedAt,
+      name: winner.name,
+      code: winner.code,
+      updatedAt: winner.updatedAt,
       isSynced: false,
-      isDeleted: local.isDeleted || remote.isDeleted,
+      isDeleted: winner.isDeleted,
     );
   }
 
@@ -44,59 +20,44 @@ class SyncMerge {
     Lyric remote, {
     String? preservedLocalAudioPath,
   }) {
-    final mergedAt = _maxDateTime(local.updatedAt, remote.updatedAt);
-    final mergedAudioUrl = _pickField(
-      local.audioUrl,
-      remote.audioUrl,
-      local.updatedAt,
-      remote.updatedAt,
-    );
+    final remoteWins = remote.updatedAt.isAfter(local.updatedAt);
+    if (!remoteWins) {
+      return Lyric(
+        id: local.id,
+        categoryId: local.categoryId,
+        title: local.title,
+        content: local.content,
+        updatedAt: local.updatedAt,
+        isSynced: false,
+        isDeleted: local.isDeleted,
+        audioUrl: local.audioUrl,
+        localAudioPath: preservedLocalAudioPath ?? local.localAudioPath,
+        youtubeLink: local.youtubeLink,
+        sequenceNumber: local.sequenceNumber,
+      );
+    }
 
     String? audioPath = preservedLocalAudioPath ?? local.localAudioPath;
-    if (mergedAudioUrl != local.audioUrl && mergedAudioUrl != remote.audioUrl) {
-      audioPath = preservedLocalAudioPath ?? local.localAudioPath;
-    } else if (mergedAudioUrl != remote.audioUrl &&
-        remote.updatedAt.isAfter(local.updatedAt)) {
-      audioPath = null;
+    if (remote.audioUrl != local.audioUrl) {
+      if (remote.audioUrl == null) {
+        audioPath = null;
+      } else if (local.audioUrl != remote.audioUrl) {
+        audioPath = null;
+      }
     }
 
     return Lyric(
       id: local.id,
-      categoryId: _pickField(
-        local.categoryId,
-        remote.categoryId,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
-      title: _pickField(
-        local.title,
-        remote.title,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
-      content: _pickField(
-        local.content,
-        remote.content,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
-      updatedAt: mergedAt,
+      categoryId: remote.categoryId,
+      title: remote.title,
+      content: remote.content,
+      updatedAt: remote.updatedAt,
       isSynced: false,
-      isDeleted: local.isDeleted || remote.isDeleted,
-      audioUrl: mergedAudioUrl,
+      isDeleted: remote.isDeleted,
+      audioUrl: remote.audioUrl,
       localAudioPath: audioPath,
-      youtubeLink: _pickField(
-        local.youtubeLink,
-        remote.youtubeLink,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
-      sequenceNumber: _pickField(
-        local.sequenceNumber,
-        remote.sequenceNumber,
-        local.updatedAt,
-        remote.updatedAt,
-      ),
+      youtubeLink: remote.youtubeLink,
+      sequenceNumber: remote.sequenceNumber,
     );
   }
 }

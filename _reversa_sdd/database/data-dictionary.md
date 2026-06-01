@@ -42,11 +42,19 @@ Documenta o schema **`public`** do app + integrações **`auth`**, **`storage`**
 | `name` | `text` | NOT NULL | — | — | 🟢 |
 | `code` | `text` | NOT NULL | — | UNIQUE (`categories_code_key`) | 🟢 |
 | `updated_at` | `timestamptz` | NOT NULL | `now()` | — | 🟢 |
+| `is_deleted` | `boolean` | NOT NULL | `false` | Soft delete (Fase A sync-contract) | 🟢 |
 
-**Índices:** PK, UNIQUE em `code`.
+**Índices:** PK, UNIQUE em `code`, `idx_categories_updated_at` em `updated_at`.
+
+**Views (sync incremental):**
+
+| View | Papel |
+|------|--------|
+| `sync_categories` | PULL com tombstones (`security_invoker = false`) |
+| `sync_lyrics` | idem |
 
 **Notas:**
-- 🟢 Não existe `is_deleted` no remoto — exclusão lógica é **somente SQLite** (`SyncRepository`).
+- 🟢 Leitura UI via tabela base + RLS `is_deleted = false`; sync usa views `sync_*`.
 - 🟡 `youtube_url` em `lyrics` coexiste com `youtube_link` (legado duplicado).
 
 ---
@@ -66,8 +74,9 @@ Documenta o schema **`public`** do app + integrações **`auth`**, **`storage`**
 | `youtube_url` | `text` | NULL | — | — | 🟢 |
 | `youtube_link` | `text` | NULL | — | — | 🟢 |
 | `sequence_number` | `integer` | NOT NULL | `0` | — | 🟢 |
+| `is_deleted` | `boolean` | NOT NULL | `false` | Soft delete (Fase A sync-contract) | 🟢 |
 
-**Índices:** `idx_lyrics_category_id` em `category_id`.
+**Índices:** `idx_lyrics_category_id` em `category_id`, `idx_lyrics_updated_at` em `updated_at`.
 
 **App:** `Lyric` / `toSupabaseMap` envia campos usados na sync; player lê `audio_url` e `youtube_link`.
 
@@ -132,14 +141,26 @@ Documenta o schema **`public`** do app + integrações **`auth`**, **`storage`**
 
 ---
 
-## SQLite local (🟡 espelho offline — não está no backup)
+## SQLite local (`lyrics_v4.db`, schema v6)
 
-| Coluna extra local | Uso |
-|--------------------|-----|
-| `is_synced` | Pendência de push |
-| `is_deleted` | Soft delete antes do sync |
+| Tabela / coluna | Uso |
+|-----------------|-----|
+| `categories.is_synced`, `lyrics.is_synced` | Fila de push do acervo |
+| `categories.is_deleted`, `lyrics.is_deleted` | Tombstone local; alinhado ao remoto após Fase A |
+| **`pending_access_events`** | Fila FIFO de acessos offline (flush → RPC) |
 
-🟢 **CONFIRMADO** — Modelo híbrido: remoto não replica soft delete; app marca `is_deleted` localmente e sincroniza delete físico ou soft conforme `SyncRepository`.
+### `pending_access_events` (🟢 pós Fase C)
+
+| Coluna | Tipo | Papel |
+|--------|------|--------|
+| `id` | INTEGER PK AUTOINCREMENT | Ordem de flush |
+| `lyric_id` | TEXT NOT NULL | Letra acessada |
+| `accessed_at` | TEXT ISO8601 | Timestamp do acesso |
+| `is_flushed` | INTEGER 0/1 | 0 = pendente de envio |
+
+**Índice:** `idx_pending_access_flush (is_flushed, id)`.
+
+🟢 **CONFIRMADO** — Remoto e local usam `is_deleted`; PULL incremental lê tombstones via `sync_*`; stats não usam INSERT client em `lyric_play_stats`.
 
 ---
 
@@ -162,8 +183,10 @@ Políticas no backup:
 | `20251226191350` | Schema base categorias/letras, RBAC, audit, storage |
 | `20251226192339` | Ajustes policies / revokes |
 | `20260114120000` | Coluna `categories.code` + backfill |
+| `20260531120000` | Sync-contract Fase A: `is_deleted`, views `sync_*`, RLS, RPC `increment_play_count` |
+| `20260531120100` | Auditoria RLS pós-deploy (revogações anon, stats só RPC) |
 
-🔴 **`increment_play_count`** — **ausente** no dump de produção; presente apenas em `supabase/migrations/20251226191350_initial_schema.sql` no repositório (ainda não aplicada em prod no snapshot).
+🟢 **`increment_play_count`** — aplicada em prod com migration `20260531120000` (2026-06-01). Dump de jan/2026 permanece histórico.
 
 ---
 
