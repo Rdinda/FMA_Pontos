@@ -1,0 +1,12 @@
+services:
+  landing-page:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dindou/fmapontospage:latest
+    container_name: fma-landing-page
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production

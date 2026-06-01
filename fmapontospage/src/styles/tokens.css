@@ -1,0 +1,34 @@
+/**
+ * FMA Pontos landing tokens
+ * Marketing: cream + gold (reference mockup)
+ * App alignment: Plus Jakarta Sans, 12px/16px radii, streaming green as secondary
+ */
+:root {
+  --fma-cream: #fdfcf8;
+  --fma-cream-muted: #f5f3ee;
+  --fma-gold: #c5a04d;
+  --fma-gold-dark: #a8883e;
+  --fma-gold-light: #d4b96a;
+  --fma-gold-glow: rgba(197, 160, 77, 0.25);
+  --fma-text: #1c1b1b;
+  --fma-text-muted: #57534e;
+  --fma-surface: #ffffff;
+  --fma-border: #e7e5e4;
+  --fma-brand-green: #1db954;
+  --fma-radius-button: 12px;
+  --fma-radius-card: 16px;
+  --fma-font-serif: "Playfair Display", Georgia, serif;
+  --fma-font-sans: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+}
+
+.dark {
+  --fma-cream: #000000;
+  --fma-cream-muted: #121212;
+  --fma-text: #e5e2e1;
+  --fma-text-muted: #bccbb9;
+  --fma-surface: #1e1e1e;
+  --fma-border: rgba(255, 255, 255, 0.08);
+  --fma-gold: #1db954;
+  --fma-gold-dark: #00873a;
+  --fma-gold-light: #53e076;
+}
