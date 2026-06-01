@@ -76,6 +76,24 @@ jobs:
         run: |
           mkdir -p android
           echo "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > android/upload-keystore.jks
+          SIZE=$(wc -c < android/upload-keystore.jks)
+          echo "Keystore size: ${SIZE} bytes"
+          if [ "$SIZE" -lt 500 ]; then
+            echo "::error::upload-keystore.jks inválido (arquivo muito pequeno). Atualize o secret KEYSTORE_BASE64 com android/keystore.base64.txt (uma linha)."
+            exit 1
+          fi
+
+      - name: Validate Keystore (senhas e alias)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          keytool -list \
+            -keystore android/upload-keystore.jks \
+            -alias "$KEY_ALIAS" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD"
 
       - name: Create key.properties
         env:
