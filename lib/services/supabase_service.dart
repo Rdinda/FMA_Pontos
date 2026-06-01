@@ -20,7 +20,7 @@ class SupabaseService {
   }
 
   Future<List<Category>> fetchCategories({DateTime? since}) async {
-    var query = client.from('categories').select();
+    var query = client.from('sync_categories').select();
     if (since != null) {
       query = query.gt('updated_at', since.toIso8601String());
     }
@@ -56,7 +56,7 @@ class SupabaseService {
   }
 
   Future<List<Lyric>> fetchLyrics({DateTime? since}) async {
-    var query = client.from('lyrics').select();
+    var query = client.from('sync_lyrics').select();
     if (since != null) {
       query = query.gt('updated_at', since.toIso8601String());
     }

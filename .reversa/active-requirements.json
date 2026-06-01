@@ -1,10 +1,17 @@
-{
-  "schema-version": 1,
-  "feature-dir": "_reversa_forward/001-novo-visual-streaming",
-  "feature-id": "001",
-  "short-name": "novo-visual-streaming",
-  "started-at": "2026-05-21T23:00:00Z",
-  "current-stage": "coding",
-  "stages-completed": ["requirements", "clarify", "plan", "to-do", "coding"],
-  "paused-features": []
-}
+{
+  "schema-version": 1,
+  "feature-dir": "_reversa_forward/002-sync-contract",
+  "feature-id": "002",
+  "short-name": "sync-contract",
+  "started-at": "2026-05-31T23:25:00Z",
+  "current-stage": "coding",
+  "stages-completed": ["requirements", "clarify", "plan", "to-do"],
+  "paused-features": [],
+  "clarify-completed-at": "2026-05-31T23:59:00Z",
+  "plan-completed-at": "2026-06-01T00:30:00Z",
+  "to-do-completed-at": "2026-06-01T01:00:00Z",
+  "doubts-resolved": 5,
+  "doubts-remaining": 0,
+  "actions-total": 37,
+  "actions-parallel": 9
+}

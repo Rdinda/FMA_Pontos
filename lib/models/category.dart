@@ -40,7 +40,8 @@ class Category {
       'id': id,
       'name': name,
       'code': code,
-      'updated_at': updatedAt.toIso8601String()
+      'updated_at': updatedAt.toIso8601String(),
+      'is_deleted': isDeleted,
     };
   }
 

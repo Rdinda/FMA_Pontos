@@ -1,0 +1,9 @@
+{"ts":"2026-05-31T22:00:00Z","action":"T001","status":"done","files":["supabase/migrations/20260531120000_sync_contract_phase_a.sql"],"note":"is_deleted columns + updated_at indexes"}
+{"ts":"2026-05-31T22:00:01Z","action":"T002","status":"done","files":["supabase/migrations/20260531120000_sync_contract_phase_a.sql"],"note":"sync_categories/sync_lyrics views security_invoker=false"}
+{"ts":"2026-05-31T22:00:02Z","action":"T003","status":"done","files":["supabase/migrations/20260531120000_sync_contract_phase_a.sql"],"note":"RLS read filter is_deleted; revoke lyric_play_stats client write"}
+{"ts":"2026-05-31T22:00:03Z","action":"T004","status":"done","files":["supabase/migrations/20260531120000_sync_contract_phase_a.sql"],"note":"CREATE OR REPLACE increment_play_count + GRANT"}
+{"ts":"2026-05-31T22:00:04Z","action":"T005","status":"done","files":["lib/models/category.dart"]}
+{"ts":"2026-05-31T22:00:05Z","action":"T006","status":"done","files":["lib/models/lyric.dart"]}
+{"ts":"2026-05-31T22:00:06Z","action":"T007","status":"done","files":["lib/services/supabase_service.dart"]}
+{"ts":"2026-05-31T22:00:07Z","action":"T008","status":"done","files":["lib/services/sync_repository.dart"],"note":"PULL hardDelete + PUSH deleteCategory/deleteLyric já implementados; sem diff adicional"}
+{"ts":"2026-05-31T22:00:08Z","action":"deploy","status":"blocked","note":"Migration 20260531120000 não aplicada em Supabase remoto — aplicar via supabase db push ou SQL Editor antes de smoke T035"}

@@ -60,6 +60,7 @@ class Lyric {
       'audio_url': audioUrl,
       'youtube_link': youtubeLink,
       'sequence_number': sequenceNumber,
+      'is_deleted': isDeleted,
     };
   }
 
