@@ -6,6 +6,7 @@ import '../models/lyric.dart';
 import '../services/audio_player_service.dart';
 import '../services/favorites_service.dart';
 import '../services/sync_repository.dart';
+import '../utils/category_artwork.dart';
 import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
 import '../widgets/streaming/streaming_scaffold.dart';
@@ -46,10 +47,34 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       }
     }
 
-    results.sort(
-      (a, b) => a.key.title.toLowerCase().compareTo(b.key.title.toLowerCase()),
-    );
     return results;
+  }
+
+  /// Agrupa favoritos por categoria (nome A–Z); letras ordenadas por título.
+  static List<({Category category, List<Lyric> lyrics})> _groupByCategory(
+    List<MapEntry<Lyric, Category>> data,
+  ) {
+    final map = <String, List<MapEntry<Lyric, Category>>>{};
+    for (final entry in data) {
+      map.putIfAbsent(entry.value.id, () => []).add(entry);
+    }
+
+    final groups = map.entries.map((e) {
+      final category = e.value.first.value;
+      final lyrics = e.value.map((x) => x.key).toList()
+        ..sort(
+          (a, b) =>
+              a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
+      return (category: category, lyrics: lyrics);
+    }).toList();
+
+    groups.sort(
+      (a, b) => a.category.name
+          .toLowerCase()
+          .compareTo(b.category.name.toLowerCase()),
+    );
+    return groups;
   }
 
   @override
@@ -71,11 +96,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         final data = snapshot.data ?? [];
         final playableLyrics = data
             .map((e) => e.key)
-            .where(
-              (l) =>
-                  (l.audioUrl?.isNotEmpty ?? false) ||
-                  (l.localAudioPath?.isNotEmpty ?? false),
-            )
+            .where(AudioPlayerService.hasPlayableAudio)
             .toList();
 
         return StreamingScaffold(
@@ -219,75 +240,180 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       );
     }
 
+    final groups = _groupByCategory(data);
+
     return Consumer<AudioPlayerService>(
       builder: (context, audioService, _) {
-        return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 16),
-          itemCount: data.length,
-          itemBuilder: (ctx, i) {
-            final entry = data[i];
-            final lyric = entry.key;
-            final category = entry.value;
-            final isCurrent = audioService.currentLyric?.id == lyric.id;
-            final isPlaying = isCurrent && audioService.isPlaying;
-            final hasAudio =
-                (lyric.audioUrl?.isNotEmpty ?? false) ||
-                (lyric.localAudioPath?.isNotEmpty ?? false);
-
-            return GlassTrackTile(
-              title: lyric.title.capitalize(),
-              subtitle:
-                  '${category.name.capitalize()} • ${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}',
-              isCurrent: isCurrent,
-              isPlaying: isPlaying,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => LyricViewScreen(lyric: lyric),
-                  ),
-                );
-              },
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (hasAudio)
-                    IconButton(
-                      icon: Icon(
-                        isPlaying
-                            ? Icons.pause_circle_filled
-                            : Icons.play_circle_filled,
-                        color: AppColors.primaryContainer,
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            for (final group in groups)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: colorScheme.surfaceContainerLow,
+                  borderRadius: StreamingTokens.cardRadius,
+                  clipBehavior: Clip.antiAlias,
+                  child: ExpansionTile(
+                    initiallyExpanded: false,
+                    tilePadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    childrenPadding: const EdgeInsets.only(bottom: 4),
+                    collapsedShape: RoundedRectangleBorder(
+                      borderRadius: StreamingTokens.cardRadius,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: StreamingTokens.cardRadius,
+                    ),
+                    leading: _FavoriteCategoryLeading(category: group.category),
+                    title: Text(
+                      group.category.name.capitalize(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
                       ),
-                      onPressed: () {
-                        if (isPlaying) {
-                          audioService.pause();
-                        } else {
-                          audioService.play(lyric);
-                        }
-                      },
                     ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.favorite_rounded,
-                      color: AppColors.primaryHighlight,
+                    subtitle: Text(
+                      '${group.lyrics.length} '
+                      '${group.lyrics.length == 1 ? 'ponto' : 'pontos'}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    onPressed: () async {
-                      await favService.removeFavorite(lyric.id);
-                      if (context.mounted) {
-                        SnackbarUtils.show(
-                          context,
-                          message: 'Removido dos favoritos',
-                        );
-                      }
-                    },
+                    iconColor: colorScheme.onSurfaceVariant,
+                    collapsedIconColor: colorScheme.onSurfaceVariant,
+                    children: [
+                      for (final lyric in group.lyrics)
+                        _FavoriteLyricTile(
+                          lyric: lyric,
+                          category: group.category,
+                          audioService: audioService,
+                          favService: favService,
+                        ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            );
-          },
+          ],
         );
       },
+    );
+  }
+}
+
+class _FavoriteCategoryLeading extends StatelessWidget {
+  final Category category;
+
+  const _FavoriteCategoryLeading({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final asset = categoryImageAsset(category);
+    const size = 44.0;
+
+    if (asset != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(
+          asset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, _, _) => _placeholder(context, size),
+        ),
+      );
+    }
+    return _placeholder(context, size);
+  }
+
+  Widget _placeholder(BuildContext context, double size) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: colorScheme.surfaceContainerHighest,
+      ),
+      child: Icon(
+        Icons.category_rounded,
+        color: colorScheme.onSurfaceVariant,
+        size: 22,
+      ),
+    );
+  }
+}
+
+class _FavoriteLyricTile extends StatelessWidget {
+  final Lyric lyric;
+  final Category category;
+  final AudioPlayerService audioService;
+  final FavoritesService favService;
+
+  const _FavoriteLyricTile({
+    required this.lyric,
+    required this.category,
+    required this.audioService,
+    required this.favService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isCurrent = audioService.currentLyric?.id == lyric.id;
+    final isPlaying = isCurrent && audioService.isPlaying;
+    final hasAudio = AudioPlayerService.hasPlayableAudio(lyric);
+
+    return GlassTrackTile(
+      title: lyric.title.capitalize(),
+      subtitle:
+          '${category.code}${lyric.sequenceNumber.toString().padLeft(2, '0')}',
+      isCurrent: isCurrent,
+      isPlaying: isPlaying,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => LyricViewScreen(lyric: lyric)),
+        );
+      },
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasAudio)
+            IconButton(
+              icon: Icon(
+                isPlaying
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_filled,
+                color: AppColors.primaryContainer,
+              ),
+              onPressed: () {
+                if (isPlaying) {
+                  audioService.pause();
+                } else {
+                  audioService.play(lyric);
+                }
+              },
+            ),
+          IconButton(
+            icon: const Icon(
+              Icons.favorite_rounded,
+              color: AppColors.primaryHighlight,
+            ),
+            onPressed: () async {
+              await favService.removeFavorite(lyric.id);
+              if (context.mounted) {
+                SnackbarUtils.show(
+                  context,
+                  message: 'Removido dos favoritos',
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

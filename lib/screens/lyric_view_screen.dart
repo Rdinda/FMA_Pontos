@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -109,10 +111,11 @@ class _LyricViewScreenState extends State<LyricViewScreen>
       final audio = Provider.of<AudioPlayerService>(context, listen: false);
       _audioService = audio;
       _audioService!.addListener(_onAudioServiceChanged);
-      final hasAudio =
-          (_lyric.audioUrl?.trim().isNotEmpty ?? false) ||
-          (_lyric.localAudioPath?.trim().isNotEmpty ?? false);
-      if (hasAudio && audio.currentLyric?.id != _lyric.id) {
+      final hasAudio = AudioPlayerService.hasPlayableAudio(_lyric);
+      if (hasAudio) {
+        if (audio.currentLyric?.id != _lyric.id) {
+          unawaited(audio.selectLyric(_lyric));
+        }
         setState(() => _playerMode = _PlayerMode.audio);
       } else if (audio.currentLyric?.id == _lyric.id) {
         setState(() => _playerMode = _PlayerMode.audio);
@@ -339,16 +342,7 @@ class _LyricViewScreenState extends State<LyricViewScreen>
           return Stack(
             fit: StackFit.expand,
             children: [
-              if (widget.fromMiniPlayer)
-                Hero(
-                  tag: PlayerHeroTags.shell(_lyric.id),
-                  child: Material(
-                    color: colorScheme.surface,
-                    child: playerColumn,
-                  ),
-                )
-              else
-                playerColumn,
+              playerColumn,
               Positioned(
                 left: 0,
                 right: 0,

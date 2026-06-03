@@ -152,10 +152,6 @@ class _TopPlayedScreenState extends State<TopPlayedScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  Text(
-                    'Os pontos que você mais abriu',
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
-                  ),
                 ],
               ),
             ),

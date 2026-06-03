@@ -40,6 +40,40 @@ class AudioPlayerService extends ChangeNotifier {
   bool get hasPrevious => _isRepeatEnabled || _currentIndex > 0;
   bool get isRepeatEnabled => _isRepeatEnabled;
 
+  static bool hasPlayableAudio(Lyric lyric) {
+    return (lyric.audioUrl?.trim().isNotEmpty ?? false) ||
+        (lyric.localAudioPath?.trim().isNotEmpty ?? false);
+  }
+
+  MediaItem _mediaItemFor(Lyric lyric) {
+    return MediaItem(
+      id: lyric.id,
+      album: 'Pontos',
+      title: lyric.title,
+      artist: 'FMA Pontos',
+      artUri: null,
+      extras: {'url': lyric.audioUrl, 'localPath': lyric.localAudioPath},
+    );
+  }
+
+  /// Define a faixa no mini player sem iniciar a reprodução.
+  Future<void> selectLyric(Lyric lyric) async {
+    if (!hasPlayableAudio(lyric)) return;
+
+    if (_currentLyric?.id == lyric.id) {
+      notifyListeners();
+      return;
+    }
+
+    _currentLyric = lyric;
+    notifyListeners();
+
+    await _audioHandler.playMediaItem(_mediaItemFor(lyric));
+    await _audioHandler.pause();
+    _isPlaying = false;
+    notifyListeners();
+  }
+
   AudioPlayerService._(this._audioHandler, this._myHandler) {
     _setupListeners();
   }
@@ -90,28 +124,24 @@ class AudioPlayerService extends ChangeNotifier {
     });
   }
 
-  Future<void> play(Lyric lyric) async {
+  Future<void> play(Lyric lyric, {bool autoStart = true}) async {
+    if (!hasPlayableAudio(lyric)) return;
+
     debugPrint('[AudioPlayerService] play() called for: ${lyric.title}');
     debugPrint('[AudioPlayerService] audioUrl: ${lyric.audioUrl}');
     debugPrint('[AudioPlayerService] localAudioPath: ${lyric.localAudioPath}');
 
-    // If different lyric, prepare it
     if (_currentLyric?.id != lyric.id) {
       _currentLyric = lyric;
       notifyListeners();
 
-      // Convert Lyric to MediaItem
-      final mediaItem = MediaItem(
-        id: lyric.id,
-        album: 'Pontos',
-        title: lyric.title,
-        artist: 'FMA Pontos',
-        artUri: null,
-        extras: {'url': lyric.audioUrl, 'localPath': lyric.localAudioPath},
-      );
-
       debugPrint('[AudioPlayerService] Calling playMediaItem...');
-      await _audioHandler.playMediaItem(mediaItem);
+      await _audioHandler.playMediaItem(_mediaItemFor(lyric));
+      if (!autoStart) {
+        await _audioHandler.pause();
+        _isPlaying = false;
+        notifyListeners();
+      }
     } else {
       // Toggle
       if (_isPlaying) {
@@ -137,13 +167,7 @@ class AudioPlayerService extends ChangeNotifier {
     if (lyrics.isEmpty) return;
 
     // Filter only lyrics with audio
-    final lyricsWithAudio = lyrics
-        .where(
-          (l) =>
-              (l.audioUrl != null && l.audioUrl!.isNotEmpty) ||
-              (l.localAudioPath != null && l.localAudioPath!.isNotEmpty),
-        )
-        .toList();
+    final lyricsWithAudio = lyrics.where(hasPlayableAudio).toList();
 
     if (lyricsWithAudio.isEmpty) return;
 
@@ -187,14 +211,7 @@ class AudioPlayerService extends ChangeNotifier {
     _currentLyric = lyric;
     notifyListeners();
 
-    final mediaItem = MediaItem(
-      id: lyric.id,
-      album: 'Pontos',
-      title: lyric.title,
-      artist: 'FMA Pontos',
-      artUri: null,
-      extras: {'url': lyric.audioUrl, 'localPath': lyric.localAudioPath},
-    );
+    final mediaItem = _mediaItemFor(lyric);
 
     debugPrint(
       '[AudioPlayerService] Playing track ${_currentIndex + 1}/${_playlist.length}: ${lyric.title}',
