@@ -57,7 +57,13 @@ class MyApp extends StatelessWidget {
             return repo;
           },
         ),
-        ChangeNotifierProvider(create: (_) => FavoritesService()),
+        ChangeNotifierProxyProvider<AuthService, FavoritesService>(
+          create: (_) => FavoritesService(),
+          update: (_, auth, fav) {
+            fav!.bindAuth(auth);
+            return fav;
+          },
+        ),
         ChangeNotifierProvider.value(value: audioService),
       ],
       child: Consumer<ThemeProvider>(

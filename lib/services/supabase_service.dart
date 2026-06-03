@@ -78,6 +78,43 @@ class SupabaseService {
         .eq('id', id);
   }
 
+  // --- User favorites (Gostei) — usuário logado não anônimo ---
+
+  Future<Set<String>> fetchUserFavoriteLyricIds(String userId) async {
+    final response = await client
+        .from('user_favorites')
+        .select('lyric_id')
+        .eq('user_id', userId);
+    return (response as List)
+        .map((row) => row['lyric_id'] as String)
+        .toSet();
+  }
+
+  Future<void> addUserFavorite({
+    required String userId,
+    required String lyricId,
+  }) async {
+    await client.from('user_favorites').upsert({
+      'user_id': userId,
+      'lyric_id': lyricId,
+    });
+  }
+
+  Future<void> removeUserFavorite({
+    required String userId,
+    required String lyricId,
+  }) async {
+    await client
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', userId)
+        .eq('lyric_id', lyricId);
+  }
+
+  Future<void> clearUserFavorites(String userId) async {
+    await client.from('user_favorites').delete().eq('user_id', userId);
+  }
+
   // --- Storage ---
   Future<String?> uploadAudio(
     String filePath,
