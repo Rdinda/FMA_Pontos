@@ -10,15 +10,17 @@ Future<void> showAppInfoBottomSheet(
   BuildContext context, {
   String? version,
 }) async {
-  final colorScheme = Theme.of(context).colorScheme;
-
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (ctx) => Consumer<AuthService>(
-      builder: (context, authService, child) {
-        return Container(
+    builder: (sheetContext) => Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return Consumer<AuthService>(
+          builder: (context, authService, _) {
+            final colorScheme = Theme.of(context).colorScheme;
+
+            return Container(
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -112,26 +114,22 @@ Future<void> showAppInfoBottomSheet(
                 ),
                 child: Column(
                   children: [
-                    Consumer<ThemeProvider>(
-                      builder: (context, themeProvider, child) {
-                        return ListTile(
-                          leading: Icon(
-                            themeProvider.themeIcon,
-                            color: colorScheme.primary,
-                          ),
-                          title: const Text('Tema'),
-                          subtitle: Text(themeProvider.themeLabel),
-                          trailing: Icon(
-                            Icons.chevron_right,
-                            color: colorScheme.outline,
-                          ),
-                          onTap: () => themeProvider.cycleTheme(),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.vertical(top: Radius.circular(16)),
-                          ),
-                        );
-                      },
+                    ListTile(
+                      leading: Icon(
+                        themeProvider.themeIcon,
+                        color: colorScheme.primary,
+                      ),
+                      title: const Text('Tema'),
+                      subtitle: Text(themeProvider.themeLabel),
+                      trailing: Icon(
+                        Icons.chevron_right,
+                        color: colorScheme.outline,
+                      ),
+                      onTap: () => themeProvider.toggleTheme(),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
                     ),
                     Divider(
                       height: 1,
@@ -150,7 +148,7 @@ Future<void> showAppInfoBottomSheet(
                         color: colorScheme.outline,
                       ),
                       onTap: () {
-                        Navigator.pop(ctx);
+                        Navigator.pop(sheetContext);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -177,7 +175,7 @@ Future<void> showAppInfoBottomSheet(
                           color: colorScheme.outline,
                         ),
                         onTap: () {
-                          Navigator.pop(ctx);
+                          Navigator.pop(sheetContext);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -204,15 +202,15 @@ Future<void> showAppInfoBottomSheet(
                         ? null
                         : () async {
                             final success = await authService.signInWithGoogle();
-                            if (success && ctx.mounted) {
-                              Navigator.pop(ctx);
+                            if (success && sheetContext.mounted) {
+                              Navigator.pop(sheetContext);
                               SnackbarUtils.show(
                                 context,
                                 message: 'Login realizado!',
                               );
                             } else if (!success &&
                                 authService.error != null &&
-                                ctx.mounted) {
+                                sheetContext.mounted) {
                               SnackbarUtils.show(
                                 context,
                                 message: authService.error!,
@@ -245,7 +243,7 @@ Future<void> showAppInfoBottomSheet(
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await authService.signOut();
-                      if (ctx.mounted) Navigator.pop(ctx);
+                      if (sheetContext.mounted) Navigator.pop(sheetContext);
                     },
                     icon: const Icon(Icons.logout),
                     label: const Text('Sair da conta'),
@@ -274,6 +272,8 @@ Future<void> showAppInfoBottomSheet(
               SizedBox(height: MediaQuery.of(context).padding.bottom),
             ],
           ),
+            );
+          },
         );
       },
     ),

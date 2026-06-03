@@ -18,6 +18,13 @@ abstract final class StreamingTokens {
   static const double categoryCardHeight = 96;
   static const double trackArtSize = 56;
   static const double horizontalCarouselItemWidth = 140;
+  static const double horizontalCarouselTextBlockHeight = 40;
+
+  /// Altura do carrossel horizontal (arte 1:1 + rótulos).
+  static double get horizontalCarouselHeight =>
+      horizontalCarouselItemWidth +
+      spacingSm +
+      horizontalCarouselTextBlockHeight;
 
   static BorderRadius get cardRadius => BorderRadius.circular(radiusMd);
   static BorderRadius get sheetRadius =>

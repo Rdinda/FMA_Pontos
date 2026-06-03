@@ -363,28 +363,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       vertical: StreamingTokens.spacingSm,
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Row(
-                          children: [
-                            if (_canEditCategory)
-                              IconButton(
-                                onPressed: _editCategory,
-                                icon: Icon(
-                                  Icons.edit_outlined,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            if (_canDeleteCategory)
-                              IconButton(
-                                onPressed: _deleteCategory,
-                                icon: Icon(
-                                  Icons.delete_outline,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                          ],
-                        ),
                         if (lyrics.isNotEmpty)
                           Material(
                             color: AppColors.primaryContainer,

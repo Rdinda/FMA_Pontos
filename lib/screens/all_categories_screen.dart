@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../services/sync_repository.dart';
+import '../services/auth_service.dart';
+import '../utils/add_category_dialog.dart';
+import '../utils/snackbar_utils.dart';
 import '../utils/string_extensions.dart';
+import '../widgets/app_info_bottom_sheet.dart';
 import '../widgets/streaming/category_card.dart';
 import '../widgets/streaming/streaming_scaffold.dart';
 import '../widgets/streaming/streaming_navigation.dart';
@@ -10,8 +14,52 @@ import '../theme/streaming_tokens.dart';
 import 'category_screen.dart';
 
 /// Lista completa de categorias (acessível pela seta em "Categorias" na Home).
-class AllCategoriesScreen extends StatelessWidget {
+class AllCategoriesScreen extends StatefulWidget {
   const AllCategoriesScreen({super.key});
+
+  @override
+  State<AllCategoriesScreen> createState() => _AllCategoriesScreenState();
+}
+
+class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
+  Future<List<Category>>? _categoriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  void _loadCategories() {
+    final syncRepo = Provider.of<SyncRepository>(context, listen: false);
+    final future = syncRepo.getCategories();
+    setState(() {
+      _categoriesFuture = future;
+    });
+  }
+
+  Future<void> _onAddCategoryTap() async {
+    final auth = Provider.of<AuthService>(context, listen: false);
+    if (!auth.canAddCategories) {
+      SnackbarUtils.show(
+        context,
+        message: auth.isAnonymous
+            ? 'Faça login com Google para adicionar categorias'
+            : 'Você precisa ser moderador para adicionar categorias',
+        isError: true,
+        action: auth.isAnonymous
+            ? SnackBarAction(
+                label: 'Entrar',
+                onPressed: () => showAppInfoBottomSheet(context),
+              )
+            : null,
+      );
+      return;
+    }
+
+    await showAddCategoryDialog(context);
+    if (mounted) _loadCategories();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +69,23 @@ class AllCategoriesScreen extends StatelessWidget {
     return StreamingScaffold(
       navContext: StreamingNavContext.standard,
       currentNavIndex: StreamingNavIndex.home,
-      appBar: const StreamingAppBar(title: 'Categorias'),
+      appBar: StreamingAppBar(
+        title: 'Categorias',
+        actions: [
+          IconButton(
+            onPressed: _onAddCategoryTap,
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            tooltip: 'Nova categoria',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
-        onRefresh: () => syncRepo.syncData(),
+        onRefresh: () async {
+          await syncRepo.syncData();
+          _loadCategories();
+        },
         child: FutureBuilder<List<Category>>(
-          future: syncRepo.getCategories(),
+          future: _categoriesFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());

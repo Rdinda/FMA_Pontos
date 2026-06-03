@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/category.dart';
-import '../../screens/admin_screen.dart';
 import '../../screens/favorites_screen.dart';
 import '../../screens/lyric_form_screen.dart';
 import '../../screens/search_screen.dart';
@@ -12,13 +11,10 @@ import '../../widgets/app_info_bottom_sheet.dart';
 
 /// Contexto do 5º/6º slot da bottom nav (ação contextual).
 enum StreamingNavContext {
-  /// Home: slot extra = adicionar categoria (ou Admin).
-  home,
-
-  /// Categoria: slots extras = editar categoria + adicionar letra.
+  /// Categoria: slot extra = adicionar letra.
   category,
 
-  /// Busca, favoritos, top, letra: sem categoria; Admin se aplicável.
+  /// Busca, favoritos, top, letra: sem slot contextual.
   standard,
 }
 
@@ -56,29 +52,7 @@ abstract final class StreamingNavigation {
     ];
 
     switch (context) {
-      case StreamingNavContext.home:
-        if (auth.isAdmin) {
-          items.add(
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.admin_panel_settings_rounded),
-              label: 'Admin',
-            ),
-          );
-        } else {
-          items.add(
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline_rounded),
-              label: 'Categoria',
-            ),
-          );
-        }
       case StreamingNavContext.category:
-        items.add(
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.edit_outlined),
-            label: 'Categoria',
-          ),
-        );
         items.add(
           const BottomNavigationBarItem(
             icon: Icon(Icons.add_rounded),
@@ -86,14 +60,7 @@ abstract final class StreamingNavigation {
           ),
         );
       case StreamingNavContext.standard:
-        if (auth.isAdmin) {
-          items.add(
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.admin_panel_settings_rounded),
-              label: 'Admin',
-            ),
-          );
-        }
+        break;
     }
 
     return items;
@@ -125,10 +92,6 @@ abstract final class StreamingNavigation {
             onAddCategory: onAddCategory,
             onEditCategory: onEditCategory,
             appVersion: appVersion);
-      case 5:
-        if (navContext == StreamingNavContext.category && category != null) {
-          _openAddLyric(context, category, auth, appVersion: appVersion);
-        }
     }
   }
 
@@ -142,36 +105,11 @@ abstract final class StreamingNavigation {
     String? appVersion,
   }) {
     switch (navContext) {
-      case StreamingNavContext.home:
-        if (auth.isAdmin) {
-          _openIfNotCurrent(context, const AdminScreen());
-        } else if (auth.canAddCategories) {
-          onAddCategory?.call();
-        } else {
-          _showPermission(
-            context,
-            auth,
-            roleLabel: 'moderador',
-            action: 'adicionar categorias',
-            appVersion: appVersion,
-          );
-        }
       case StreamingNavContext.category:
-        if (auth.canEditCategories) {
-          onEditCategory?.call();
-        } else {
-          _showPermission(
-            context,
-            auth,
-            roleLabel: 'moderador',
-            action: 'editar categorias',
-            appVersion: appVersion,
-          );
-        }
+        if (category == null) break;
+        _openAddLyric(context, category, auth, appVersion: appVersion);
       case StreamingNavContext.standard:
-        if (auth.isAdmin) {
-          _openIfNotCurrent(context, const AdminScreen());
-        }
+        break;
     }
   }
 

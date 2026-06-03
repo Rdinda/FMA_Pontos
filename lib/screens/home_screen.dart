@@ -10,7 +10,6 @@ import 'category_screen.dart';
 import 'top_played_screen.dart';
 import 'all_categories_screen.dart';
 import 'lyric_view_screen.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/string_extensions.dart';
 import '../utils/snackbar_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -80,94 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Bom dia';
-    if (hour < 18) return 'Boa tarde';
-    return 'Boa noite';
-  }
-
-  String _userName(AuthService auth) {
-    if (!auth.isAnonymous && auth.displayName != null) {
-      return auth.displayName!.split(' ').first;
-    }
-    return 'Usuário';
-  }
-
-  void _showAddCategoryDialog() {
-    final nameController = TextEditingController();
-    final codeController = TextEditingController();
-
-    nameController.addListener(() {
-      if (codeController.text.isEmpty) {
-        final text = nameController.text.trim();
-        if (text.isNotEmpty) {
-          final len = text.length >= 2 ? 2 : text.length;
-          codeController.text = text.substring(0, len).toUpperCase();
-        }
-      }
-    });
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Nova Categoria'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Nome', filled: true),
-              textCapitalization: TextCapitalization.sentences,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: codeController,
-              decoration: const InputDecoration(
-                labelText: 'Código (Prefixo)',
-                filled: true,
-                helperText: 'Ex: OX para Oxum (Único)',
-              ),
-              textCapitalization: TextCapitalization.characters,
-              maxLength: 4,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty &&
-                  codeController.text.isNotEmpty) {
-                final newCat = Category(
-                  id: const Uuid().v4(),
-                  name: nameController.text.trim(),
-                  code: codeController.text.trim().toUpperCase(),
-                  updatedAt: DateTime.now(),
-                );
-                Provider.of<SyncRepository>(
-                  context,
-                  listen: false,
-                ).addCategory(newCat);
-                Navigator.pop(ctx);
-              } else {
-                SnackbarUtils.show(
-                  context,
-                  message: 'Preencha nome e código',
-                  isError: true,
-                );
-              }
-            },
-            child: const Text('Salvar'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showAppInfoDialog() {
     showAppInfoBottomSheet(context, version: _version);
   }
@@ -195,9 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: StreamingScaffold(
-        navContext: StreamingNavContext.home,
+        navContext: StreamingNavContext.standard,
         currentNavIndex: StreamingNavIndex.home,
-        onAddCategory: _showAddCategoryDialog,
         appVersion: _version.isEmpty ? null : _version,
         appBar: StreamingAppBar(
           leading: Consumer<AuthService>(
@@ -280,14 +190,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   vertical: StreamingTokens.spacingSm,
                 ),
                 children: [
-                  _GreetingBanner(
-                    greeting: _greeting(),
-                    userName: _userName(authService),
-                  ),
+                  const _GreetingBanner(),
                   const SizedBox(height: StreamingTokens.spacingLg),
                   _SectionHeader(
                     title: 'Categorias',
-                    onArrowTap: () {
+                    onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -331,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: StreamingTokens.spacingLg),
                   _SectionHeader(
                     title: 'Mais Acessados',
-                    onArrowTap: () {
+                    onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -351,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ] else ...[
                     const SizedBox(height: StreamingTokens.spacingSm),
                     SizedBox(
-                      height: 180,
+                      height: StreamingTokens.horizontalCarouselHeight,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _topPlayed.length,
@@ -543,44 +450,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _SectionHeader extends StatelessWidget {
   final String title;
-  final VoidCallback? onArrowTap;
+  final VoidCallback? onTap;
 
-  const _SectionHeader({required this.title, this.onArrowTap});
+  const _SectionHeader({required this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final titleStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+        );
 
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+    if (onTap == null) {
+      return Text(title, style: titleStyle);
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Expanded(child: Text(title, style: titleStyle)),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ],
           ),
         ),
-        if (onArrowTap != null)
-          IconButton(
-            onPressed: onArrowTap,
-            icon: Icon(
-              Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant,
-            ),
-            tooltip: 'Ver todos',
-            visualDensity: VisualDensity.compact,
-          ),
-      ],
+      ),
     );
   }
 }
 
 class _GreetingBanner extends StatelessWidget {
-  final String greeting;
-  final String userName;
-
-  const _GreetingBanner({required this.greeting, required this.userName});
+  const _GreetingBanner();
 
   @override
   Widget build(BuildContext context) {
@@ -613,12 +521,12 @@ class _GreetingBanner extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
+            const Positioned(
               left: 16,
               bottom: 16,
               child: Text(
-                '$greeting,\n$userName',
-                style: const TextStyle(
+                'Axé',
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -655,6 +563,7 @@ class _TopPlayedCarouselItem extends StatelessWidget {
         width: StreamingTokens.horizontalCarouselItemWidth,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             AspectRatio(
               aspectRatio: 1,
@@ -679,7 +588,7 @@ class _TopPlayedCarouselItem extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: StreamingTokens.spacingSm),
             Text(
               lyric.title.capitalize(),
               maxLines: 1,
@@ -687,6 +596,7 @@ class _TopPlayedCarouselItem extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
+                height: 1.2,
                 color: colorScheme.onSurface,
               ),
             ),
@@ -696,6 +606,7 @@ class _TopPlayedCarouselItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
+                height: 1.2,
                 color: colorScheme.onSurfaceVariant,
               ),
             ),

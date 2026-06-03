@@ -6,9 +6,9 @@ import '../../services/favorites_service.dart';
 import '../../services/sync_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/streaming_tokens.dart';
-import '../../screens/lyric_view_screen.dart';
 import '../../utils/lyric_sync.dart';
 import '../../utils/string_extensions.dart';
+import 'player_expansion.dart';
 
 /// Mini player persistente acima da bottom nav (Stitch Home_Acervo).
 class StreamingMiniPlayer extends StatelessWidget {
@@ -38,20 +38,16 @@ class StreamingMiniPlayer extends StatelessWidget {
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Material(
-                color: colorScheme.surfaceContainerHigh,
-                borderRadius: StreamingTokens.cardRadius,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => LyricViewScreen(lyric: lyric),
-                      ),
-                    );
-                  },
+              child: Hero(
+                tag: PlayerHeroTags.shell(lyric.id),
+                child: Material(
+                  color: colorScheme.surfaceContainerHigh,
                   borderRadius: StreamingTokens.cardRadius,
-                  child: Column(
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => PlayerExpansion.openFromMiniPlayer(context, lyric),
+                    borderRadius: StreamingTokens.cardRadius,
+                    child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _MiniPlayerProgressBar(
@@ -65,7 +61,11 @@ class StreamingMiniPlayer extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            _MiniArt(isPlaying: audio.isPlaying),
+                            PlayerAlbumArt(
+                              lyricId: lyric.id,
+                              isPlaying: audio.isPlaying,
+                              compact: true,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -156,7 +156,8 @@ class StreamingMiniPlayer extends StatelessWidget {
                   ),
                 ),
               ),
-            );
+            ),
+          );
           },
         );
       },
@@ -211,31 +212,4 @@ class _MiniPlayerProgressBar extends StatelessWidget {
   }
 }
 
-class _MiniArt extends StatelessWidget {
-  final bool isPlaying;
-
-  const _MiniArt({required this.isPlaying});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primaryContainer, Color(0xFF0E0E0E)],
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          isPlaying ? Icons.graphic_eq_rounded : Icons.music_note_rounded,
-          color: Colors.white70,
-          size: 20,
-        ),
-      ),
-    );
-  }
-}
+/// Barra de progresso opaca

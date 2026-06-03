@@ -14,6 +14,8 @@ abstract final class AppColors {
   static const Color surfaceContainerDark = Color(0xFF201F1F);
   static const Color surfaceContainerHighDark = Color(0xFF2A2A2A);
   static const Color surfaceContainerHighestDark = Color(0xFF353534);
+  /// Fundo do painel de letras (player expandido).
+  static const Color lyricsPanelBackground = Color(0xFF222222);
   static const Color onSurfaceDark = Color(0xFFE5E2E1);
   static const Color onSurfaceVariantDark = Color(0xFFBCCBB9);
   static const Color outlineDark = Color(0xFF869585);
