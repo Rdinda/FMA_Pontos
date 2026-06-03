@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 import '../models/lyric.dart';
 import '../services/audio_player_service.dart';
@@ -16,6 +17,8 @@ import '../theme/app_colors.dart';
 import '../theme/streaming_tokens.dart';
 import 'lyric_view_screen.dart';
 
+typedef FavoriteCategoryGroup = ({Category category, List<Lyric> lyrics});
+
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
 
@@ -24,10 +27,58 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  Future<List<MapEntry<Lyric, Category>>>? _favoritesFuture;
-  Set<String>? _lastFavoriteIds;
+  static const _kExpandedCategoriesKey = 'favorites_expanded_category_ids';
 
-  Future<List<MapEntry<Lyric, Category>>> _loadFavoritesData(
+  Future<List<FavoriteCategoryGroup>>? _favoritesFuture;
+  Set<String>? _lastFavoriteIds;
+  Set<String> _expandedCategoryIds = {};
+  bool _expandedPrefsLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExpandedCategoryIds();
+  }
+
+  Future<void> _loadExpandedCategoryIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getStringList(_kExpandedCategoriesKey) ?? [];
+    if (!mounted) return;
+    setState(() {
+      _expandedCategoryIds = stored.toSet();
+      _expandedPrefsLoaded = true;
+    });
+  }
+
+  Future<void> _saveExpandedCategoryIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kExpandedCategoriesKey,
+      _expandedCategoryIds.toList(),
+    );
+  }
+
+  void _pruneExpandedCategoryIds(Iterable<String> visibleCategoryIds) {
+    final visible = visibleCategoryIds.toSet();
+    final pruned = _expandedCategoryIds.where(visible.contains).toSet();
+    if (pruned.length != _expandedCategoryIds.length) {
+      setState(() => _expandedCategoryIds = pruned);
+      _saveExpandedCategoryIds();
+    }
+  }
+
+  void _onCategoryExpansionChanged(String categoryId, bool expanded) {
+    setState(() {
+      if (expanded) {
+        _expandedCategoryIds.add(categoryId);
+      } else {
+        _expandedCategoryIds.remove(categoryId);
+      }
+    });
+    _saveExpandedCategoryIds();
+  }
+
+  Future<List<FavoriteCategoryGroup>> _loadFavoritesData(
     SyncRepository repo,
     Set<String> favoriteIds,
   ) async {
@@ -35,38 +86,30 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     final categories = await repo.getCategories();
     final categoryMap = {for (var c in categories) c.id: c};
+    final lyrics = await repo.getLyricsByIds(favoriteIds.toList());
 
-    final List<MapEntry<Lyric, Category>> results = [];
-    for (final id in favoriteIds) {
-      final lyric = await repo.getLyric(id);
-      if (lyric != null) {
-        final category = categoryMap[lyric.categoryId];
-        if (category != null) {
-          results.add(MapEntry(lyric, category));
-        }
-      }
-    }
-
-    return results;
+    return _groupLyrics(lyrics, categoryMap);
   }
 
-  /// Agrupa favoritos por categoria (nome A–Z); letras ordenadas por título.
-  static List<({Category category, List<Lyric> lyrics})> _groupByCategory(
-    List<MapEntry<Lyric, Category>> data,
+  /// Agrupa por categoria (nome A–Z); letras ordenadas por título.
+  static List<FavoriteCategoryGroup> _groupLyrics(
+    List<Lyric> lyrics,
+    Map<String, Category> categoryMap,
   ) {
-    final map = <String, List<MapEntry<Lyric, Category>>>{};
-    for (final entry in data) {
-      map.putIfAbsent(entry.value.id, () => []).add(entry);
+    final map = <String, List<Lyric>>{};
+    for (final lyric in lyrics) {
+      if (!categoryMap.containsKey(lyric.categoryId)) continue;
+      map.putIfAbsent(lyric.categoryId, () => []).add(lyric);
     }
 
     final groups = map.entries.map((e) {
-      final category = e.value.first.value;
-      final lyrics = e.value.map((x) => x.key).toList()
+      final category = categoryMap[e.key]!;
+      final sortedLyrics = List<Lyric>.from(e.value)
         ..sort(
           (a, b) =>
               a.title.toLowerCase().compareTo(b.title.toLowerCase()),
         );
-      return (category: category, lyrics: lyrics);
+      return (category: category, lyrics: sortedLyrics);
     }).toList();
 
     groups.sort(
@@ -75,6 +118,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           .compareTo(b.category.name.toLowerCase()),
     );
     return groups;
+  }
+
+  static List<Lyric> _playableLyricsInDisplayOrder(
+    List<FavoriteCategoryGroup> groups,
+  ) {
+    return [
+      for (final g in groups)
+        for (final l in g.lyrics)
+          if (AudioPlayerService.hasPlayableAudio(l)) l,
+    ];
   }
 
   @override
@@ -86,18 +139,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     if (_lastFavoriteIds == null ||
         !setEquals(_lastFavoriteIds, favService.favorites)) {
       _lastFavoriteIds = Set.from(favService.favorites);
-      _favoritesFuture = _loadFavoritesData(repo, favService.favorites);
+      _favoritesFuture = _loadFavoritesData(repo, favService.favorites).then(
+        (groups) {
+          if (mounted) {
+            _pruneExpandedCategoryIds(groups.map((g) => g.category.id));
+          }
+          return groups;
+        },
+      );
     }
 
-    return FutureBuilder<List<MapEntry<Lyric, Category>>>(
+    return FutureBuilder<List<FavoriteCategoryGroup>>(
       future: _favoritesFuture,
       builder: (context, snapshot) {
         final isLoading = snapshot.connectionState == ConnectionState.waiting;
-        final data = snapshot.data ?? [];
-        final playableLyrics = data
-            .map((e) => e.key)
-            .where(AudioPlayerService.hasPlayableAudio)
-            .toList();
+        final groups = snapshot.data ?? [];
+        final playableLyrics = _playableLyricsInDisplayOrder(groups);
 
         return StreamingScaffold(
           navContext: StreamingNavContext.standard,
@@ -172,7 +229,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 ),
               ),
               const SizedBox(height: StreamingTokens.spacingMd),
-              Expanded(child: _buildBody(context, isLoading, data, favService)),
+              Expanded(
+                child: _buildBody(
+                  context,
+                  isLoading,
+                  groups,
+                  favService,
+                ),
+              ),
             ],
           ),
         );
@@ -183,7 +247,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget _buildBody(
     BuildContext context,
     bool isLoading,
-    List<MapEntry<Lyric, Category>> data,
+    List<FavoriteCategoryGroup> groups,
     FavoritesService favService,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -213,11 +277,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       );
     }
 
-    if (isLoading) {
+    if (isLoading || !_expandedPrefsLoaded) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (data.isEmpty) {
+    if (groups.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -240,8 +304,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       );
     }
 
-    final groups = _groupByCategory(data);
-
     return Consumer<AudioPlayerService>(
       builder: (context, audioService, _) {
         return ListView(
@@ -250,56 +312,126 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             for (final group in groups)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: colorScheme.surfaceContainerLow,
-                  borderRadius: StreamingTokens.cardRadius,
-                  clipBehavior: Clip.antiAlias,
-                  child: ExpansionTile(
-                    initiallyExpanded: false,
-                    tilePadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    childrenPadding: const EdgeInsets.only(bottom: 4),
-                    collapsedShape: RoundedRectangleBorder(
-                      borderRadius: StreamingTokens.cardRadius,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: StreamingTokens.cardRadius,
-                    ),
-                    leading: _FavoriteCategoryLeading(category: group.category),
-                    title: Text(
-                      group.category.name.capitalize(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${group.lyrics.length} '
-                      '${group.lyrics.length == 1 ? 'ponto' : 'pontos'}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    iconColor: colorScheme.onSurfaceVariant,
-                    collapsedIconColor: colorScheme.onSurfaceVariant,
-                    children: [
-                      for (final lyric in group.lyrics)
-                        _FavoriteLyricTile(
-                          lyric: lyric,
-                          category: group.category,
-                          audioService: audioService,
-                          favService: favService,
-                        ),
-                    ],
+                child: _FavoriteCategorySection(
+                  category: group.category,
+                  lyrics: group.lyrics,
+                  isExpanded:
+                      _expandedCategoryIds.contains(group.category.id),
+                  onExpandedChanged: (expanded) => _onCategoryExpansionChanged(
+                    group.category.id,
+                    expanded,
                   ),
+                  audioService: audioService,
+                  favService: favService,
                 ),
               ),
           ],
         );
       },
+    );
+  }
+}
+
+class _FavoriteCategorySection extends StatelessWidget {
+  final Category category;
+  final List<Lyric> lyrics;
+  final bool isExpanded;
+  final ValueChanged<bool> onExpandedChanged;
+  final AudioPlayerService audioService;
+  final FavoritesService favService;
+
+  const _FavoriteCategorySection({
+    required this.category,
+    required this.lyrics,
+    required this.isExpanded,
+    required this.onExpandedChanged,
+    required this.audioService,
+    required this.favService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      borderRadius: StreamingTokens.cardRadius,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => onExpandedChanged(!isExpanded),
+            borderRadius: StreamingTokens.cardRadius,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Row(
+                children: [
+                  _FavoriteCategoryLeading(category: category),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.name.capitalize(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${lyrics.length} '
+                          '${lyrics.length == 1 ? 'ponto' : 'pontos'}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    child: Icon(
+                      Icons.expand_more_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedCrossFade(
+            firstCurve: Curves.easeOutCubic,
+            secondCurve: Curves.easeInCubic,
+            sizeCurve: Curves.easeOutCubic,
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final lyric in lyrics)
+                    _FavoriteLyricTile(
+                      lyric: lyric,
+                      category: category,
+                      audioService: audioService,
+                      favService: favService,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

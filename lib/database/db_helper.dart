@@ -221,6 +221,29 @@ CREATE TABLE pending_access_events (
     return null;
   }
 
+  /// Busca várias letras por ID em uma ou poucas queries (lotes de 500).
+  Future<List<Lyric>> getLyricsByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+
+    final db = await instance.database;
+    const batchSize = 500;
+    final lyrics = <Lyric>[];
+
+    for (var i = 0; i < ids.length; i += batchSize) {
+      final end = (i + batchSize < ids.length) ? i + batchSize : ids.length;
+      final chunk = ids.sublist(i, end);
+      final placeholders = List.filled(chunk.length, '?').join(',');
+      final result = await db.query(
+        'lyrics',
+        where: 'id IN ($placeholders) AND is_deleted = 0',
+        whereArgs: chunk,
+      );
+      lyrics.addAll(result.map((json) => Lyric.fromMap(json)));
+    }
+
+    return lyrics;
+  }
+
   Future<List<Lyric>> getSyncedLyrics() async {
     final db = await instance.database;
     final result = await db.query('lyrics', where: 'is_synced = 1');
