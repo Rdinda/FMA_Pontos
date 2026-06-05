@@ -1,7 +1,7 @@
 name: pontos
 description: "Um aplicativo para gerenciar pontos de umbanda "
 publish_to: 'none'
-version: 1.0.26
+version: 1.0.27
 
 environment:
   sdk: ^3.10.4
@@ -52,6 +52,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/categories/
+
 
 
 
