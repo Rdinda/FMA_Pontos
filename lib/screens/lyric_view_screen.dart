@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'lyric_form_screen.dart';
 import '../models/category.dart';
@@ -24,6 +25,7 @@ import '../widgets/streaming/player_expansion.dart';
 const _kLyricsSheetCollapsedHeight = 56.0;
 const _kSheetHandleHeight = 40.0;
 const _kCompactNowPlayingBarHeight = 64.0;
+const _kLyricsPanelExpandedIdsKey = 'lyrics_panel_expanded_lyric_ids';
 
 class LyricViewScreen extends StatefulWidget {
   final Lyric lyric;
@@ -61,6 +63,7 @@ class _LyricViewScreenState extends State<LyricViewScreen>
 
   void _animateSheet({required bool expanded}) {
     setState(() => _sheetExpanded = expanded);
+    unawaited(_saveLyricsPanelExpandedPref(expanded));
     final target = expanded
         ? _lyricsExpandedSize
         : (_collapsedFraction ?? _kLyricsSheetCollapsedHeight / 600);
@@ -90,9 +93,31 @@ class _LyricViewScreenState extends State<LyricViewScreen>
     if (mounted) setState(() {});
   }
 
+  Future<void> _loadLyricsPanelExpandedPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    final expandedIds = prefs.getStringList(_kLyricsPanelExpandedIdsKey) ?? [];
+    if (!mounted || !expandedIds.contains(_lyric.id)) return;
+    setState(() {
+      _sheetExpanded = true;
+      _sheetSize = _lyricsExpandedSize;
+    });
+  }
+
+  Future<void> _saveLyricsPanelExpandedPref(bool expanded) async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = (prefs.getStringList(_kLyricsPanelExpandedIdsKey) ?? []).toSet();
+    if (expanded) {
+      ids.add(_lyric.id);
+    } else {
+      ids.remove(_lyric.id);
+    }
+    await prefs.setStringList(_kLyricsPanelExpandedIdsKey, ids.toList());
+  }
+
   @override
   void initState() {
     super.initState();
+    unawaited(_loadLyricsPanelExpandedPref());
     _sheetSnapController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 260),
@@ -272,7 +297,8 @@ class _LyricViewScreenState extends State<LyricViewScreen>
           final collapsedSize = _kLyricsSheetCollapsedHeight / bodyHeight;
           _collapsedFraction = collapsedSize;
           if (_sheetSize == 0) {
-            _sheetSize = collapsedSize;
+            _sheetSize =
+                _sheetExpanded ? _lyricsExpandedSize : collapsedSize;
           }
           final effectiveSheetSize = _sheetSize.clamp(
             collapsedSize,
@@ -827,10 +853,11 @@ class _LyricsPanel extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final lines = LyricSync.parseLines(content);
+    final panelBackground = AppColors.resolveLyricsPanelBackground(context);
 
     if (!showLyricsContent) {
       return Material(
-        color: AppColors.lyricsPanelBackground,
+        color: panelBackground,
         borderRadius: StreamingTokens.sheetRadius,
         clipBehavior: Clip.antiAlias,
         elevation: 8,
@@ -857,7 +884,7 @@ class _LyricsPanel extends StatelessWidget {
     }
 
     return Material(
-      color: AppColors.lyricsPanelBackground,
+      color: panelBackground,
       borderRadius: StreamingTokens.sheetRadius,
       clipBehavior: Clip.antiAlias,
       child: Column(

@@ -14,8 +14,15 @@ abstract final class AppColors {
   static const Color surfaceContainerDark = Color(0xFF201F1F);
   static const Color surfaceContainerHighDark = Color(0xFF2A2A2A);
   static const Color surfaceContainerHighestDark = Color(0xFF353534);
-  /// Fundo do painel de letras (player expandido).
+  /// Fundo do painel de letras (player expandido) — só tema escuro.
   static const Color lyricsPanelBackground = Color(0xFF222222);
+
+  static Color resolveLyricsPanelBackground(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return lyricsPanelBackground;
+    }
+    return Theme.of(context).colorScheme.surfaceContainerHigh;
+  }
   static const Color onSurfaceDark = Color(0xFFE5E2E1);
   static const Color onSurfaceVariantDark = Color(0xFFBCCBB9);
   static const Color outlineDark = Color(0xFF869585);
